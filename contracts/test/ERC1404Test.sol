@@ -14,8 +14,8 @@ contract UserProxy {
         return transfer(to, amount);
     }
 
-    function allowReceiveTransfers(address _account) public {
-        token.allowReceiveTransfers(_account);
+    function allowReceiveTransfers(address _account, bool _updatedValue) public {
+        token.allowReceiveTransfers(_account, _updatedValue);
     }
 }
 
@@ -68,10 +68,19 @@ contract ERC1404Test {
     }
 
     function testAdminCanAddAccountToWhitelistAndBeApprovedForTransfer() public {
-        token.allowReceiveTransfers(address(chuck));
-        Assert.equal(token.checkReceiveTransfers(address(chuck)), true, "chuck should be able to receive transfers");
+        token.allowReceiveTransfers(address(chuck), true);
+        Assert.equal(token.getReceiveTransfersStatus(address(chuck)), true, "chuck should be able to receive transfers");
         
         uint8 restrictionCode = token.detectTransferRestriction(address(bob), address(chuck), 17);
         Assert.equal(uint(restrictionCode), 0, "should allow transfer to whitelisted addresses");
+    }
+
+    function testAdminCanRemoveAccountFromTheWhitelistAndBeApprovedForTransfer() public {
+        token.allowReceiveTransfers(address(chuck), true);
+        token.allowReceiveTransfers(address(chuck), false);
+        Assert.equal(token.getReceiveTransfersStatus(address(chuck)), false, "chuck should be able to receive transfers");
+        
+        uint8 restrictionCode = token.detectTransferRestriction(address(bob), address(chuck), 17);
+        Assert.equal(uint(restrictionCode), 1, "should have removed from whitelist");
     }
 }
