@@ -6,11 +6,16 @@ contract ERC1404 {
   uint8 public decimals;
   uint256 public totalSupply;
   address public contractOwner;
+
+
   uint8 public constant SUCCESS_CODE = 0;
+  uint8 public constant RECIPIENT_NOT_APPROVED = 1;
+  // mapping(uint8 => string) public transferCodes;
 
   mapping(address => uint256) private _balances;
   mapping(address => mapping(address => uint256)) private _allowed;
   mapping(address => mapping(address => uint8)) private _approvalNonces;
+  mapping(address => bool) public canReceiveTransfers; // TODO: may want to map address => uint256 for max holdings
 
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
@@ -45,7 +50,9 @@ contract ERC1404 {
   /// @param value Amount of tokens being transferred
   /// @return Code by which to reference message for rejection reasoning
   function detectTransferRestriction(address from, address to, uint256 value) public view returns(uint8) {
-    return SUCCESS_CODE;
+    if(from == contractOwner) return SUCCESS_CODE;
+    if(canReceiveTransfers[to]) return SUCCESS_CODE;
+    return RECIPIENT_NOT_APPROVED;
   }
 
   /// @notice Returns a human-readable message for a given restriction code
@@ -53,6 +60,14 @@ contract ERC1404 {
   /// @return Text showing the restriction's reasoning
   function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory) {
     return "SUCCESS";
+  }
+
+  function allowReceiveTransfers(address _account) public {
+    canReceiveTransfers[_account] = true;
+  }
+
+  function checkReceiveTransfers(address _account) public returns(bool) {
+    return canReceiveTransfers[_account];
   }
 
   /******* ERC20 FUNCTIONS ***********/

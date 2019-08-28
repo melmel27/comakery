@@ -13,23 +13,26 @@ contract UserProxy {
     function transfer(address to, uint amount) public returns(bool success) {
         return transfer(to, amount);
     }
+
+    function allowReceiveTransfers(address _account) public {
+        token.allowReceiveTransfers(_account);
+    }
 }
 
 contract ERC1404Test {
     ERC1404 token;
-    address initialTokenHolder;
+    address tokenContractOwner;
     UserProxy public alice;
     UserProxy public bob;
     UserProxy public chuck;
-    
 
     function beforeEach() public {
-        alice = new UserProxy(token);
+        alice = new UserProxy(token); // alice owns the contract and gets all the tokens first
         bob = new UserProxy(token);
         chuck = new UserProxy(token);
 
-        initialTokenHolder = address(alice);
-        token = new ERC1404(initialTokenHolder, "xyz", "Ex Why Zee", 6, 1234567);
+        tokenContractOwner = address(this);
+        token = new ERC1404(tokenContractOwner, "xyz", "Ex Why Zee", 6, 1234567);
     }
 
     function testTokenInitialization() public {
@@ -38,24 +41,37 @@ contract ERC1404Test {
 
         Assert.equal(uint(token.decimals()), 6, "should return the token decimals");
         Assert.equal(uint(token.totalSupply()), 1234567, "should return the totalSupply");
-        Assert.equal(token.contractOwner(), initialTokenHolder, "wrong contract owner");
+        Assert.equal(token.contractOwner(), tokenContractOwner, "wrong contract owner");
     }
 
     function testInitialTokenHolderGetsTotalSupply() public {
         Assert.isTrue(token.totalSupply() > 1, "there should be tokens issued");
 
         Assert.equal(uint(token.totalSupply()),
-            token.balanceOf(initialTokenHolder),
-            "all the tokens should be in the initialTokenHolder address");
+            token.balanceOf(tokenContractOwner),
+            "all the tokens should be in the tokenContractOwner address");
     }
 
     function testTransferRestrictionSuccess() public {
-        uint8 restrictionCode = token.detectTransferRestriction(initialTokenHolder, initialTokenHolder, 1);
+        uint8 restrictionCode = token.detectTransferRestriction(tokenContractOwner, tokenContractOwner, 17);
         Assert.equal(uint(restrictionCode), 0, "not the transfer SUCCESS code");
     }
 
     function testMessageForTransferRestrictionSuccess() public {
         string memory message = token.messageForTransferRestriction(0);
         Assert.equal(message, "SUCCESS", "wrong message for success");
+    }
+
+    function testTransferRestrictionsBetweenUsersNotOnWhitelist() public {
+        uint8 restrictionCode = token.detectTransferRestriction(address(bob), address(chuck), 17);
+        Assert.equal(uint(restrictionCode), 1, "should restrict transfer between not whitelisted addresses");
+    }
+
+    function testAdminCanAddAccountToWhitelistAndBeApprovedForTransfer() public {
+        token.allowReceiveTransfers(address(chuck));
+        Assert.equal(token.checkReceiveTransfers(address(chuck)), true, "chuck should be able to receive transfers");
+        
+        uint8 restrictionCode = token.detectTransferRestriction(address(bob), address(chuck), 17);
+        Assert.equal(uint(restrictionCode), 0, "should allow transfer to whitelisted addresses");
     }
 }
