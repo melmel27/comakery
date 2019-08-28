@@ -5,6 +5,7 @@ contract ERC1404 {
   string public name;
   uint8 public decimals;
   uint256 public totalSupply;
+  uint8 public constant SUCCESS_CODE = 0;
 
   mapping(address => uint256) private _balances;
   mapping(address => mapping(address => uint256)) private _allowed;
@@ -19,22 +20,42 @@ contract ERC1404 {
   }
 
   constructor(
-    address _initialTokenHolder, 
+    address _owner,
     string memory _symbol,
     string memory _name,
     uint8 _decimals,
     uint256 _totalSupply
   ) public {
-    require(_initialTokenHolder != address(0), "Token holder address cannot be 0x0");
+    require(_owner != address(0), "Token owner address cannot be 0x0");
 
     symbol = _symbol;
     name = _name;
     decimals = _decimals;
     totalSupply = _totalSupply;
 
-    _balances[_initialTokenHolder] = totalSupply;
+    _balances[_owner] = totalSupply;
+  }
+  /******* ERC1404 FUNCTIONS ***********/
+  
+  /// @notice Detects if a transfer will be reverted and if so returns an appropriate reference code
+  /// @param from Sending address
+  /// @param to Receiving address
+  /// @param value Amount of tokens being transferred
+  /// @return Code by which to reference message for rejection reasoning
+  function detectTransferRestriction(address from, address to, uint256 value) public view returns(uint8) {
+    return SUCCESS_CODE;
   }
 
+  /// @notice Returns a human-readable message for a given restriction code
+  /// @param restrictionCode Identifier for looking up a message
+  /// @return Text showing the restriction's reasoning
+  function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory) {
+    return "SUCCESS";
+  }
+
+
+  /******* ERC20 FUNCTIONS ***********/
+  
   function balanceOf(address owner) public view returns(uint256 balance) {
     return _balances[owner];
   }

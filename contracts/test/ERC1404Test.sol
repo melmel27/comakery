@@ -29,4 +29,14 @@ contract ERC1404Test {
             token.balanceOf(initialTokenHolder),
             "all the tokens should be in the initialTokenHolder address");
     }
+
+    function testTransferRestrictionSuccess() public {
+        uint8 restrictionCode = token.detectTransferRestriction(initialTokenHolder, initialTokenHolder, 1);
+        Assert.equal(uint(restrictionCode), 0, "not the transfer SUCCESS code");
+    }
+
+    function testMessageForTransferRestrictionSuccess() public {
+        string memory message = token.messageForTransferRestriction(0);
+        Assert.equal(message, "SUCCESS", "wrong message for success");
+    }
 }
