@@ -5,7 +5,7 @@ contract ERC1404 {
   string public name;
   uint8 public decimals;
   uint256 public totalSupply;
-  address public owner;
+  address public contractOwner;
   uint8 public constant SUCCESS_CODE = 0;
 
   mapping(address => uint256) private _balances;
@@ -21,21 +21,21 @@ contract ERC1404 {
   }
 
   constructor(
-    address _owner,
+    address _contractOwner,
     string memory _symbol,
     string memory _name,
     uint8 _decimals,
     uint256 _totalSupply
   ) public {
-    require(_owner != address(0), "Token owner address cannot be 0x0");
+    require(_contractOwner != address(0), "Token owner address cannot be 0x0");
 
     symbol = _symbol;
     name = _name;
     decimals = _decimals;
     totalSupply = _totalSupply;
-    owner = _owner;
+    contractOwner = _contractOwner;
 
-    _balances[_owner] = totalSupply;
+    _balances[_contractOwner] = totalSupply;
   }
   /******* ERC1404 FUNCTIONS ***********/
   
@@ -54,7 +54,6 @@ contract ERC1404 {
   function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory) {
     return "SUCCESS";
   }
-
 
   /******* ERC20 FUNCTIONS ***********/
   

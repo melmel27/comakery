@@ -4,12 +4,31 @@ import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "../contracts/ERC1404.sol";
 
+contract UserProxy {
+    ERC1404 public token;
+    constructor(ERC1404 _token) public {
+        token = _token;
+    }
+
+    function transfer(address to, uint amount) public returns(bool success) {
+        return transfer(to, amount);
+    }
+}
+
 contract ERC1404Test {
     ERC1404 token;
     address initialTokenHolder;
+    UserProxy public alice;
+    UserProxy public bob;
+    UserProxy public chuck;
+    
 
     function beforeEach() public {
-        initialTokenHolder = address(this);
+        alice = new UserProxy(token);
+        bob = new UserProxy(token);
+        chuck = new UserProxy(token);
+
+        initialTokenHolder = address(alice);
         token = new ERC1404(initialTokenHolder, "xyz", "Ex Why Zee", 6, 1234567);
     }
 
@@ -19,7 +38,7 @@ contract ERC1404Test {
 
         Assert.equal(uint(token.decimals()), 6, "should return the token decimals");
         Assert.equal(uint(token.totalSupply()), 1234567, "should return the totalSupply");
-        Assert.equal(token.owner(), initialTokenHolder, "wrong owner");
+        Assert.equal(token.contractOwner(), initialTokenHolder, "wrong contract owner");
     }
 
     function testInitialTokenHolderGetsTotalSupply() public {
