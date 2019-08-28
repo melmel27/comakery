@@ -5,6 +5,7 @@ contract ERC1404 {
   string public name;
   uint8 public decimals;
   uint256 public totalSupply;
+  address public owner;
   uint8 public constant SUCCESS_CODE = 0;
 
   mapping(address => uint256) private _balances;
@@ -32,6 +33,7 @@ contract ERC1404 {
     name = _name;
     decimals = _decimals;
     totalSupply = _totalSupply;
+    owner = _owner;
 
     _balances[_owner] = totalSupply;
   }

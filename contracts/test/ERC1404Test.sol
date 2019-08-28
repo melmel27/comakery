@@ -19,7 +19,7 @@ contract ERC1404Test {
 
         Assert.equal(uint(token.decimals()), 6, "should return the token decimals");
         Assert.equal(uint(token.totalSupply()), 1234567, "should return the totalSupply");
-
+        Assert.equal(token.owner(), initialTokenHolder, "wrong owner");
     }
 
     function testInitialTokenHolderGetsTotalSupply() public {
