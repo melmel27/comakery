@@ -10,11 +10,14 @@ contract ERC1404 {
 
   uint8 public constant SUCCESS_CODE = 0;
   uint8 public constant RECIPIENT_NOT_APPROVED = 1;
+  uint8 public constant SENDER_TOKENS_LOCKED = 2;
 
   mapping(address => uint256) private _balances;
   mapping(address => mapping(address => uint256)) private _allowed;
   mapping(address => mapping(address => uint8)) private _approvalNonces;
+  
   mapping(address => bool) public receiveTransfersStatus; // TODO: may want to map address => uint256 for max holdings
+  mapping(address => uint256) public lockupPeriods;  // unix timestamp to lock funds until
 
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
@@ -50,8 +53,10 @@ contract ERC1404 {
   /// @return Code by which to reference message for rejection reasoning
   function detectTransferRestriction(address from, address to, uint256 value) public view returns(uint8) {
     if(from == contractOwner) return SUCCESS_CODE;
-    if(receiveTransfersStatus[to]) return SUCCESS_CODE;
-    return RECIPIENT_NOT_APPROVED;
+    uint8 _result = SUCCESS_CODE;
+    if(!receiveTransfersStatus[to]) _result = RECIPIENT_NOT_APPROVED;
+    if(now < lockupPeriods[from]) _result = SENDER_TOKENS_LOCKED;
+    return _result;
   }
 
   /// @notice Returns a human-readable message for a given restriction code
@@ -61,7 +66,7 @@ contract ERC1404 {
     return "SUCCESS";
   }
 
-  function allowReceiveTransfers(address _account, bool _updatedValue) public {
+  function setReceiveTransferStatus(address _account, bool _updatedValue) public {
     receiveTransfersStatus[_account] = _updatedValue;
   }
 
@@ -69,6 +74,13 @@ contract ERC1404 {
     return receiveTransfersStatus[_account];
   }
 
+  function lockupUntil(address _account, uint256 _timestamp) public {
+    lockupPeriods[_account] = _timestamp;
+  }
+
+  function getLockup(address _account) public returns(uint256) {
+    return lockupPeriods[_account];
+  }
   /******* ERC20 FUNCTIONS ***********/
   
   function balanceOf(address owner) public view returns(uint256 balance) {
@@ -101,8 +113,8 @@ contract ERC1404 {
     return _approve(spender, newApprovalValue);
   }
 
-  // fetch the current allowed transfers for a sender and receiver along with the spender's nonce
-  function fetchPreApproval(address spender) external view returns(uint256 spenderAllowance, uint8 nonce) {
+  // gets the current allowed transfers for a sender and receiver along with the spender's nonce
+  function allowanceAndNonce(address spender) external view returns(uint256 spenderAllowance, uint8 nonce) {
     uint256 _allowance = _allowed[msg.sender][spender];
     uint8 _nonce = _approvalNonces[msg.sender][spender];
     return (_allowance, _nonce);

@@ -14,8 +14,8 @@ contract UserProxy {
         return transfer(to, amount);
     }
 
-    function allowReceiveTransfers(address _account, bool _updatedValue) public {
-        token.allowReceiveTransfers(_account, _updatedValue);
+    function setReceiveTransferStatus(address _account, bool _updatedValue) public {
+        token.setReceiveTransferStatus(_account, _updatedValue);
     }
 }
 
@@ -27,12 +27,12 @@ contract ERC1404Test {
     UserProxy public chuck;
 
     function beforeEach() public {
-        alice = new UserProxy(token); // alice owns the contract and gets all the tokens first
-        bob = new UserProxy(token);
-        chuck = new UserProxy(token);
-
         tokenContractOwner = address(this);
         token = new ERC1404(tokenContractOwner, "xyz", "Ex Why Zee", 6, 1234567);
+
+        alice = new UserProxy(token);
+        bob = new UserProxy(token);
+        chuck = new UserProxy(token);
     }
 
     function testTokenInitialization() public {
@@ -68,7 +68,7 @@ contract ERC1404Test {
     }
 
     function testAdminCanAddAccountToWhitelistAndBeApprovedForTransfer() public {
-        token.allowReceiveTransfers(address(chuck), true);
+        token.setReceiveTransferStatus(address(chuck), true);
         Assert.equal(token.getReceiveTransfersStatus(address(chuck)), true, "chuck should be able to receive transfers");
         
         uint8 restrictionCode = token.detectTransferRestriction(address(bob), address(chuck), 17);
@@ -76,11 +76,32 @@ contract ERC1404Test {
     }
 
     function testAdminCanRemoveAccountFromTheWhitelistAndBeApprovedForTransfer() public {
-        token.allowReceiveTransfers(address(chuck), true);
-        token.allowReceiveTransfers(address(chuck), false);
+        token.setReceiveTransferStatus(address(chuck), true);
+        token.setReceiveTransferStatus(address(chuck), false);
         Assert.equal(token.getReceiveTransfersStatus(address(chuck)), false, "chuck should be able to receive transfers");
         
         uint8 restrictionCode = token.detectTransferRestriction(address(bob), address(chuck), 17);
-        Assert.equal(uint(restrictionCode), 1, "should have removed from whitelist");
+        Assert.equal(uint(restrictionCode), 1, "should have been removed from whitelist");
+    }
+
+    function testAdminCanLockupTokens() public {
+        // token.transfer(address(alice), 150);
+        uint lockupTill = now + 10000;
+        token.lockupUntil(address(alice), lockupTill);
+        Assert.equal(token.getLockup(address(alice)), lockupTill, "not locked up as expected");
+
+        token.setReceiveTransferStatus(address(bob), true);
+        uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);
+        Assert.equal(uint(restrictionCode), 2, "should have tokens locked");
+    }
+
+     function testAdminCanUnlockTokens() public {
+        uint lockupTill = now + 10000;
+        token.lockupUntil(address(alice), lockupTill);
+        token.setReceiveTransferStatus(address(bob), true);
+        token.lockupUntil(address(alice), 0);
+        
+        uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);
+        Assert.equal(uint(restrictionCode), 0, "should not have tokens locked");
     }
 }
