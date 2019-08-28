@@ -12,6 +12,8 @@ contract ERC1404 {
   uint8 public constant RECIPIENT_NOT_APPROVED = 1;
   uint8 public constant SENDER_TOKENS_LOCKED = 2;
 
+  uint256 public constant MAX_UINT = uint(0) - uint(1);
+
   mapping(address => uint256) private _balances;
   mapping(address => mapping(address => uint256)) private _allowed;
   mapping(address => mapping(address => uint8)) private _approvalNonces;
@@ -74,8 +76,16 @@ contract ERC1404 {
     return receiveTransfersStatus[_account];
   }
 
-  function lockupUntil(address _account, uint256 _timestamp) public {
+  function lock(address _account) public {
+    lockupPeriods[_account] = MAX_UINT;
+  }
+
+  function lockUntil(address _account, uint256 _timestamp) public {
     lockupPeriods[_account] = _timestamp;
+  }
+
+  function unlock(address _account) public {
+    lockupPeriods[_account] = 0;
   }
 
   function getLockup(address _account) public returns(uint256) {
