@@ -8,7 +8,7 @@ contract ERC1404Test {
     ERC1404 token;
 
     function beforeEach() public {
-        token = new ERC1404("xyz");
+        token = new ERC1404(address(this), "xyz");
     }
 
     function testSymbolName() public {
