@@ -11,8 +11,10 @@ contract ERC1404 {
   uint8 public constant SUCCESS_CODE = 0;
   uint8 public constant RECIPIENT_NOT_APPROVED = 1;
   uint8 public constant SENDER_TOKENS_LOCKED = 2;
+  uint8 public constant DO_NOT_SEND_TO_TOKEN_CONTRACT = 3;
+  uint8 public constant DO_NOT_SEND_TO_EMPTY_ADDRESS = 4;
 
-  uint256 public constant MAX_UINT = uint(0) - uint(1);
+  uint256 public constant MAX_UINT = uint(0) - uint(1); // TODO: hardcode this value?
 
   mapping(address => uint256) private _balances;
   mapping(address => mapping(address => uint256)) private _allowed;
@@ -23,11 +25,6 @@ contract ERC1404 {
 
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
-
-  modifier validAddress(address _address) {
-    require(_address != address(0), "Error 0x0 is an invalid address");
-    _;
-  }
 
   constructor(
     address _contractOwner,
@@ -54,11 +51,14 @@ contract ERC1404 {
   /// @param value Amount of tokens being transferred
   /// @return Code by which to reference message for rejection reasoning
   function detectTransferRestriction(address from, address to, uint256 value) public view returns(uint8) {
+    if(to == address(0)) return DO_NOT_SEND_TO_EMPTY_ADDRESS;
+    if(to == address(this)) return DO_NOT_SEND_TO_TOKEN_CONTRACT;
     if(from == contractOwner) return SUCCESS_CODE;
-    uint8 _result = SUCCESS_CODE;
-    if(!receiveTransfersStatus[to]) _result = RECIPIENT_NOT_APPROVED;
-    if(now < lockupPeriods[from]) _result = SENDER_TOKENS_LOCKED;
-    return _result;
+    
+    if(!receiveTransfersStatus[to]) return RECIPIENT_NOT_APPROVED;
+    if(now < lockupPeriods[from]) return SENDER_TOKENS_LOCKED;
+    
+    return SUCCESS_CODE;
   }
 
   /// @notice Returns a human-readable message for a given restriction code
@@ -72,7 +72,7 @@ contract ERC1404 {
     receiveTransfersStatus[_account] = _updatedValue;
   }
 
-  function getReceiveTransfersStatus(address _account) public returns(bool) {
+  function getReceiveTransfersStatus(address _account) public view returns(bool) {
     return receiveTransfersStatus[_account];
   }
 
@@ -88,7 +88,7 @@ contract ERC1404 {
     lockupPeriods[_account] = 0;
   }
 
-  function getLockup(address _account) public returns(uint256) {
+  function getLockup(address _account) public view returns(uint256) {
     return lockupPeriods[_account];
   }
   /******* ERC20 FUNCTIONS ***********/
@@ -110,13 +110,12 @@ contract ERC1404 {
       The approve function implements the standard to maintain backwards compatibility with ERC20.
       Read more about the race condition exploit of approve here https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
    */
-  function approve(address spender, uint256 value) public validAddress(spender) returns(bool success) {
+  function approve(address spender, uint256 value) public returns(bool success) {
     return _approve(spender, value);
   }
 
   // Use safeApprove() instead of approve() to avoid the race condition exploit which is a known security hole in the ERC20 standard
   function safeApprove(address spender, uint256 newApprovalValue, uint256 expectedApprovedValue, uint8 nonce) public
-  validAddress(spender)
   returns(bool success) {
     require(expectedApprovedValue == _allowed[msg.sender][spender], "The expected approved amount does not match the actual approved amount");
     require(nonce == _approvalNonces[msg.sender][spender], "The nonce does not match the current transfer approval nonce");
@@ -146,9 +145,8 @@ contract ERC1404 {
     return true;
   }
 
-  function _transfer(address from, address to, uint256 value) internal validAddress(to) {
+  function _transfer(address from, address to, uint256 value) internal {
     require(value <= _balances[to], "Insufficent tokens");
-    require(to != address(this), "Error: cannot transfer tokens to the token contract address - the tokens would be permanently unrecoverable.");
     _balances[from] = sub(_balances[from], value);
     _balances[to] = add(_balances[to], value);
     emit Transfer(from, to, value);

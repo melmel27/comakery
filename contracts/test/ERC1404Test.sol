@@ -113,4 +113,14 @@ contract ERC1404Test {
         uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);
         Assert.equal(uint(restrictionCode), 0, "should not have tokens locked");
     }
+
+    function testCannotSendToTokenContractItself() public {
+        uint8 restrictionCode = token.detectTransferRestriction(address(tokenContractOwner), address(token), 17);
+        Assert.equal(uint(restrictionCode), 3, "should not be able to send tokens to the contract itself");
+    }
+
+    function testCannotSendTo0x0() public {
+        uint8 restrictionCode = token.detectTransferRestriction(address(tokenContractOwner), address(0x0), 17);
+        Assert.equal(uint(restrictionCode), 4, "should not be able to send tokens to the empty contract");
+    }
 }
