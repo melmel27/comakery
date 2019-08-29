@@ -19,12 +19,23 @@ contract ERC1404 {
   mapping(address => uint256) private _balances;
   mapping(address => mapping(address => uint256)) private _allowed;
   mapping(address => mapping(address => uint8)) private _approvalNonces;
-  
+
   mapping(address => bool) public receiveTransfersStatus; // TODO: may want to map address => uint256 for max holdings
-  mapping(address => uint256) public lockupPeriods;  // unix timestamp to lock funds until
+  mapping(address => uint256) public lockupPeriods; // unix timestamp to lock funds until
 
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
+
+  /// @notice Checks if a transfer is restricted, reverts if it is
+  /// @param from Sending address
+  /// @param to Receiving address
+  /// @param value Amount of tokens being transferred
+  /// @dev Defining this modifier is not required by the standard, using detectTransferRestriction and appropriately emitting TransferRestricted is however
+  modifier checkRestrictions(address from, address to, uint256 value) {
+    uint8 restrictionCode = detectTransferRestriction(from, to, value);
+    require(restrictionCode == SUCCESS_CODE, messageForTransferRestriction(restrictionCode));
+    _;
+  }
 
   constructor(
     address _contractOwner,
@@ -44,32 +55,33 @@ contract ERC1404 {
     _balances[_contractOwner] = totalSupply;
   }
   /******* ERC1404 FUNCTIONS ***********/
-  
+
   /// @notice Detects if a transfer will be reverted and if so returns an appropriate reference code
   /// @param from Sending address
   /// @param to Receiving address
   /// @param value Amount of tokens being transferred
   /// @return Code by which to reference message for rejection reasoning
   function detectTransferRestriction(address from, address to, uint256 value) public view returns(uint8) {
-    if(to == address(0)) return DO_NOT_SEND_TO_EMPTY_ADDRESS;
-    if(to == address(this)) return DO_NOT_SEND_TO_TOKEN_CONTRACT;
-    if(from == contractOwner) return SUCCESS_CODE;
-    
-    if(!receiveTransfersStatus[to]) return RECIPIENT_NOT_APPROVED;
-    if(now < lockupPeriods[from]) return SENDER_TOKENS_LOCKED;
-    
+    if (to == address(0)) return DO_NOT_SEND_TO_EMPTY_ADDRESS;
+    if (to == address(this)) return DO_NOT_SEND_TO_TOKEN_CONTRACT;
+    if (from == contractOwner) return SUCCESS_CODE;
+
+    if (!receiveTransfersStatus[to]) return RECIPIENT_NOT_APPROVED;
+    if (now < lockupPeriods[from]) return SENDER_TOKENS_LOCKED;
+
     return SUCCESS_CODE;
   }
 
   /// @notice Returns a human-readable message for a given restriction code
   /// @param restrictionCode Identifier for looking up a message
   /// @return Text showing the restriction's reasoning
-  function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory) {
-    return ["SUCCESS", 
-    "RECIPIENT NOT APPROVED", 
-    "SENDER TOKENS LOCKED", 
-    "DO NOT SEND TO TOKEN CONTRACT", 
-    "DO NOT SEND TO EMPTY ADDRESS"][restrictionCode];
+  function messageForTransferRestriction(uint8 restrictionCode) public pure returns(string memory) {
+    return ["SUCCESS",
+      "RECIPIENT NOT APPROVED",
+      "SENDER TOKENS LOCKED",
+      "DO NOT SEND TO TOKEN CONTRACT",
+      "DO NOT SEND TO EMPTY ADDRESS"
+    ][restrictionCode];
   }
 
   function setReceiveTransferStatus(address _account, bool _updatedValue) public {
@@ -96,7 +108,7 @@ contract ERC1404 {
     return lockupPeriods[_account];
   }
   /******* ERC20 FUNCTIONS ***********/
-  
+
   function balanceOf(address owner) public view returns(uint256 balance) {
     return _balances[owner];
   }
@@ -134,7 +146,7 @@ contract ERC1404 {
   }
 
   /********** INTERNAL FUNCTIONS **********/
-  function transferFrom(address from, address to, uint256 value) public returns(bool success) {
+  function transferFrom(address from, address to, uint256 value) public checkRestrictions(from, to, value) returns(bool success) {
     require(value <= _allowed[from][to], "The approved allowance is lower than the transfer amount");
     _allowed[from][msg.sender] = sub(_allowed[from][msg.sender], value);
     _transfer(from, to, value);
@@ -149,7 +161,7 @@ contract ERC1404 {
     return true;
   }
 
-  function _transfer(address from, address to, uint256 value) internal {
+  function _transfer(address from, address to, uint256 value) internal checkRestrictions(from, to, value) {
     require(value <= _balances[to], "Insufficent tokens");
     _balances[from] = sub(_balances[from], value);
     _balances[to] = add(_balances[to], value);

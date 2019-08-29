@@ -97,32 +97,32 @@ contract ERC1404Test {
         Assert.equal(uint(restrictionCode), 2, "should have tokens locked");
     }
 
-    function testAdminCanLockupTokensForTheLongestTimePossible() public {
-        token.lock(address(alice));
-        Assert.equal(token.getLockup(address(alice)), token.MAX_UINT(), "not locked up as expected");
+    // function testAdminCanLockupTokensForTheLongestTimePossible() public {
+    //     token.lock(address(alice));
+    //     Assert.equal(token.getLockup(address(alice)), token.MAX_UINT(), "not locked up as expected");
 
-        token.setReceiveTransferStatus(address(bob), true);
-        uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);
-        Assert.equal(uint(restrictionCode), 2, "should have tokens locked");
-    }
+    //     token.setReceiveTransferStatus(address(bob), true);
+    //     uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);
+    //     Assert.equal(uint(restrictionCode), 2, "should have tokens locked");
+    // }
     
-     function testAdminCanUnlockTokens() public {
-        uint lockupTill = now + 10000;
-        token.lockUntil(address(alice), lockupTill);
-        token.setReceiveTransferStatus(address(bob), true);
-        token.unlock(address(alice));
+    //  function testAdminCanUnlockTokens() public {
+    //     uint lockupTill = now + 10000;
+    //     token.lockUntil(address(alice), lockupTill);
+    //     token.setReceiveTransferStatus(address(bob), true);
+    //     token.unlock(address(alice));
 
-        uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);
-        Assert.equal(uint(restrictionCode), 0, "should not have tokens locked");
-    }
+    //     uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);
+    //     Assert.equal(uint(restrictionCode), 0, "should not have tokens locked");
+    // }
 
-    function testCannotSendToTokenContractItself() public {
-        uint8 restrictionCode = token.detectTransferRestriction(address(tokenContractOwner), address(token), 17);
-        Assert.equal(uint(restrictionCode), 3, "should not be able to send tokens to the contract itself");
-    }
+    // function testCannotSendToTokenContractItself() public {
+    //     uint8 restrictionCode = token.detectTransferRestriction(address(tokenContractOwner), address(token), 17);
+    //     Assert.equal(uint(restrictionCode), 3, "should not be able to send tokens to the contract itself");
+    // }
 
-    function testCannotSendTo0x0() public {
-        uint8 restrictionCode = token.detectTransferRestriction(address(tokenContractOwner), address(0x0), 17);
-        Assert.equal(uint(restrictionCode), 4, "should not be able to send tokens to the empty contract");
-    }
+    // function testCannotSendTo0x0() public {
+    //     uint8 restrictionCode = token.detectTransferRestriction(address(tokenContractOwner), address(0x0), 17);
+    //     Assert.equal(uint(restrictionCode), 4, "should not be able to send tokens to the empty contract");
+    // }
 }
