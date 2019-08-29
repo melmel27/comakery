@@ -65,7 +65,11 @@ contract ERC1404 {
   /// @param restrictionCode Identifier for looking up a message
   /// @return Text showing the restriction's reasoning
   function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory) {
-    return "SUCCESS";
+    return ["SUCCESS", 
+    "RECIPIENT NOT APPROVED", 
+    "SENDER TOKENS LOCKED", 
+    "DO NOT SEND TO TOKEN CONTRACT", 
+    "DO NOT SEND TO EMPTY ADDRESS"][restrictionCode];
   }
 
   function setReceiveTransferStatus(address _account, bool _updatedValue) public {

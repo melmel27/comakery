@@ -58,8 +58,11 @@ contract ERC1404Test {
     }
 
     function testMessageForTransferRestrictionSuccess() public {
-        string memory message = token.messageForTransferRestriction(0);
-        Assert.equal(message, "SUCCESS", "wrong message for success");
+        Assert.equal(token.messageForTransferRestriction(0), "SUCCESS", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(1), "RECIPIENT NOT APPROVED", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(2), "SENDER TOKENS LOCKED", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(3), "DO NOT SEND TO TOKEN CONTRACT", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(4), "DO NOT SEND TO EMPTY ADDRESS", "wrong message");
     }
 
     function testTransferRestrictionsBetweenUsersNotOnWhitelist() public {
@@ -103,7 +106,6 @@ contract ERC1404Test {
         Assert.equal(uint(restrictionCode), 2, "should have tokens locked");
     }
     
-
      function testAdminCanUnlockTokens() public {
         uint lockupTill = now + 10000;
         token.lockUntil(address(alice), lockupTill);
