@@ -20,7 +20,7 @@ contract ERC1404 {
   mapping(address => mapping(address => uint256)) private _allowed;
   mapping(address => mapping(address => uint8)) private _approvalNonces;
 
-  mapping(address => bool) public receiveTransfersStatus; // TODO: may want to map address => uint256 for max holdings
+  mapping(address => bool) public approvedReceivers; // TODO: may want to map address => uint256 for max holdings
   mapping(address => uint256) public lockupPeriods; // unix timestamp to lock funds until
 
   event Transfer(address indexed from, address indexed to, uint256 value);
@@ -66,7 +66,7 @@ contract ERC1404 {
     if (to == address(this)) return DO_NOT_SEND_TO_TOKEN_CONTRACT;
     if (from == contractOwner) return SUCCESS_CODE;
 
-    if (!receiveTransfersStatus[to]) return RECIPIENT_NOT_APPROVED;
+    if (!approvedReceivers[to]) return RECIPIENT_NOT_APPROVED;
     if (now < lockupPeriods[from]) return SENDER_TOKENS_LOCKED;
 
     return SUCCESS_CODE;
@@ -84,12 +84,12 @@ contract ERC1404 {
     ][restrictionCode];
   }
 
-  function setReceiveTransferStatus(address _account, bool _updatedValue) public {
-    receiveTransfersStatus[_account] = _updatedValue;
+  function setApprovedReceiver(address _account, bool _updatedValue) public {
+    approvedReceivers[_account] = _updatedValue;
   }
 
-  function getReceiveTransfersStatus(address _account) public view returns(bool) {
-    return receiveTransfersStatus[_account];
+  function getApprovedReceiver(address _account) public view returns(bool) {
+    return approvedReceivers[_account];
   }
 
   function lock(address _account) public {

@@ -14,8 +14,8 @@ contract UserProxy {
         return transfer(to, amount);
     }
 
-    function setReceiveTransferStatus(address _account, bool _updatedValue) public {
-        token.setReceiveTransferStatus(_account, _updatedValue);
+    function setApprovedReceiver(address _account, bool _updatedValue) public {
+        token.setApprovedReceiver(_account, _updatedValue);
     }
 
 }
@@ -37,17 +37,17 @@ contract ERC1404Test2 {
     }
 
     function testAdminCanAddAccountToWhitelistAndBeApprovedForTransfer() public {
-        token.setReceiveTransferStatus(address(chuck), true);
-        Assert.equal(token.getReceiveTransfersStatus(address(chuck)), true, "chuck should be able to receive transfers");
+        token.setApprovedReceiver(address(chuck), true);
+        Assert.equal(token.getApprovedReceiver(address(chuck)), true, "chuck should be able to receive transfers");
         
         uint8 restrictionCode = token.detectTransferRestriction(address(bob), address(chuck), 17);
         Assert.equal(uint(restrictionCode), 0, "should allow transfer to whitelisted addresses");
     }
 
     function testAdminCanRemoveAccountFromTheWhitelistAndBeApprovedForTransfer() public {
-        token.setReceiveTransferStatus(address(chuck), true);
-        token.setReceiveTransferStatus(address(chuck), false);
-        Assert.equal(token.getReceiveTransfersStatus(address(chuck)), false, "chuck should be able to receive transfers");
+        token.setApprovedReceiver(address(chuck), true);
+        token.setApprovedReceiver(address(chuck), false);
+        Assert.equal(token.getApprovedReceiver(address(chuck)), false, "chuck should be able to receive transfers");
         
         uint8 restrictionCode = token.detectTransferRestriction(address(bob), address(chuck), 17);
         Assert.equal(uint(restrictionCode), 1, "should have been removed from whitelist");
@@ -58,7 +58,7 @@ contract ERC1404Test2 {
         token.lockUntil(address(alice), lockupTill);
         Assert.equal(token.getLockup(address(alice)), lockupTill, "not locked up as expected");
 
-        token.setReceiveTransferStatus(address(bob), true);
+        token.setApprovedReceiver(address(bob), true);
         uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);
         Assert.equal(uint(restrictionCode), 2, "should have tokens locked");
     }
@@ -67,7 +67,7 @@ contract ERC1404Test2 {
         token.lock(address(alice));
         Assert.equal(token.getLockup(address(alice)), token.MAX_UINT(), "not locked up as expected");
 
-        token.setReceiveTransferStatus(address(bob), true);
+        token.setApprovedReceiver(address(bob), true);
         uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);
         Assert.equal(uint(restrictionCode), 2, "should have tokens locked");
     }
@@ -75,7 +75,7 @@ contract ERC1404Test2 {
      function testAdminCanUnlockTokens() public {
         uint lockupTill = now + 10000;
         token.lockUntil(address(alice), lockupTill);
-        token.setReceiveTransferStatus(address(bob), true);
+        token.setApprovedReceiver(address(bob), true);
         token.unlock(address(alice));
 
         uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);

@@ -14,8 +14,8 @@ contract UserProxy {
         return transfer(to, amount);
     }
 
-    function setReceiveTransferStatus(address _account, bool _updatedValue) public {
-        token.setReceiveTransferStatus(_account, _updatedValue);
+    function setApprovedReceiver(address _account, bool _updatedValue) public {
+        token.setApprovedReceiver(_account, _updatedValue);
     }
 }
 
