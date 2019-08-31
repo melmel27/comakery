@@ -1,4 +1,4 @@
-pragma solidity ^ 0.5 .0;
+pragma solidity ^0.5.8;
 
 contract ERC1404 {
   string public symbol;
@@ -49,10 +49,11 @@ contract ERC1404 {
     symbol = _symbol;
     name = _name;
     decimals = _decimals;
-    totalSupply = _totalSupply;
+    
     contractOwner = _contractOwner;
 
-    _balances[_contractOwner] = totalSupply;
+    _balances[_contractOwner] = _totalSupply;
+    totalSupply = _balances[_contractOwner];
   }
   /******* ERC1404 FUNCTIONS ***********/
 
@@ -107,6 +108,14 @@ contract ERC1404 {
   function getLockup(address _account) public view returns(uint256) {
     return lockupPeriods[_account];
   }
+
+  /******* Mint & Burn ***********/
+
+  function burnFrom(address burnAddress, uint256 value) public {
+    _balances[burnAddress] = sub(_balances[burnAddress], value);
+    totalSupply = sub(totalSupply, value);
+  }
+
   /******* ERC20 FUNCTIONS ***********/
 
   function balanceOf(address owner) public view returns(uint256 balance) {
@@ -162,7 +171,7 @@ contract ERC1404 {
   }
 
   function _transfer(address from, address to, uint256 value) internal checkRestrictions(from, to, value) {
-    require(value <= _balances[to], "Insufficent tokens");
+    require(value <= _balances[from], "Insufficent tokens");
     _balances[from] = sub(_balances[from], value);
     _balances[to] = add(_balances[to], value);
     emit Transfer(from, to, value);
