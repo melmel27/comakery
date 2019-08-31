@@ -1,15 +1,12 @@
-# Blockchain Sketches
-Sketches of wallet integration and other blockchain smart contract functionality.
+# CoMakery Security Token
 
-This repository is basically an elaborate Gist with some example code. Don't expect this code to be suitable for any kind of production environment. It's just a rough reference.
-
-## Run
+## Dev Setup
 
 Install: 
 
 * Node.js
 * Yarn package management for Node.js
-* MetaMask chrome browser extension. This is your Ethereum Wallet.
+* MetaMask chrome browser extension. This is your Ethereum Wallet. You will need this for deployment and the demo.
 * Ganache (a test blockchain). Launch it. Set your ganache RPC port to `HTTP://0.0.0.0:8545`
 
 **MetaMask Setup:**
@@ -20,8 +17,8 @@ Install:
 
 **Setup this code:**
 ```
-git clone git@github.com:aquabu/blockchain_sketches.git
-cd blockchain_sketches
+git clone git@github.com:CoMakery/comakery-security-token.git
+cd comakery-security-token
 
 yarn install
 yarn setup
@@ -29,17 +26,3 @@ yarn dev
 
 open http://localhost:8080
 ```
-
-## Approach
-
-* Quick sketches - not the prettiest code, but clean enough to think about
-* Low ceremony examples
-* Fairly minimal use of libraries
-* No or limited tests except where it helps me think more clearly or illustrates usage
-* Remember I said this isn't production code
-
-## TODO
-
-* ERC1404 whitelist examples
-* DAO Integration Example
-* Binance chain integration through Trust Wallet
