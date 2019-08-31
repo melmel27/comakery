@@ -2,7 +2,24 @@
 <html lang='en'>
 
 <head>
-    <title>Send Tokens With MetaMask</title>
+    <title>Send Security Tokens With MetaMask</title>
+
+        <!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta charset="utf-8">
+  <title>CoMakery Security Token Demo</title>
+  <meta name="description" content="Demo of CoMakery Security Tokens">
+  <meta name="author" content="CoMakery">
+
+  <!-- Mobile Specific Metas
+–––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- CSS
+–––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/skeleton.css">
+
     <script src='bundle.js' type='text/javascript'></script>
     <script>
         // async function run() {
@@ -40,8 +57,33 @@
     </script>
 </head>
 
-<body id='messages'>
+<!-- <body id='messages'>
     Hello world
-</body>
+</body> -->
+
+  <!-- Primary Page Layout
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <div class="container" style=" margin-top: 3%">
+    <div class="row">
+        <div class="column">
+            <h1><strong>CoMakery Security Token Demo</strong></h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="eight columns u-max-full-width">
+            <h3>Transfer</h3>
+            <form id="transfer" action="#">
+                <label for="to-address">To Ethereum Address</label>
+                <input type="text" name="to-address" id="to-address" value="">
+                <br />
+                <input class="button-primary" type="submit" value="Send">
+            </form>
+        </div>
+        </div>
+    </div>
+</div>
+</div>
+<!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
 
 </body>
