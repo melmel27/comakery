@@ -111,8 +111,9 @@ contract ERC1404 {
 
   /******* Mint & Burn ***********/
 
-  function burnFrom(address burnAddress, uint256 value) public {
-    _balances[burnAddress] = sub(_balances[burnAddress], value);
+  function burnFrom(address from, uint256 value) public {
+    require(value <= _balances[from], "Insufficent tokens to burn");
+    _balances[from] = sub(_balances[from], value);
     totalSupply = sub(totalSupply, value);
   }
 

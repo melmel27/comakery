@@ -25,4 +25,13 @@ contract MintBurnTest {
         Assert.equal(token.balanceOf(address(alice)), 0, "wrong balance for alice");
         Assert.equal(token.totalSupply(), 83, "incorrect total supply");
     }
+
+    function testCannotBurnMoreThanAddressBalance() public {
+        token.transfer(address(alice), 10);
+        (bool success,) = address(token).call(abi.encodeWithSignature("burnFrom(address,uint256)", address(alice), 11));
+        Assert.isFalse(success, "should fail to burn if address does not have enough balance to burn");
+
+        Assert.equal(token.totalSupply(), 100, "incorrect total supply");
+        Assert.equal(token.balanceOf(address(alice)), 10, "wrong balance for alice");
+    }
 }
