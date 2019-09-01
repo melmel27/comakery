@@ -97,11 +97,7 @@ contract ERC1404 {
     return approvedReceivers[_account];
   }
 
-  function lock(address _account) public {
-    timeLock[_account] = MAX_UINT;
-  }
-
-  function lockUntil(address _account, uint256 _timestamp) public {
+  function setTimeLock(address _account, uint256 _timestamp) public {
     timeLock[_account] = _timestamp;
   }
 

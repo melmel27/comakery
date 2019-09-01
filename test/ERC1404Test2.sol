@@ -40,17 +40,8 @@ contract ERC1404Test2 {
 
     function testAdminCanLockupTokensForASpecificTime() public {
         uint lockupTill = now + 10000;
-        token.lockUntil(address(alice), lockupTill);
+        token.setTimeLock(address(alice), lockupTill);
         Assert.equal(token.getLockup(address(alice)), lockupTill, "not locked up as expected");
-
-        token.setApprovedReceiver(address(bob), true);
-        uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);
-        Assert.equal(uint(restrictionCode), 2, "should have tokens locked");
-    }
-
-    function testAdminCanLockupTokensForTheLongestTimePossible() public {
-        token.lock(address(alice));
-        Assert.equal(token.getLockup(address(alice)), token.MAX_UINT(), "not locked up as expected");
 
         token.setApprovedReceiver(address(bob), true);
         uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);
@@ -59,7 +50,7 @@ contract ERC1404Test2 {
     
      function testAdminCanUnlockTokens() public {
         uint lockupTill = now + 10000;
-        token.lockUntil(address(alice), lockupTill);
+        token.setTimeLock(address(alice), lockupTill);
         token.setApprovedReceiver(address(bob), true);
         token.unlock(address(alice));
 
@@ -72,7 +63,7 @@ contract ERC1404Test2 {
         Assert.equal(uint(restrictionCode), 3, "should not be able to send tokens to the contract itself");
     }
 
-    function testCannotSendToZero() public {
+    function testCannotSendToAddressZero() public {
         uint8 restrictionCode = token.detectTransferRestriction(address(tokenContractOwner), address(0), 17);
         Assert.equal(uint(restrictionCode), 4, "should not be able to send tokens to the empty contract");
     }
