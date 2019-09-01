@@ -117,6 +117,11 @@ contract ERC1404 {
     totalSupply = sub(totalSupply, value);
   }
 
+  function mint(address to, uint256 value) public {
+    _balances[to] = add(_balances[to], value);
+    totalSupply = add(totalSupply, value);
+  }
+
   /******* ERC20 FUNCTIONS ***********/
 
   function balanceOf(address owner) public view returns(uint256 balance) {

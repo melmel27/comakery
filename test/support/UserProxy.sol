@@ -12,10 +12,6 @@ contract UserProxy {
         return token.transfer(to, amount);
     }
 
-    function checkBalance() public returns(uint256) {
-        return token.balanceOf(address(this));
-    }
-
     function setApprovedReceiver(address _account, bool _updatedValue) public {
         token.setApprovedReceiver(_account, _updatedValue);
     }

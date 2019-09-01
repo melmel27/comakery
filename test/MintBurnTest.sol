@@ -34,4 +34,20 @@ contract MintBurnTest {
         Assert.equal(token.totalSupply(), 100, "incorrect total supply");
         Assert.equal(token.balanceOf(address(alice)), 10, "wrong balance for alice");
     }
+
+    function testMint() public {
+        Assert.equal(token.balanceOf(address(this)), 100, "wrong balance for owner");
+        Assert.equal(token.balanceOf(address(alice)), 0, "wrong balance for owner");
+        Assert.equal(token.totalSupply(), 100, "incorrect total supply");
+
+        token.mint(address(alice), 10);
+
+        Assert.equal(token.balanceOf(address(alice)), 10, "wrong balance for owner");
+        Assert.equal(token.totalSupply(), 110, "incorrect total supply");
+    }
+
+    function testCannotMintMoreThanMaxUintValue() public {
+        (bool success,) = address(token).call(abi.encodeWithSignature("mint(address,uint256)", address(alice), token.MAX_UINT()));
+        Assert.isFalse(success, "should fail because it exceeds the max uint256 value");
+    }
 }
