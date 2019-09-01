@@ -5,7 +5,7 @@ import "truffle/DeployedAddresses.sol";
 import "../contracts/ERC1404.sol";
 import "./support/UserProxy.sol";
 
-contract ERC1404Test1 {
+contract ERC1404BasicsTest {
     ERC1404 token;
     address tokenContractOwner;
     UserProxy public alice;
@@ -55,5 +55,15 @@ contract ERC1404Test1 {
     function testTransferRestrictionsBetweenUsersNotOnWhitelist() public {
         uint8 restrictionCode = token.detectTransferRestriction(address(bob), address(chuck), 17);
         Assert.equal(uint(restrictionCode), 1, "should restrict transfer between not whitelisted addresses");
+    }
+
+    function testCannotSendToTokenContractItself() public {
+        uint8 restrictionCode = token.detectTransferRestriction(address(tokenContractOwner), address(token), 17);
+        Assert.equal(uint(restrictionCode), 3, "should not be able to send tokens to the contract itself");
+    }
+
+    function testCannotSendToAddressZero() public {
+        uint8 restrictionCode = token.detectTransferRestriction(address(tokenContractOwner), address(0), 17);
+        Assert.equal(uint(restrictionCode), 4, "should not be able to send tokens to the empty contract");
     }
 }

@@ -54,7 +54,7 @@ contract MintBurnFreezeTest {
     function testFreeze() public {
         UserProxy bob = new UserProxy(token);
         token.transfer(address(alice), 10);
-        token.setApprovedReceiver(address(bob), true);
+        token.setApprovedReceiver(address(bob), 100);
         token.freeze(address(alice), true);
         
         uint8 code = token.detectTransferRestriction(address(alice), address(bob), 1);
