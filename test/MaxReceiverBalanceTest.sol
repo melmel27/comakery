@@ -31,4 +31,10 @@ contract MaxReceiverBalanceTest {
         restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 10);
         Assert.equal(uint(restrictionCode), 1, "should not allow a value transfer above the max for the recipient address");
     }
+
+    function testGetMaxBalance() public {
+        Assert.equal(token.getMaxBalance(address(alice)), 0, "wrong balance for alice");
+        token.setMaxBalance(address(alice), 10);
+        Assert.equal(token.getMaxBalance(address(alice)), 10, "wrong balance for alice");
+    }
 }
