@@ -21,7 +21,7 @@ contract ERC1404 {
   mapping(address => mapping(address => uint256)) private _allowed;
   mapping(address => mapping(address => uint8)) private _approvalNonces;
 
-  mapping(address => uint256) public approvedReceivers; // TODO: may want to map address => uint256 for max holdings
+  mapping(address => uint256) public maxBalances; // TODO: may want to map address => uint256 for max holdings
   mapping(address => uint256) public timeLock; // unix timestamp to lock funds until
   mapping(address => bool) public frozen;
 
@@ -69,7 +69,7 @@ contract ERC1404 {
     if (to == address(this)) return DO_NOT_SEND_TO_TOKEN_CONTRACT;
     if (from == contractOwner) return SUCCESS_CODE;
 
-    if (value > approvedReceivers[to]) return RECIPIENT_NOT_APPROVED;
+    if (value > maxBalances[to]) return RECIPIENT_NOT_APPROVED;
     if (now < timeLock[from]) return SENDER_TOKENS_TIME_LOCKED;
     if (frozen[from]) return SENDER_ADDRESS_FROZEN;
 
@@ -89,12 +89,12 @@ contract ERC1404 {
     ][restrictionCode];
   }
 
-  function setApprovedReceiver(address _account, uint256 _updatedValue) public {
-    approvedReceivers[_account] = _updatedValue;
+  function setMaxBalance(address _account, uint256 _updatedValue) public {
+    maxBalances[_account] = _updatedValue;
   }
 
-  function getApprovedReceiver(address _account) public view returns(uint256) {
-    return approvedReceivers[_account];
+  function getMaxBalance(address _account) public view returns(uint256) {
+    return maxBalances[_account];
   }
 
   function setTimeLock(address _account, uint256 _timestamp) public {

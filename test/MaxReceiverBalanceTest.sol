@@ -23,11 +23,11 @@ contract MaxReceiverBalanceTest {
         uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);
         
 
-        token.setApprovedReceiver(address(bob), 10);
+        token.setMaxBalance(address(bob), 10);
         restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 10);
         Assert.equal(uint(restrictionCode), 0, "should allow max value");
 
-        token.setApprovedReceiver(address(bob), 0);
+        token.setMaxBalance(address(bob), 0);
         restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 10);
         Assert.equal(uint(restrictionCode), 1, "should not allow a value transfer above the max for the recipient address");
     }

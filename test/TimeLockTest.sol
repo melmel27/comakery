@@ -26,7 +26,7 @@ contract TimeLockTest {
         token.setTimeLock(address(alice), lockupTill);
         Assert.equal(token.getLockup(address(alice)), lockupTill, "not locked up as expected");
 
-        token.setApprovedReceiver(address(bob), 17);
+        token.setMaxBalance(address(bob), 17);
         uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);
         Assert.equal(uint(restrictionCode), 2, "should have tokens locked");
     }
@@ -34,7 +34,7 @@ contract TimeLockTest {
      function testAdminCanUnlockTokens() public {
         uint lockupTill = now + 10000;
         token.setTimeLock(address(alice), lockupTill);
-        token.setApprovedReceiver(address(bob), 17);
+        token.setMaxBalance(address(bob), 17);
         token.unlock(address(alice));
 
         uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);

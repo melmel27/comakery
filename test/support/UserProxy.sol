@@ -12,7 +12,7 @@ contract UserProxy {
         return token.transfer(to, amount);
     }
 
-    function setApprovedReceiver(address _account, uint256 _updatedValue) public {
-        token.setApprovedReceiver(_account, _updatedValue);
+    function setMaxBalance(address _account, uint256 _updatedValue) public {
+        token.setMaxBalance(_account, _updatedValue);
     }
 }
