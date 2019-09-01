@@ -5,7 +5,7 @@ import "truffle/DeployedAddresses.sol";
 import "./support/UserProxy.sol";
 import "../contracts/ERC1404.sol";
 
-contract MintBurnTest {
+contract MintBurnFreezeTest {
     ERC1404 public token;
     UserProxy public alice;
 
@@ -49,5 +49,17 @@ contract MintBurnTest {
     function testCannotMintMoreThanMaxUintValue() public {
         (bool success,) = address(token).call(abi.encodeWithSignature("mint(address,uint256)", address(alice), token.MAX_UINT()));
         Assert.isFalse(success, "should fail because it exceeds the max uint256 value");
+    }
+
+    function testFreeze() public {
+        UserProxy bob = new UserProxy(token);
+        token.transfer(address(alice), 10);
+        token.setApprovedReceiver(address(bob), true);
+        token.freeze(address(alice), true);
+        
+        uint8 code = token.detectTransferRestriction(address(alice), address(bob), 1);
+        Assert.equal(uint256(code), 5, "wrong transfer restriction code for frozen account");
+
+        Assert.equal(token.messageForTransferRestriction(code), "SENDER ADDRESS IS FROZEN", "wrong transfer restriction code for frozen account");
     }
 }

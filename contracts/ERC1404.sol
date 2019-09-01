@@ -10,9 +10,10 @@ contract ERC1404 {
 
   uint8 public constant SUCCESS_CODE = 0;
   uint8 public constant RECIPIENT_NOT_APPROVED = 1;
-  uint8 public constant SENDER_TOKENS_LOCKED = 2;
+  uint8 public constant SENDER_TOKENS_TIME_LOCKED = 2;
   uint8 public constant DO_NOT_SEND_TO_TOKEN_CONTRACT = 3;
   uint8 public constant DO_NOT_SEND_TO_EMPTY_ADDRESS = 4;
+  uint8 public constant SENDER_ADDRESS_FROZEN = 5;
 
   uint256 public constant MAX_UINT = ((2**255 - 1) * 2) + 1; // get max uint256 without overflow
 
@@ -22,6 +23,7 @@ contract ERC1404 {
 
   mapping(address => bool) public approvedReceivers; // TODO: may want to map address => uint256 for max holdings
   mapping(address => uint256) public lockupPeriods; // unix timestamp to lock funds until
+  mapping(address => bool) public frozen;
 
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
@@ -68,7 +70,8 @@ contract ERC1404 {
     if (from == contractOwner) return SUCCESS_CODE;
 
     if (!approvedReceivers[to]) return RECIPIENT_NOT_APPROVED;
-    if (now < lockupPeriods[from]) return SENDER_TOKENS_LOCKED;
+    if (now < lockupPeriods[from]) return SENDER_TOKENS_TIME_LOCKED;
+    if (frozen[from]) return SENDER_ADDRESS_FROZEN;
 
     return SUCCESS_CODE;
   }
@@ -81,7 +84,8 @@ contract ERC1404 {
       "RECIPIENT NOT APPROVED",
       "SENDER TOKENS LOCKED",
       "DO NOT SEND TO TOKEN CONTRACT",
-      "DO NOT SEND TO EMPTY ADDRESS"
+      "DO NOT SEND TO EMPTY ADDRESS",
+      "SENDER ADDRESS IS FROZEN"
     ][restrictionCode];
   }
 
@@ -109,7 +113,8 @@ contract ERC1404 {
     return lockupPeriods[_account];
   }
 
-  /******* Mint & Burn ***********/
+  /******* Mint, Burn, Freeze ***********/
+  // For Token owner
 
   function burnFrom(address from, uint256 value) public {
     require(value <= _balances[from], "Insufficent tokens to burn");
@@ -122,6 +127,9 @@ contract ERC1404 {
     totalSupply = add(totalSupply, value);
   }
 
+  function freeze(address addr, bool status) public {
+    frozen[addr] = status;
+  }
   /******* ERC20 FUNCTIONS ***********/
 
   function balanceOf(address owner) public view returns(uint256 balance) {
