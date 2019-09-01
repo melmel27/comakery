@@ -22,7 +22,7 @@ contract ERC1404 {
   mapping(address => mapping(address => uint8)) private _approvalNonces;
 
   mapping(address => bool) public approvedReceivers; // TODO: may want to map address => uint256 for max holdings
-  mapping(address => uint256) public lockupPeriods; // unix timestamp to lock funds until
+  mapping(address => uint256) public timeLock; // unix timestamp to lock funds until
   mapping(address => bool) public frozen;
 
   event Transfer(address indexed from, address indexed to, uint256 value);
@@ -70,7 +70,7 @@ contract ERC1404 {
     if (from == contractOwner) return SUCCESS_CODE;
 
     if (!approvedReceivers[to]) return RECIPIENT_NOT_APPROVED;
-    if (now < lockupPeriods[from]) return SENDER_TOKENS_TIME_LOCKED;
+    if (now < timeLock[from]) return SENDER_TOKENS_TIME_LOCKED;
     if (frozen[from]) return SENDER_ADDRESS_FROZEN;
 
     return SUCCESS_CODE;
@@ -98,19 +98,19 @@ contract ERC1404 {
   }
 
   function lock(address _account) public {
-    lockupPeriods[_account] = MAX_UINT;
+    timeLock[_account] = MAX_UINT;
   }
 
   function lockUntil(address _account, uint256 _timestamp) public {
-    lockupPeriods[_account] = _timestamp;
+    timeLock[_account] = _timestamp;
   }
 
   function unlock(address _account) public {
-    lockupPeriods[_account] = 0;
+    timeLock[_account] = 0;
   }
 
   function getLockup(address _account) public view returns(uint256) {
-    return lockupPeriods[_account];
+    return timeLock[_account];
   }
 
   /******* Mint, Burn, Freeze ***********/
