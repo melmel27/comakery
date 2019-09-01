@@ -14,7 +14,7 @@ contract ERC1404 {
   uint8 public constant DO_NOT_SEND_TO_TOKEN_CONTRACT = 3;
   uint8 public constant DO_NOT_SEND_TO_EMPTY_ADDRESS = 4;
 
-  uint256 public constant MAX_UINT = uint(0) - uint(1); // TODO: hardcode this value?
+  uint256 public constant MAX_UINT = ((2**255 - 1) * 2) + 1; // get max uint256 without overflow
 
   mapping(address => uint256) private _balances;
   mapping(address => mapping(address => uint256)) private _allowed;

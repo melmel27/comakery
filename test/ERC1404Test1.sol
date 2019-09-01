@@ -28,6 +28,7 @@ contract ERC1404Test1 {
         Assert.equal(uint(token.decimals()), 6, "should return the token decimals");
         Assert.equal(uint(token.totalSupply()), 1234567, "should return the totalSupply");
         Assert.equal(token.contractOwner(), tokenContractOwner, "wrong contract owner");
+        Assert.equal(token.MAX_UINT(), uint(0) - uint(1), "MAX_UINT shoudld be largest possible uint256");
     }
 
     function testInitialTokenHolderGetsTotalSupply() public {
