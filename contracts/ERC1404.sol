@@ -101,11 +101,11 @@ contract ERC1404 {
     timeLock[_account] = _timestamp;
   }
 
-  function unlock(address _account) public {
+  function removeTimeLock(address _account) public {
     timeLock[_account] = 0;
   }
 
-  function getLockup(address _account) public view returns(uint256) {
+  function getTimeLock(address _account) public view returns(uint256) {
     return timeLock[_account];
   }
 
