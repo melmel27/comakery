@@ -14,6 +14,7 @@ contract ERC1404 {
   uint8 public constant DO_NOT_SEND_TO_TOKEN_CONTRACT = 3;
   uint8 public constant DO_NOT_SEND_TO_EMPTY_ADDRESS = 4;
   uint8 public constant SENDER_ADDRESS_FROZEN = 5;
+  uint8 public constant ALL_TRANSFERS_PAUSED = 6;
 
   uint256 public constant MAX_UINT = ((2**255 - 1) * 2) + 1; // get max uint256 without overflow
 
@@ -24,6 +25,7 @@ contract ERC1404 {
   mapping(address => uint256) public maxBalances; // TODO: may want to map address => uint256 for max holdings
   mapping(address => uint256) public timeLock; // unix timestamp to lock funds until
   mapping(address => bool) public frozen;
+  bool public isPaused = false;
 
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
@@ -65,6 +67,7 @@ contract ERC1404 {
   /// @param value Amount of tokens being transferred
   /// @return Code by which to reference message for rejection reasoning
   function detectTransferRestriction(address from, address to, uint256 value) public view returns(uint8) {
+    if(isPaused) return ALL_TRANSFERS_PAUSED;
     if (to == address(0)) return DO_NOT_SEND_TO_EMPTY_ADDRESS;
     if (to == address(this)) return DO_NOT_SEND_TO_TOKEN_CONTRACT;
     if (from == contractOwner) return SUCCESS_CODE;
@@ -85,7 +88,8 @@ contract ERC1404 {
       "SENDER TOKENS LOCKED",
       "DO NOT SEND TO TOKEN CONTRACT",
       "DO NOT SEND TO EMPTY ADDRESS",
-      "SENDER ADDRESS IS FROZEN"
+      "SENDER ADDRESS IS FROZEN",
+      "ALL TRANSFERS PAUSED"
     ][restrictionCode];
   }
 
@@ -107,6 +111,14 @@ contract ERC1404 {
 
   function getTimeLock(address _account) public view returns(uint256) {
     return timeLock[_account];
+  }
+
+  function pause() public {
+    isPaused = true;
+  }
+
+  function unpause() public {
+    isPaused = false;
   }
 
   /******* Mint, Burn, Freeze ***********/

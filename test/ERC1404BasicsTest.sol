@@ -50,6 +50,8 @@ contract ERC1404BasicsTest {
         Assert.equal(token.messageForTransferRestriction(2), "SENDER TOKENS LOCKED", "wrong message");
         Assert.equal(token.messageForTransferRestriction(3), "DO NOT SEND TO TOKEN CONTRACT", "wrong message");
         Assert.equal(token.messageForTransferRestriction(4), "DO NOT SEND TO EMPTY ADDRESS", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(5), "SENDER ADDRESS IS FROZEN", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(6), "ALL TRANSFERS PAUSED", "wrong message");
     }
 
     function testTransferRestrictionsBetweenUsersNotOnWhitelist() public {
@@ -65,5 +67,18 @@ contract ERC1404BasicsTest {
     function testCannotSendToAddressZero() public {
         uint8 restrictionCode = token.detectTransferRestriction(address(tokenContractOwner), address(0), 17);
         Assert.equal(uint(restrictionCode), 4, "should not be able to send tokens to the empty contract");
+    }
+
+    function testCanPauseTransfers() public {
+        Assert.isFalse(token.isPaused(), "should not be paused yet");
+        token.pause();
+        Assert.isTrue(token.isPaused(), "should be paused");
+        uint8 restrictionCode = token.detectTransferRestriction(address(tokenContractOwner), address(alice), 1);
+        Assert.equal(uint(restrictionCode), 6, "should not be able to transfer when contract is paused");
+
+        token.unpause();
+        Assert.isFalse(token.isPaused(), "should be unpaused");
+        restrictionCode = token.detectTransferRestriction(address(tokenContractOwner), address(alice), 1);
+        Assert.equal(uint(restrictionCode), 0, "should be able to transfer when contract is unpaused");
     }
 }
