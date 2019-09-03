@@ -1,0 +1,6 @@
+skinparam roundcorner 10
+skinparam ArrowColor black
+skinparam actor {
+    BorderColor gray
+}
+hide footbox

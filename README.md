@@ -6,15 +6,32 @@ The CoMakery Security Token implements the **ERC-20** token standard and the **E
 
 # Use Cases
 
+## Initial Setup: Separating Token Treasury From Transfer Approvals
+
+![](docs/plant-uml-diagrams/setup.png)
+
+
 ## Issuer Issues the Token To AML / KYC'd Recipients
 
-## Separating Token Treasury From Transfer Approvals
+![](docs/plant-uml-diagrams/basic-issuance.png)
 
-## Token Lockup Period Based On Jurisdiction
+1. Token Lockup Period Based On Jurisdiction
+1. Unaccredited (Everyday) Investors Can Acquire a Limited Amount of Tokens
 
-## Unaccredited (Everyday) Investors Can Acquire a Limited Amount of Tokens
+# Transfer Restrictions
+
+| From | To | Restrict | Enforced By |
+|:-|:-|:-|:-|
+| Reg D/S/CF | Anyone | Until TimeLock ends | setTimeLock(investorAddress)
+| Reg S Group | US Accredited | Not During Flowback Restriction Period | allowGroupTransfer(fromGroupS, toGroupD, afterTime); |
+| Reg S Group | Reg S Group | Not Until Shorter Reg S TimeLock Ended | allowGroupTransfer(fromGroupS, toGroupS, afterTime); |
+| Stolen Tokens | Anyone | Freeze, Burn, Reissue| freeze(stolenTokenAddress);<br /> burnFrom(address, amount);<br />mint(newOwnerAddress); |
+| Issuer | Reg CF with > maximum value of tokens allowed | Forbidden | setMaxBalance() |
+| Any Address During Regulatory Freeze| Anyone | Forbidden | pause() |
 
 ## Accredited Investors Can Trade With Each Other
+
+![](docs/plant-uml-diagrams/p2p-trade.png)
 
 ## Avoiding Flow Back of REG S Assets
 
@@ -30,7 +47,7 @@ The CoMakery Security Token implements the **ERC-20** token standard and the **E
 
 ## Lost Key Token Recovery
 
-## Compatibility With Dividend Distribution and Staking Contracts
+# Compatibility With Dividend Distribution and Staking Contracts
 
 # Dev Setup
 
