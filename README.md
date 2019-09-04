@@ -1,4 +1,6 @@
-# Cosecto - An Open Source CoMakery Security Token
+# Cosecto
+
+## An Open Source Security Token From Your Friends At CoMakery
 
 ## Status: Work In Progress
 
