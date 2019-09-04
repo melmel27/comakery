@@ -16,11 +16,38 @@ This open source software is provided with no warranty. This is not legal advice
 
 ![](docs/plant-uml-diagrams/setup.png)
 
-- Separating Token Treasury From Transfer Approvals
+1. The Deployer configures the parameters and deploys the smart contracts to a public blockchain. The deployment allows configuration for a separate reserveAddress to hold tokens from the Transfer Administrator who can configure the transfer restrictions for the tokens. This allows the security tokens to be stored in a cold storage since the treasury reserve address private keys are not needed for everyday use.
+2. Transfer Admin can then provisions a hot wallet that can be used for distributing tokens to investors or other stakeholders with `setRestrictions(investorAddress, transferGroup, addressTimeLock, maxTokens)` 
+3. Transfer Admin authorizes the transfer of tokens between account groups with `allowGroupTransfer(fromGroup, toGroup, afterTimestamp)` .
+4. The Reserve Admin can then transfer tokens to the hot wallet.
+
+
+## Separating Private Key Management Roles
+
+For greater security, during the setup process for added security the Transfer Admin can setup rules for allowing transfering tokens. This forces the Reserve Admin to transfer tokens to a hot wallet first. The Hot Wallet holds a limited balance. This enforces multiple signatures and a limited loss from any single account with a single transfer. The use of a hot wallet for small balances also makes everyday token administration easier without exposing the issuer's reserve of tokens to the risk of total theft in a single transaction.
+
+This configuration can be accomplished in this manner:
+1. Transfer Admin, Reserve Admin and Hot Wallet admin accounts are managed by separate users with separate keys. For example, separate Nano Ledger S hardware wallets:
+1. Reserve and Hot Wallet addresses have their own separate transfer groups
+    * `unrestrictedAddressTimeLock = 0` this timestamp will always have passed
+    * `unrestrictedMaxTokenAmount = 2**256 -1` is the largest number storable this number is available as the `MAX_UNIT()` constant.
+    * `setRestrictions(reserveAddress, reserveTransferGroup, unrestrictedAddressTimelock, unrestrictedMaxTokenAmount)`
+    * `setRestrictions(reserveAddress, reserveTransferGroup, unrestrictedAddressTimeLock, sensibleMaxAmountInHotWallet)`
+1. Reserve Address can only transfer to Hot Wallet Groups
+    
+1. Hot Wallet Address can transfer to investor groups like Reg D and Reg S.
+
+Then the Hot Wallet Admin can distribute tokens to investors and stakeholders as described below...
 
 ## Issuer Issues the Token To AML / KYC'd Recipients
 
 ![](docs/plant-uml-diagrams/basic-issuance.png)
+
+1. The Transfer Admin gathers AML/KYC and accreditation information from investors and stakeholders who will receive tokens directly from the issuer (the Primary Issuance).
+1. Transfer Admin then configures approved blockchain account addresses for investor and stakholders with `h`. Based on the AML/KYC and accreditation process the investor can provision the account address with a maximum number of tokens; a transfer group designating a regulatory class like "Reg D", "Reg CF" or "Reg S"; and a date that the tokens in the address will be locked until.
+1. The tokens can then be transferred to the provisioned addresses.
+
+Note that there are no transfers yet authorized between accounts. By default all transfers are restricted.
 
 1. Token Lockup Period Based On Jurisdiction
 1. Unaccredited (Everyday) Investors Can Acquire a Limited Amount of Tokens
@@ -29,14 +56,23 @@ This open source software is provided with no warranty. This is not legal advice
 
 ![](docs/plant-uml-diagrams/transfer-restrictions.png)
 
+The Transfer Admin for the Token Contract can provision account addresses to transfer and receive tokens under certain conditions. This is the process for configuring transfer restrictions and transferring tokens:
+1. An Investor sends their AML/KYC information to the Transfer Admin.
+1. The Transfer Admin calls `setRestrictions(investorAddress, transferGroup, addressTimeLock, maxTokens)` to provision their account. Initially this will be done for the Primary Issuance of tokens to investors where tokens are distributed directly from the issuer to holder accounts.
+1. A potential buyer sends their AML/KYC information to the Transfer Admin.
+1. The Transfer Admin calls `setRestrictions(buyerAddress, transferGroup, addressTimeLock, maxTokens)` to provision the Buyer account.
+1. At this time or before, the Transfer Admin authorizes the transfer of tokens between account groups with `allowGroupTransfer(fromGroup, toGroup, afterTimestamp)` . Note that allowing a transfer from group A to group B does not allow a transfer from group B to group B. This would have to be done separately. An example is that Reg CF unaccredited investors may be allowed to sell to Accredited US investors but not vice versa.
+
+## Overview of Transfer Restriction Enforcement Methods
+
 | From | To | Restrict | Enforced By |
 |:-|:-|:-|:-|
-| Reg D/S/CF | Anyone | Until TimeLock ends | setTimeLock(investorAddress)
-| Reg S Group | US Accredited | Not During Flowback Restriction Period | allowGroupTransfer(fromGroupS, toGroupD, afterTime); |
-| Reg S Group | Reg S Group | Not Until Shorter Reg S TimeLock Ended | allowGroupTransfer(fromGroupS, toGroupS, afterTime); |
-| Stolen Tokens | Anyone | Freeze, Burn, Reissue| freeze(stolenTokenAddress);<br /> burnFrom(address, amount);<br />mint(newOwnerAddress); |
-| Issuer | Reg CF with > maximum value of tokens allowed | Forbidden | setMaxBalance() |
-| Any Address During Regulatory Freeze| Anyone | Forbidden | pause() |
+| Reg D/S/CF | Anyone | Until TimeLock ends | `setTimeLock(investorAddress)` |
+| Reg S Group | US Accredited | Forbidden During Flowback Restriction Period | `allowGroupTransfer(fromGroupS, toGroupD, afterTime)` |
+| Reg S Group | Reg S Group | Forbidden Until Shorter Reg S TimeLock Ended | `allowGroupTransfer(fromGroupS, toGroupS, afterTime)` |
+| Stolen Tokens | Anyone | Fix With Freeze, Burn, Reissue| `freeze(stolenTokenAddress);`<br /> `burnFrom(address, amount);`<br />`mint(newOwnerAddress);` |
+| Issuer | Reg CF with > maximum value of tokens allowed | Forbid transfers increasing token balances above max balance | `setMaxBalance(amount)` |
+| Any Address During Regulatory Freeze| Anyone | Forbid all transfers while paused | `pause()` |
 
 ## Investors Can Trade With Other Investors In The Same Group (e.g. Reg S)
 
@@ -97,7 +133,7 @@ In the case of lost keys with sufficient legal reason to be returned to their ow
 
 Once again, although this is not in the spirit of a cryptocurrency, it is available as a response to requirements that some regulators impose on blockchain security token projects.
 
-# Compatibility With Dividend Distribution and Staking Contracts
+# Compatible With Dividend Distribution and Staking Contracts
 
 Although this code does not implement dividend distribution or staking, it can be used with staking and dividend contracts. Contact noah@comakery.com for further details.
 
