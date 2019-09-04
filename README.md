@@ -38,7 +38,7 @@ This open source software is provided with no warranty. This is not legal advice
 | Issuer | Reg CF with > maximum value of tokens allowed | Forbidden | setMaxBalance() |
 | Any Address During Regulatory Freeze| Anyone | Forbidden | pause() |
 
-## Accredited Investors Can Trade With Other Investors In The Same Group (e.g. Reg S)
+## Investors Can Trade With Other Investors In The Same Group (e.g. Reg S)
 
 To allow trading in a group:
 * Call `setRestrictions(address, transferGroup, addressTimeLock, maxTokens)` for traders in the group 
@@ -57,17 +57,45 @@ To allow trading between Foreign Reg S account addresses but forbid flow back to
     * the `addressTimelock` and `groupTimeLock` times have passed; and 
     * the recipient of a token transfer does not exceeded the `maxTokens` in their account address.h
 
+## Enforcing Maximum Holders Rules
+
+By default blockchain addresses cannot receive tokens. To receive tokens the issuer gathers AML/KYC information and then calls `setRestrictions()`. A single user may have multiple addresses. The issuer can track the number of holders offline and stop authorizing holders when the maximum holders amount has been reached.
+
+If you need tracking for max number of holders implemented contact noah@comakery.com
+
 ## Exchanges Can Register Omnibus Accounts
 
-## Enforcing Maximum Holders Rules
+Centralized exchanges can register custody addresses using the same method as other users. They contact the Issuer to provision accounts and the Transfer Admin calles `setRestrictions` for the exchange account.
+
+When customers of the exchange want to withdraw tokens from the exchange account they must withdraw into an account that the Transfer Admin has provisioned for them with `setRestrictions()`.
+
+Talk to a lawyer about when exchange accounts may or may not exceed the maximum number of holders allowed for a token.
 
 ## Transfers Can Be Paused To Comply With Regulatory Action
 
-## Recovery From Blockchain Fork
+If there is a regulatory issue with the token, all transfers may be paused by calling `pause()`. During normal functioning of the contract, `pause()` should never need to be called.
+
+## Recovery From A Blockchain Fork
+
+Issuers should have a plan for what to do during a blockchain fork. Often security tokens represent a scarce off chain asset and a fork in the blockchain may present ambiguity about who can claim an off chain asset. For example, if one 1 token represents 1 ounce of gold, a fork introduces two valid claims for one ounce of gold. 
+
+In the advent of a blockchain fork, the issuer should do something like the following:
+- have a clear way of signaling which branch of the blockchain is valid
+- signal which branch is the system of record
+- call `pause()` on the invalid fork
+- use `burn()` and `mint()` to fix errors that have been agreed to by both parties involved or ruled by a court in the issuers jurisdiction
 
 ## Law Enforcement Recovery of Stolen Assets
 
+In the case of stolen assets with sufficient legal reason to be returned to their owner, the issuer can call `freeze()`, `burn()`, and `mint()` to transfer the assets to the appropriate account.
+
+Although this is not in the spirit of a cryptocurrency, it is available as a response to requirements that some regulators impose on blockchain security token projects.
+
 ## Lost Key Token Recovery
+
+In the case of lost keys with sufficient legal reason to be returned to their owner, the issuer can call `freeze()`, `burn()`, and `mint()` to transfer the assets to the appropriate account. This opens the issuer up to potential cases of fraud. Handle with care.
+
+Once again, although this is not in the spirit of a cryptocurrency, it is available as a response to requirements that some regulators impose on blockchain security token projects.
 
 # Compatibility With Dividend Distribution and Staking Contracts
 
