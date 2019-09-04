@@ -15,6 +15,8 @@ contract ERC1404 {
   uint8 public constant DO_NOT_SEND_TO_EMPTY_ADDRESS = 4;
   uint8 public constant SENDER_ADDRESS_FROZEN = 5;
   uint8 public constant ALL_TRANSFERS_PAUSED = 6;
+  uint8 public constant TRANSFER_GROUP_NOT_APPROVED = 7;
+  uint8 public constant TRANSFER_GROUP_NOT_ACTIVE_UNTIL_LATER = 8;
 
   uint256 public constant MAX_UINT = ((2**255 - 1) * 2) + 1; // get max uint256 without overflow
 
@@ -24,6 +26,8 @@ contract ERC1404 {
 
   mapping(address => uint256) public maxBalances; // TODO: may want to map address => uint256 for max holdings
   mapping(address => uint256) public timeLock; // unix timestamp to lock funds until
+  mapping(address => uint256) public transferGroups; // restricted groups like Reg S, Reg D and Reg CF
+  mapping(uint256 => mapping(uint256 => uint256)) public allowGroupTransfers; // approve transfers between groups: from => to => TimeLockUntil
   mapping(address => bool) public frozen;
   bool public isPaused = false;
 
@@ -75,6 +79,8 @@ contract ERC1404 {
     if (value > maxBalances[to]) return RECIPIENT_NOT_APPROVED;
     if (now < timeLock[from]) return SENDER_TOKENS_TIME_LOCKED;
     if (frozen[from]) return SENDER_ADDRESS_FROZEN;
+    if (0 == allowGroupTransfers[transferGroups[from]][transferGroups[to]]) return TRANSFER_GROUP_NOT_APPROVED;
+    if (now < allowGroupTransfers[transferGroups[from]][transferGroups[to]]) return TRANSFER_GROUP_NOT_ACTIVE_UNTIL_LATER;
 
     return SUCCESS_CODE;
   }
@@ -119,6 +125,22 @@ contract ERC1404 {
 
   function unpause() public {
     isPaused = false;
+  }
+
+  function setGroup(address addr, uint256 groupID) public {
+    transferGroups[addr] = groupID;
+  }
+
+  function setRestrictions(address addr, uint256 groupID, uint256 timeLockUntil, uint256 maxTokens) public {
+      setGroup(addr, groupID);  
+      setTimeLock(addr, timeLockUntil);
+      setMaxBalance(addr, maxTokens);
+  }
+
+  function allowGroupTransfer(uint256 groupA, uint256 groupB, uint256 transferAfter ) public {
+      // TODO: if 0 no transfer; update README
+      // TODO: if 1 any transfer works; update README
+      allowGroupTransfers[groupA][groupB] = transferAfter;
   }
 
   /******* Mint, Burn, Freeze ***********/

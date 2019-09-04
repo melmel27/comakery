@@ -19,6 +19,8 @@ contract TimeLockTest {
         alice = new UserProxy(token);
         bob = new UserProxy(token);
         chuck = new UserProxy(token);
+
+        token.allowGroupTransfer(0, 0, now); // don't restrict default group transfers
     }
 
     function testAdminCanLockupTokensForASpecificTime() public {

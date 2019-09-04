@@ -10,7 +10,6 @@ contract ERC1404BasicsTest {
     address tokenContractOwner;
     UserProxy public alice;
     UserProxy public bob;
-    UserProxy public chuck;
 
     function beforeEach() public {
         tokenContractOwner = address(this);
@@ -18,7 +17,7 @@ contract ERC1404BasicsTest {
 
         alice = new UserProxy(token);
         bob = new UserProxy(token);
-        chuck = new UserProxy(token);
+        token.allowGroupTransfer(0, 0, now); // don't restrict default group transfers
     }
 
     function testTokenInitialization() public {
@@ -52,11 +51,6 @@ contract ERC1404BasicsTest {
         Assert.equal(token.messageForTransferRestriction(4), "DO NOT SEND TO EMPTY ADDRESS", "wrong message");
         Assert.equal(token.messageForTransferRestriction(5), "SENDER ADDRESS IS FROZEN", "wrong message");
         Assert.equal(token.messageForTransferRestriction(6), "ALL TRANSFERS PAUSED", "wrong message");
-    }
-
-    function testTransferRestrictionsBetweenUsersNotOnWhitelist() public {
-        uint8 restrictionCode = token.detectTransferRestriction(address(bob), address(chuck), 17);
-        Assert.equal(uint(restrictionCode), 1, "should restrict transfer between not whitelisted addresses");
     }
 
     function testCannotSendToTokenContractItself() public {
