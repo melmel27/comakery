@@ -8,14 +8,14 @@ actor "Reserve\nAdmin" as RAdmin
 actor "Hot Wallet\nAdmin" as HAdmin
 
 Deployer -> Token: constructor(\nreserveAddress,\ntransferAdminAddress,\nsymbol,\ndecimals,\ntotalSupply,\n...)
-TAdmin -> Token: allowGroupTransfer(reserveTransferGroup, hotWalletTransferGroup, unrestrictedAddressTimeLock)
-TAdmin -> Token: setRestrictions(reserveAddress, reserveTransferGroup, unrestrictedAddressTimelock, unrestrictedMaxTokenAmount)
-TAdmin -> Token: setRestrictions(reserveAddress, hotWalletTransferGroup, unrestrictedAddressTimeLock, sensibleMaxAmountInHotWallet)
-RAdmin -> Token: transfer(hotWallet, amount)
-TAdmin -> Token: setRestrictions(investorAddress, issuerTransferGroup, addressTimeLock, maxTokens)
-HAdmin -> Token: transfer(investorAddress, amount)
+TAdmin -> Token: allowGroupTransfer(\nreserveTransferGroup,\nhotWalletTransferGroup,\nunrestrictedAddressTimeLock)
+TAdmin -> Token: setRestrictions(\nreserveAddress,\nreserveTransferGroup,\nunrestrictedAddressTimelock,\nunrestrictedMaxTokenAmount)
+TAdmin -> Token: setRestrictions(\nreserveAddress,\nhotWalletTransferGroup,\nunrestrictedAddressTimeLock,\nsensibleMaxAmountInHotWallet)
+RAdmin -> Token: transfer(\nhotWallet,\namount)
+TAdmin -> Token: setRestrictions(\ninvestorAddress,\nissuerTransferGroup,\naddressTimeLock,\nmaxTokens)
+HAdmin -> Token: transfer(\ninvestorAddress,\namount)
 activate Token
-Token -> Token: detectTransferRestriction(from, to, value)
+Token -> Token: detectTransferRestriction(\nfrom,\nto,\nvalue)
 
 @enduml
 ```
