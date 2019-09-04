@@ -1,10 +1,10 @@
-# CoMakery Security Token
+# Cosecto - An Open Source CoMakery Security Token
 
 ## Status: Work In Progress
 
 ## Overview
 
-The CoMakery Security Token implements the **ERC-20** token standard and the **ERC-1404** security token standard. It attempts to balance simplicity and sufficiency for smart contract tokens that need to comply with regulatory authorities. 
+Cosecto, is an open source Security Token from CoMakery. Cosecto implements the **ERC-20** token standard and the **ERC-1404** security token standard. It attempts to balance simplicity and sufficiency for smart contract tokens that need to comply with regulatory authorities. 
 
 Simplicity is necessary to make the full operations of the contract clear to users of the smart contracts. Simplicity also reduces the number of smart contract lines that need to be secured (each line of a smart contract is a security liability).
 
