@@ -54,4 +54,14 @@ contract TransferRestrictionsTest {
         uint8 restrictionCode = token.detectTransferRestriction(address(bob), address(alice), 17); // reversed transfer direction!
         Assert.equal(uint(restrictionCode), 7, "approved transfers should not work when transfer between groups is not approved");
     }
+
+        function testCannotSendToTokenContractItself() public {
+        uint8 restrictionCode = token.detectTransferRestriction(address(tokenContractOwner), address(token), 17);
+        Assert.equal(uint(restrictionCode), 3, "should not be able to send tokens to the contract itself");
+    }
+
+    function testCannotSendToAddressZero() public {
+        uint8 restrictionCode = token.detectTransferRestriction(address(tokenContractOwner), address(0), 17);
+        Assert.equal(uint(restrictionCode), 4, "should not be able to send tokens to the empty contract");
+    }
 }

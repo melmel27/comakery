@@ -9,14 +9,14 @@ contract ERC1404 {
 
 
   uint8 public constant SUCCESS_CODE = 0;
-  uint8 public constant RECIPIENT_NOT_APPROVED = 1;
+  uint8 public constant GREATER_THAN_RECIPIENT_MAX_BALANCE = 1;
   uint8 public constant SENDER_TOKENS_TIME_LOCKED = 2;
   uint8 public constant DO_NOT_SEND_TO_TOKEN_CONTRACT = 3;
   uint8 public constant DO_NOT_SEND_TO_EMPTY_ADDRESS = 4;
   uint8 public constant SENDER_ADDRESS_FROZEN = 5;
   uint8 public constant ALL_TRANSFERS_PAUSED = 6;
   uint8 public constant TRANSFER_GROUP_NOT_APPROVED = 7;
-  uint8 public constant TRANSFER_GROUP_NOT_ACTIVE_UNTIL_LATER = 8;
+  uint8 public constant TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER = 8;
 
   uint256 public constant MAX_UINT = ((2**255 - 1) * 2) + 1; // get max uint256 without overflow
 
@@ -76,11 +76,11 @@ contract ERC1404 {
     if (to == address(this)) return DO_NOT_SEND_TO_TOKEN_CONTRACT;
     if (from == contractOwner) return SUCCESS_CODE;
 
-    if (value > maxBalances[to]) return RECIPIENT_NOT_APPROVED;
+    if (value > maxBalances[to]) return GREATER_THAN_RECIPIENT_MAX_BALANCE;
     if (now < timeLock[from]) return SENDER_TOKENS_TIME_LOCKED;
     if (frozen[from]) return SENDER_ADDRESS_FROZEN;
     if (0 == allowGroupTransfers[transferGroups[from]][transferGroups[to]]) return TRANSFER_GROUP_NOT_APPROVED;
-    if (now < allowGroupTransfers[transferGroups[from]][transferGroups[to]]) return TRANSFER_GROUP_NOT_ACTIVE_UNTIL_LATER;
+    if (now < allowGroupTransfers[transferGroups[from]][transferGroups[to]]) return TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER;
 
     return SUCCESS_CODE;
   }
@@ -90,12 +90,14 @@ contract ERC1404 {
   /// @return Text showing the restriction's reasoning
   function messageForTransferRestriction(uint8 restrictionCode) public pure returns(string memory) {
     return ["SUCCESS",
-      "RECIPIENT NOT APPROVED",
+      "GREATER THAN RECIPIENT MAX BALANCE",
       "SENDER TOKENS LOCKED",
       "DO NOT SEND TO TOKEN CONTRACT",
       "DO NOT SEND TO EMPTY ADDRESS",
       "SENDER ADDRESS IS FROZEN",
-      "ALL TRANSFERS PAUSED"
+      "ALL TRANSFERS PAUSED",
+      "TRANSFER GROUP NOT APPROVED",
+      "TRANSFER GROUP NOT ALLOWED UNTIL LATER"
     ][restrictionCode];
   }
 
