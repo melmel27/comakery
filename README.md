@@ -26,18 +26,21 @@ This open source software is provided with no warranty. This is not legal advice
 
 By default the reserve tokens cannot be transferred to any address. To allow transfers the Transfer Admin must configure transfer rules using both `setRestrictions(account, ...)` and `allowGroupTransfer(...)`
 
-During the setup process for added security, the Transfer Admin can setup rules for allowing transferring tokens. This forces the Reserve Admin to transfer tokens to a hot wallet first. The Hot Wallet holds a limited balance. This enforces multiple signatures and a limited loss from any single account with a single transfer. The use of a hot wallet for small balances also makes everyday token administration easier without exposing the issuer's reserve of tokens to the risk of total theft in a single transaction.
+During the setup process for added security, the Transfer Admin can setup rules that only allow the Reserve Admin to transfer tokens to the hot wallet address first. The Hot Wallet is also restricted to a limited max balance. This enforces transfer approvals for multiple private key holders for token transfers of large size - and a limited loss from any single account with a single transfer. The use of a hot wallet for small balances also makes everyday token administration easier without exposing the issuer's reserve of tokens to the risk of total theft in a single transaction.
 
-This configuration can be accomplished in this manner:
-1. Transfer Admin, Reserve Admin and Hot Wallet admin accounts are managed by separate users with separate keys. For example, separate Nano Ledger S hardware wallets:
+The Reserve Account restriction configuration can be accomplished in this manner:
+1. Transfer Admin, Reserve Admin and Hot Wallet admin accounts are managed by separate users with separate keys. For example, separate Nano Ledger S hardware wallets.
 1. Reserve and Hot Wallet addresses have their own separate transfer groups
     * `unrestrictedAddressTimeLock = 0` this timestamp will always have passed
     * `unrestrictedMaxTokenAmount = 2**256 -1` is the largest number storable this number is available as the `MAX_UNIT()` constant.
     * `setRestrictions(reserveAddress, reserveTransferGroup, unrestrictedAddressTimelock, unrestrictedMaxTokenAmount)`
-    * `setRestrictions(reserveAddress, reserveTransferGroup, unrestrictedAddressTimeLock, sensibleMaxAmountInHotWallet)`
+    * `setRestrictions(reserveAddress, hotWalletTransferGroup, unrestrictedAddressTimeLock, sensibleMaxAmountInHotWallet)`
 1. Reserve Address can only transfer to Hot Wallet Groups
-    
+    * `allowGroupTransfer(reserveTransferGroup, hotWalletTransferGroup, unrestrictedAddressTimeLock)`
+    * `setRestrictions(reserveAddress, hotWalletTransferGroup, unrestrictedAddressTimeLock, sensibleMaxAmountInHotWallet)`
 1. Hot Wallet Address can transfer to investor groups like Reg D and Reg S.
+    * `allowGroupTransfer(hotWalletTransferGroup, regD_TransferGroup, unrestrictedAddressTimeLock)`
+    * `allowGroupTransfer(hotWalletTransferGroup, regS_TransferGroup, unrestrictedAddressTimeLock)`
 
 Then the Hot Wallet Admin can distribute tokens to investors and stakeholders as described below...
 

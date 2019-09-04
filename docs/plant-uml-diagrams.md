@@ -8,11 +8,12 @@ actor "Reserve\nAdmin" as RAdmin
 actor "Hot Wallet\nAdmin" as HAdmin
 
 Deployer -> Token: constructor(\nreserveAddress,\ntransferAdminAddress,\nsymbol,\ndecimals,\ntotalSupply,\n...)
-TAdmin -> Token: set transfer rules
-TAdmin -> Token: setRestrictions(hotWalletAddress, issuerTransferGroup, addressTimeLock, maxTokens)
-RAdmin -> Token: transfer tokens to hot wallet
+TAdmin -> Token: allowGroupTransfer(reserveTransferGroup, hotWalletTransferGroup, unrestrictedAddressTimeLock)
+TAdmin -> Token: setRestrictions(reserveAddress, reserveTransferGroup, unrestrictedAddressTimelock, unrestrictedMaxTokenAmount)
+TAdmin -> Token: setRestrictions(reserveAddress, hotWalletTransferGroup, unrestrictedAddressTimeLock, sensibleMaxAmountInHotWallet)
+RAdmin -> Token: transfer(hotWallet, amount)
 TAdmin -> Token: setRestrictions(investorAddress, issuerTransferGroup, addressTimeLock, maxTokens)
-HAdmin -> Token: issue tokens to investors from hot wallet
+HAdmin -> Token: transfer(investorAddress, amount)
 activate Token
 Token -> Token: detectTransferRestriction(from, to, value)
 
