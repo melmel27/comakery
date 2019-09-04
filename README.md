@@ -4,7 +4,9 @@
 
 ## Overview
 
-The CoMakery Security Token implements the **ERC-20** token standard and the **ERC-1404** security token standard. It attempts to balance simplicity and sufficiency for smart contract tokens that need to comply with Regulatory Authorities. Simplicity is necessary to make the full operations of the contract clear to users of the smart contracts and for reducing the number of smart contract lines that need to be secured (each line of a smart contract is a security liability).
+The CoMakery Security Token implements the **ERC-20** token standard and the **ERC-1404** security token standard. It attempts to balance simplicity and sufficiency for smart contract tokens that need to comply with regulatory authorities. 
+
+Simplicity is necessary to make the full operations of the contract clear to users of the smart contracts. Simplicity also reduces the number of smart contract lines that need to be secured (each line of a smart contract is a security liability).
 
 ## Disclaimer
 
@@ -16,15 +18,16 @@ This open source software is provided with no warranty. This is not legal advice
 
 ![](docs/plant-uml-diagrams/setup.png)
 
-1. The Deployer configures the parameters and deploys the smart contracts to a public blockchain. The deployment allows configuration for a separate reserveAddress to hold tokens from the Transfer Administrator who can configure the transfer restrictions for the tokens. This allows the security tokens to be stored in a cold storage since the treasury reserve address private keys are not needed for everyday use.
-2. Transfer Admin can then provisions a hot wallet that can be used for distributing tokens to investors or other stakeholders with `setRestrictions(investorAddress, transferGroup, addressTimeLock, maxTokens)` 
-3. Transfer Admin authorizes the transfer of tokens between account groups with `allowGroupTransfer(fromGroup, toGroup, afterTimestamp)` .
-4. The Reserve Admin can then transfer tokens to the hot wallet.
+1. The Deployer configures the parameters and deploys the smart contracts to a public blockchain. The deployment allows configuration of a separate reserve address and Transfer Administrator address. This allows the reserve security tokens to be stored in cold storage since the treasury reserve address private keys are not needed for everyday use by the Transfer Admin.
+2. The Transfer Admin can then provisions a hot wallet address for distributing tokens to investors or other stakeholders. The Transfer Admin uses `setRestrictions(investorAddress, transferGroup, addressTimeLock, maxTokens)` to set address restrictions.
+3. The Transfer Admin authorizes the transfer of tokens between account groups with `allowGroupTransfer(fromGroup, toGroup, afterTimestamp)` .
+4. The Reserve Admin can then transfer tokens to the Hot Wallet address.
+5. The Hot Wallet Admin can then transfer tokens to investors or other stakeholders who are entitled to tokens.
 
 
 ## Setup For Separate Issuer Private Key Management Roles
 
-By default the reserve tokens cannot be transferred to any address. To allow transfers the Transfer Admin must configure transfer rules using both `setRestrictions(account, ...)` and `allowGroupTransfer(...)`
+By default the reserve tokens cannot be transferred to any address. To allow transfers the Transfer Admin must configure transfer rules using both `setRestrictions(account, ...)` and `allowGroupTransfer(...)`.
 
 During the setup process for added security, the Transfer Admin can setup rules that only allow the Reserve Admin to transfer tokens to the hot wallet address first. The Hot Wallet is also restricted to a limited max balance. This enforces transfer approvals for multiple private key holders for token transfers of large size - and a limited loss from any single account with a single transfer. The use of a hot wallet for small balances also makes everyday token administration easier without exposing the issuer's reserve of tokens to the risk of total theft in a single transaction.
 
@@ -118,7 +121,7 @@ If there is a regulatory issue with the token, all transfers may be paused by ca
 
 ## Recovery From A Blockchain Fork
 
-Issuers should have a plan for what to do during a blockchain fork. Often security tokens represent a scarce off chain asset and a fork in the blockchain may present ambiguity about who can claim an off chain asset. For example, if one 1 token represents 1 ounce of gold, a fork introduces two valid claims for one ounce of gold. 
+Issuers should have a plan for what to do during a blockchain fork. Often security tokens represent a scarce off chain asset and a fork in the blockchain may present ambiguity about who can claim an off chain asset. For example, if 1 token represents 1 ounce of gold, a fork introduces 2 competing claims for 1 ounce of gold. 
 
 In the advent of a blockchain fork, the issuer should do something like the following:
 - have a clear way of signaling which branch of the blockchain is valid
