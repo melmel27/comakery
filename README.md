@@ -12,7 +12,7 @@ This open source software is provided with no warranty. This is not legal advice
 
 # Primary Issuance
 
-## Initial Security Token Setup
+## Initial Security Token Deployment
 
 ![](docs/plant-uml-diagrams/setup.png)
 
@@ -22,9 +22,11 @@ This open source software is provided with no warranty. This is not legal advice
 4. The Reserve Admin can then transfer tokens to the hot wallet.
 
 
-## Separating Private Key Management Roles
+## Setup For Separate Issuer Private Key Management Roles
 
-For greater security, during the setup process for added security the Transfer Admin can setup rules for allowing transfering tokens. This forces the Reserve Admin to transfer tokens to a hot wallet first. The Hot Wallet holds a limited balance. This enforces multiple signatures and a limited loss from any single account with a single transfer. The use of a hot wallet for small balances also makes everyday token administration easier without exposing the issuer's reserve of tokens to the risk of total theft in a single transaction.
+By default the reserve tokens cannot be transferred to any address. To allow transfers the Transfer Admin must configure transfer rules using both `setRestrictions(account, ...)` and `allowGroupTransfer(...)`
+
+During the setup process for added security, the Transfer Admin can setup rules for allowing transferring tokens. This forces the Reserve Admin to transfer tokens to a hot wallet first. The Hot Wallet holds a limited balance. This enforces multiple signatures and a limited loss from any single account with a single transfer. The use of a hot wallet for small balances also makes everyday token administration easier without exposing the issuer's reserve of tokens to the risk of total theft in a single transaction.
 
 This configuration can be accomplished in this manner:
 1. Transfer Admin, Reserve Admin and Hot Wallet admin accounts are managed by separate users with separate keys. For example, separate Nano Ledger S hardware wallets:
@@ -57,7 +59,7 @@ Note that there are no transfers yet authorized between accounts. By default all
 ![](docs/plant-uml-diagrams/transfer-restrictions.png)
 
 The Transfer Admin for the Token Contract can provision account addresses to transfer and receive tokens under certain conditions. This is the process for configuring transfer restrictions and transferring tokens:
-1. An Investor sends their AML/KYC information to the Transfer Admin.
+1. An Investor sends their Anti Money Laundering and Know Your Customer (AML/KYC) information to the Transfer Admin or to a proxy vetting service to verify this information. The benefit of using a qualified third party provider is to avoid needing to store privately identifiable information.
 1. The Transfer Admin calls `setRestrictions(investorAddress, transferGroup, addressTimeLock, maxTokens)` to provision their account. Initially this will be done for the Primary Issuance of tokens to investors where tokens are distributed directly from the issuer to holder accounts.
 1. A potential buyer sends their AML/KYC information to the Transfer Admin.
 1. The Transfer Admin calls `setRestrictions(buyerAddress, transferGroup, addressTimeLock, maxTokens)` to provision the Buyer account.
@@ -101,7 +103,7 @@ If you need tracking for max number of holders implemented contact noah@comakery
 
 ## Exchanges Can Register Omnibus Accounts
 
-Centralized exchanges can register custody addresses using the same method as other users. They contact the Issuer to provision accounts and the Transfer Admin calles `setRestrictions` for the exchange account.
+Centralized exchanges can register custody addresses using the same method as other users. They contact the Issuer to provision accounts and the Transfer Admin calls `setRestrictions()` for the exchange account.
 
 When customers of the exchange want to withdraw tokens from the exchange account they must withdraw into an account that the Transfer Admin has provisioned for them with `setRestrictions()`.
 
