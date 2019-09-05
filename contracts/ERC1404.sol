@@ -76,11 +76,13 @@ contract ERC1404 {
     if (to == address(this)) return DO_NOT_SEND_TO_TOKEN_CONTRACT;
     if (from == contractOwner) return SUCCESS_CODE;
 
-    if (value > maxBalances[to]) return GREATER_THAN_RECIPIENT_MAX_BALANCE;
-    if (now < timeLock[from]) return SENDER_TOKENS_TIME_LOCKED;
-    if (frozenAddresses[from]) return SENDER_ADDRESS_FROZEN;
-    if (0 == _allowGroupTransfers[transferGroups[from]][transferGroups[to]]) return TRANSFER_GROUP_NOT_APPROVED;
-    if (now < _allowGroupTransfers[transferGroups[from]][transferGroups[to]]) return TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER;
+    if (value > getMaxBalance(to)) return GREATER_THAN_RECIPIENT_MAX_BALANCE;
+    if (now < getTimeLock(from)) return SENDER_TOKENS_TIME_LOCKED;
+    if (frozen(from)) return SENDER_ADDRESS_FROZEN;
+    
+    uint256 _allowedTransferTime = getAllowTransferTime(from,to);
+    if (0 == _allowedTransferTime) return TRANSFER_GROUP_NOT_APPROVED;
+    if (now < _allowedTransferTime) return TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER;
 
     return SUCCESS_CODE;
   }
@@ -156,6 +158,12 @@ contract ERC1404 {
 
   function getAllowTransfer(address from, address to, uint256 atTimestamp) public view returns(bool) {
     getAllowGroupTransfer(getTransferGroup(from), getTransferGroup(to), atTimestamp);
+  }
+
+  // note the transfer time default is 0 for transfers between all addresses
+  // a transfer time of 0 is treated as not allowed
+  function getAllowTransferTime(address from, address to) public view returns(uint timestamp) {
+      return _allowGroupTransfers[transferGroups[from]][transferGroups[to]];
   }
 
   /******* Mint, Burn, Freeze ***********/

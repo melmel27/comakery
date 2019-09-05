@@ -50,4 +50,14 @@ contract GettersAndSettersTest {
         bool allowed = token.getAllowTransfer(alice, bob, now);
         allowed.isFalse("should not allow transfers between groups by default");
     }
+
+    function testGetAllowTransferTime() public {
+        address alice = address(0x1);
+        address bob = address(0x2);
+        token.getAllowTransferTime(alice, bob).equal(0, "default to time 0 for all addresses");
+
+        // allow alice and bob's default group (0) to trade after timestamp 100
+        token.setAllowGroupTransfer(0,0,100);  
+        token.getAllowTransferTime(alice, bob).equal(100, "transfer group timestamp not properly set");
+    }
 }
