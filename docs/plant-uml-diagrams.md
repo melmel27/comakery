@@ -9,10 +9,10 @@ actor "Hot Wallet\nAdmin" as HAdmin
 
 Deployer -> Token: constructor(\nreserveAddress,\ntransferAdminAddress,\nsymbol,\ndecimals,\ntotalSupply,\n...)
 TAdmin -> Token: setAllowGroupTransfer(\nreserveTransferGroup,\nhotWalletTransferGroup,\nunrestrictedAddressTimeLock)
-TAdmin -> Token: setRestrictions(\nreserveAddress,\nreserveTransferGroup,\nunrestrictedAddressTimelock,\nunrestrictedMaxTokenAmount)
-TAdmin -> Token: setRestrictions(\nreserveAddress,\nhotWalletTransferGroup,\nunrestrictedAddressTimeLock,\nsensibleMaxAmountInHotWallet)
+TAdmin -> Token: setAccountPermissions(\nreserveAddress,\nreserveTransferGroup,\nunrestrictedAddressTimelock,\nunrestrictedMaxTokenAmount)
+TAdmin -> Token: setAccountPermissions(\nreserveAddress,\nhotWalletTransferGroup,\nunrestrictedAddressTimeLock,\nsensibleMaxAmountInHotWallet)
 RAdmin -> Token: transfer(\nhotWallet,\namount)
-TAdmin -> Token: setRestrictions(\ninvestorAddress,\nissuerTransferGroup,\naddressTimeLock,\nmaxTokens)
+TAdmin -> Token: setAccountPermissions(\ninvestorAddress,\nissuerTransferGroup,\naddressTimeLock,\nmaxTokens)
 HAdmin -> Token: transfer(\ninvestorAddress,\namount)
 activate Token
 Token -> Token: detectTransferRestriction(\nfrom,\nto,\nvalue)
@@ -31,7 +31,7 @@ actor "Hot Wallet\nAdmin" as HAdmin
 Investor -> TAdmin: send AML/KYC and accreditation info
 TAdmin -> Token: setMaxBalance(investorAddress, maxTokens)
 TAdmin -> Token: setTimeLock(investorAddress, timeToUnlock)
-TAdmin -> Token: setRestrictions(investorAddress, transferGroup, addressTimeLock, maxTokens)\n// Reg D, S or CF
+TAdmin -> Token: setAccountPermissions(investorAddress, transferGroup, addressTimeLock, maxTokens)\n// Reg D, S or CF
 HAdmin -> Token: transfer(investorAddress, amount)
 activate Token
 Token -> Token: detectTransferRestriction(from, to, value)
@@ -48,11 +48,11 @@ actor "Transfer\nAdmin" as TAdmin
 participant "Token Contract" as Token
 
 Investor -> TAdmin: send AML/KYC and accreditation info
-TAdmin -> Token: setRestrictions(buyerAddress, transferGroup, addressTimeLock, maxTokens)
+TAdmin -> Token: setAccountPermissions(buyerAddress, transferGroup, addressTimeLock, maxTokens)
 
 
 Buyer -> TAdmin: send AML/KYC and accreditation info
-TAdmin -> Token: setRestrictions(sellerAddress, transferGroup, addressTimeLock, maxTokens)
+TAdmin -> Token: setAccountPermissions(sellerAddress, transferGroup, addressTimeLock, maxTokens)
 TAdmin -> Token: setAllowGroupTransfer(fromGroup, toGroup, afterTimestamp)
 
 Investor -> Token: transfer(buyerAddress, amount)

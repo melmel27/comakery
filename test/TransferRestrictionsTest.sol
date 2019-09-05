@@ -23,8 +23,8 @@ contract TransferRestrictionsTest {
         alice = new UserProxy(token);
         bob = new UserProxy(token);
 
-        token.setRestrictions(address(alice), groupA, transferTimeIsNow, maxTokens);
-        token.setRestrictions(address(bob), groupB, transferTimeIsNow, maxTokens);
+        token.setAccountPermissions(address(alice), groupA, transferTimeIsNow, maxTokens);
+        token.setAccountPermissions(address(bob), groupB, transferTimeIsNow, maxTokens);
     }
 
     function testTransferRestrictionsBetweenUsersNotOnWhitelist() public {

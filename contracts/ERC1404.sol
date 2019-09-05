@@ -137,7 +137,7 @@ contract ERC1404 {
     return transferGroups[addr];
   }
 
-  function setRestrictions(address addr, uint256 groupID, uint256 timeLockUntil, uint256 maxTokens) public {
+  function setAccountPermissions(address addr, uint256 groupID, uint256 timeLockUntil, uint256 maxTokens) public {
       setGroup(addr, groupID);  
       setTimeLock(addr, timeLockUntil);
       setMaxBalance(addr, maxTokens);
