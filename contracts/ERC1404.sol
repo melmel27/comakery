@@ -133,6 +133,10 @@ contract ERC1404 {
     transferGroups[addr] = groupID;
   }
 
+  function getTransferGroup(address addr) public view returns (uint256 groupID) {
+    return transferGroups[addr];
+  }
+
   function setRestrictions(address addr, uint256 groupID, uint256 timeLockUntil, uint256 maxTokens) public {
       setGroup(addr, groupID);  
       setTimeLock(addr, timeLockUntil);
@@ -147,8 +151,11 @@ contract ERC1404 {
 
   function getAllowGroupTransfer(uint256 from, uint256 to, uint256 timestamp) public view returns(bool) {
     if(allowGroupTransfers[from][to] == 0) return false ;
-    
     return allowGroupTransfers[from][to] < timestamp;    
+  }
+
+  function getAllowTransfer(address from, address to, uint256 atTimestamp) public view returns(bool) {
+    getAllowGroupTransfer(getTransferGroup(from), getTransferGroup(to), atTimestamp);
   }
 
   /******* Mint, Burn, Freeze ***********/

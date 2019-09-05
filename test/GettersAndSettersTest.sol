@@ -34,11 +34,20 @@ contract GettersAndSettersTest {
         Assert.equal(token.frozen(owner), false, "default is not frozen");
     }
 
-    function testTransferRestrictions() public {
-        bool allowed = token.getAllowGroupTransfer(0,0,now);
-        allowed.isFalse("bad getter value");
+    function testCheckingAllowGroupTransfers() public {
+        uint defaultGroup = 0;
+        bool allowed = token.getAllowGroupTransfer(defaultGroup, defaultGroup, now);
+        allowed.isFalse("should not allow transfers between groups by default");
 
-        token.allowGroupTransfer(0,0,1);
-        token.getAllowGroupTransfer(0,0,now).isTrue("should allow transfer after first second of all time");
+        token.allowGroupTransfer(defaultGroup,defaultGroup,1); // allow transfers in default group 1 second after the start of time
+        token.getAllowGroupTransfer(defaultGroup,defaultGroup,now).isTrue("should allow transfer after first second of all time");
+    }
+
+    function testCheckingAllowGroupTransfersWithAddresses() public {
+        address alice = address(0x1);
+        address bob = address(0x2);
+        
+        bool allowed = token.getAllowTransfer(alice, bob, now);
+        allowed.isFalse("should not allow transfers between groups by default");
     }
 }
