@@ -47,6 +47,7 @@ contract ERC1404 {
 
   constructor(
     address _contractOwner,
+    address _tokenReserveAdmin,
     string memory _symbol,
     string memory _name,
     uint8 _decimals,
@@ -60,8 +61,8 @@ contract ERC1404 {
     
     contractOwner = _contractOwner;
 
-    _balances[_contractOwner] = _totalSupply;
-    totalSupply = _balances[_contractOwner];
+    _balances[_tokenReserveAdmin] = _totalSupply;
+    totalSupply = _balances[_tokenReserveAdmin];
   }
   /******* ERC1404 FUNCTIONS ***********/
 

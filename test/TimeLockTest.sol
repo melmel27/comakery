@@ -11,10 +11,13 @@ contract TimeLockTest {
     UserProxy public alice;
     UserProxy public bob;
     UserProxy public chuck;
+    address reserveAdmin;
 
     function beforeEach() public {
         tokenContractOwner = address(this);
-        token = new ERC1404(tokenContractOwner, "xyz", "Ex Why Zee", 6, 1234567);
+        reserveAdmin = address(0x1);
+        token = new ERC1404(tokenContractOwner, reserveAdmin, "xyz", "Ex Why Zee", 6, 1234567);
+
 
         alice = new UserProxy(token);
         bob = new UserProxy(token);

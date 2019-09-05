@@ -15,7 +15,7 @@ contract GettersAndSettersTest {
 
     function beforeEach() public {
         owner = address(this);
-        token = new ERC1404(owner, "xyz", "Ex Why Zee", 0, 100);        
+        token = new ERC1404(owner, owner, "xyz", "Ex Why Zee", 0, 100);        
     }
 
     function testGettersAndSetters() public {

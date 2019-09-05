@@ -7,15 +7,17 @@ import "../contracts/ERC1404.sol";
 
 contract MintBurnFreezeTest {
     ERC1404 public token;
+    address tokenContractOwner;
     UserProxy public alice;
 
     function beforeEach() public {
-        token = new ERC1404(address(this), "xyz", "Ex Why Zee", 0, 100);        
+        tokenContractOwner = address(this);
+        token = new ERC1404(tokenContractOwner, tokenContractOwner, "xyz", "Ex Why Zee", 6, 100);
         alice = new UserProxy(token);
     }
 
     function testBurn() public {
-        Assert.equal(token.balanceOf(address(this)), 100, "wrong balance for owner");
+        Assert.equal(token.balanceOf(tokenContractOwner), 100, "wrong balance for owner");
         token.transfer(address(alice), 17);
         
         Assert.equal(token.totalSupply(), 100, "incorrect total supply");
@@ -36,7 +38,7 @@ contract MintBurnFreezeTest {
     }
 
     function testMint() public {
-        Assert.equal(token.balanceOf(address(this)), 100, "wrong balance for owner");
+        Assert.equal(token.balanceOf(tokenContractOwner), 100, "wrong balance for owner");
         Assert.equal(token.balanceOf(address(alice)), 0, "wrong balance for owner");
         Assert.equal(token.totalSupply(), 100, "incorrect total supply");
 
@@ -61,5 +63,18 @@ contract MintBurnFreezeTest {
         Assert.equal(uint256(code), 5, "wrong transfer restriction code for frozen account");
 
         Assert.equal(token.messageForTransferRestriction(code), "SENDER ADDRESS IS FROZEN", "wrong transfer restriction code for frozen account");
+    }
+
+    function testCanPauseTransfers() public {
+        Assert.isFalse(token.isPaused(), "should not be paused yet");
+        token.pause();
+        Assert.isTrue(token.isPaused(), "should be paused");
+        uint8 restrictionCode = token.detectTransferRestriction(address(tokenContractOwner), address(alice), 1);
+        Assert.equal(uint(restrictionCode), 6, "should not be able to transfer when contract is paused");
+
+        token.unpause();
+        Assert.isFalse(token.isPaused(), "should be unpaused");
+        restrictionCode = token.detectTransferRestriction(address(tokenContractOwner), address(alice), 1);
+        Assert.equal(uint(restrictionCode), 0, "should be able to transfer when contract is unpaused");
     }
 }

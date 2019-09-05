@@ -18,7 +18,7 @@ contract TransferRestrictionsTest {
 
     function beforeEach() public {
         tokenContractOwner = address(this);
-        token = new ERC1404(tokenContractOwner, "xyz", "Ex Why Zee", 6, 1234567);
+        token = new ERC1404(tokenContractOwner, tokenContractOwner, "xyz", "Ex Why Zee", 6, 1234567);
 
         alice = new UserProxy(token);
         bob = new UserProxy(token);
@@ -63,5 +63,17 @@ contract TransferRestrictionsTest {
     function testCannotSendToAddressZero() public {
         uint8 restrictionCode = token.detectTransferRestriction(address(tokenContractOwner), address(0), 17);
         Assert.equal(uint(restrictionCode), 4, "should not be able to send tokens to the empty contract");
+    }
+
+    function testMessageForTransferRestrictionSuccess() public {
+        Assert.equal(token.messageForTransferRestriction(0), "SUCCESS", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(1), "GREATER THAN RECIPIENT MAX BALANCE", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(2), "SENDER TOKENS LOCKED", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(3), "DO NOT SEND TO TOKEN CONTRACT", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(4), "DO NOT SEND TO EMPTY ADDRESS", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(5), "SENDER ADDRESS IS FROZEN", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(6), "ALL TRANSFERS PAUSED", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(7), "TRANSFER GROUP NOT APPROVED", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(8), "TRANSFER GROUP NOT ALLOWED UNTIL LATER", "wrong message");
     }
 }

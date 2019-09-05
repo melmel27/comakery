@@ -1,4 +1,4 @@
-pragma solidity ^ 0.5 .8;
+pragma solidity ^0.5.8;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
@@ -10,10 +10,12 @@ contract MaxReceiverBalanceTest {
     address tokenContractOwner;
     UserProxy public alice;
     UserProxy public bob;
+    address reserveAdmin;
 
     function beforeEach() public {
         tokenContractOwner = address(this);
-        token = new ERC1404(tokenContractOwner, "xyz", "Ex Why Zee", 6, 1234567);
+        reserveAdmin = address(0x1);
+        token = new ERC1404(tokenContractOwner, reserveAdmin, "xyz", "Ex Why Zee", 6, 1234567);
 
         alice = new UserProxy(token);
         bob = new UserProxy(token);
