@@ -34,5 +34,7 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
 
       # run tests!
-      - run: yarn ganache-cli
+      - run: 
+        - command: yarn ganache-cli
+        - background: true
       - run: yarn truffle test
