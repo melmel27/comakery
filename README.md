@@ -22,14 +22,14 @@ This open source software is provided with no warranty. This is not legal advice
 
 1. The Deployer configures the parameters and deploys the smart contracts to a public blockchain. The deployment allows configuration of a separate reserve address and Transfer Administrator address. This allows the reserve security tokens to be stored in cold storage since the treasury reserve address private keys are not needed for everyday use by the Transfer Admin.
 2. The Transfer Admin can then provisions a hot wallet address for distributing tokens to investors or other stakeholders. The Transfer Admin uses `setRestrictions(investorAddress, transferGroup, addressTimeLock, maxTokens)` to set address restrictions.
-3. The Transfer Admin authorizes the transfer of tokens between account groups with `allowGroupTransfer(fromGroup, toGroup, afterTimestamp)` .
+3. The Transfer Admin authorizes the transfer of tokens between account groups with `setAllowGroupTransfer(fromGroup, toGroup, afterTimestamp)` .
 4. The Reserve Admin can then transfer tokens to the Hot Wallet address.
 5. The Hot Wallet Admin can then transfer tokens to investors or other stakeholders who are entitled to tokens.
 
 
 ## Setup For Separate Issuer Private Key Management Roles
 
-By default the reserve tokens cannot be transferred to any address. To allow transfers the Transfer Admin must configure transfer rules using both `setRestrictions(account, ...)` and `allowGroupTransfer(...)`.
+By default the reserve tokens cannot be transferred to any address. To allow transfers the Transfer Admin must configure transfer rules using both `setRestrictions(account, ...)` and `setAllowGroupTransfer(...)`.
 
 During the setup process for added security, the Transfer Admin can setup rules that only allow the Reserve Admin to transfer tokens to the hot wallet address first. The Hot Wallet is also restricted to a limited max balance. This enforces transfer approvals for multiple private key holders for token transfers of large size - and a limited loss from any single account with a single transfer. The use of a hot wallet for small balances also makes everyday token administration easier without exposing the issuer's reserve of tokens to the risk of total theft in a single transaction.
 
@@ -41,11 +41,11 @@ The Reserve Account restriction configuration can be accomplished in this manner
     * `setRestrictions(reserveAddress, reserveTransferGroup, unrestrictedAddressTimelock, unrestrictedMaxTokenAmount)`
     * `setRestrictions(reserveAddress, hotWalletTransferGroup, unrestrictedAddressTimeLock, sensibleMaxAmountInHotWallet)`
 1. Reserve Address can only transfer to Hot Wallet Groups
-    * `allowGroupTransfer(reserveTransferGroup, hotWalletTransferGroup, unrestrictedAddressTimeLock)`
+    * `setAllowGroupTransfer(reserveTransferGroup, hotWalletTransferGroup, unrestrictedAddressTimeLock)`
     * `setRestrictions(reserveAddress, hotWalletTransferGroup, unrestrictedAddressTimeLock, sensibleMaxAmountInHotWallet)`
 1. Hot Wallet Address can transfer to investor groups like Reg D and Reg S.
-    * `allowGroupTransfer(hotWalletTransferGroup, regD_TransferGroup, unrestrictedAddressTimeLock)`
-    * `allowGroupTransfer(hotWalletTransferGroup, regS_TransferGroup, unrestrictedAddressTimeLock)`
+    * `setAllowGroupTransfer(hotWalletTransferGroup, regD_TransferGroup, unrestrictedAddressTimeLock)`
+    * `setAllowGroupTransfer(hotWalletTransferGroup, regS_TransferGroup, unrestrictedAddressTimeLock)`
 
 Then the Hot Wallet Admin can distribute tokens to investors and stakeholders as described below...
 
@@ -71,15 +71,15 @@ The Transfer Admin for the Token Contract can provision account addresses to tra
 1. The Transfer Admin calls `setRestrictions(investorAddress, transferGroup, addressTimeLock, maxTokens)` to provision their account. Initially this will be done for the Primary Issuance of tokens to investors where tokens are distributed directly from the issuer to holder accounts.
 1. A potential buyer sends their AML/KYC information to the Transfer Admin.
 1. The Transfer Admin calls `setRestrictions(buyerAddress, transferGroup, addressTimeLock, maxTokens)` to provision the Buyer account.
-1. At this time or before, the Transfer Admin authorizes the transfer of tokens between account groups with `allowGroupTransfer(fromGroup, toGroup, afterTimestamp)` . Note that allowing a transfer from group A to group B does not allow a transfer from group B to group B. This would have to be done separately. An example is that Reg CF unaccredited investors may be allowed to sell to Accredited US investors but not vice versa.
+1. At this time or before, the Transfer Admin authorizes the transfer of tokens between account groups with `setAllowGroupTransfer(fromGroup, toGroup, afterTimestamp)` . Note that allowing a transfer from group A to group B does not allow a transfer from group B to group B. This would have to be done separately. An example is that Reg CF unaccredited investors may be allowed to sell to Accredited US investors but not vice versa.
 
 ## Overview of Transfer Restriction Enforcement Methods
 
 | From | To | Restrict | Enforced By |
 |:-|:-|:-|:-|
 | Reg D/S/CF | Anyone | Until TimeLock ends | `setTimeLock(investorAddress)` |
-| Reg S Group | US Accredited | Forbidden During Flowback Restriction Period | `allowGroupTransfer(fromGroupS, toGroupD, afterTime)` |
-| Reg S Group | Reg S Group | Forbidden Until Shorter Reg S TimeLock Ended | `allowGroupTransfer(fromGroupS, toGroupS, afterTime)` |
+| Reg S Group | US Accredited | Forbidden During Flowback Restriction Period | `setAllowGroupTransfer(fromGroupS, toGroupD, afterTime)` |
+| Reg S Group | Reg S Group | Forbidden Until Shorter Reg S TimeLock Ended | `setAllowGroupTransfer(fromGroupS, toGroupS, afterTime)` |
 | Stolen Tokens | Anyone | Fix With Freeze, Burn, Reissue| `freeze(stolenTokenAddress);`<br /> `burnFrom(address, amount);`<br />`mint(newOwnerAddress);` |
 | Issuer | Reg CF with > maximum value of tokens allowed | Forbid transfers increasing token balances above max balance | `setMaxBalance(amount)` |
 | Any Address During Regulatory Freeze| Anyone | Forbid all transfers while paused | `pause()` |
@@ -88,7 +88,7 @@ The Transfer Admin for the Token Contract can provision account addresses to tra
 
 To allow trading in a group:
 * Call `setRestrictions(address, transferGroup, addressTimeLock, maxTokens)` for traders in the group 
-* `allowGroupTransfer(fromGroupX, toGroupX, groupTimeLock)` for account addresses associated with groupIDs like Reg S 
+* `setAllowGroupTransfer(fromGroupX, toGroupX, groupTimeLock)` for account addresses associated with groupIDs like Reg S 
 * The token holders in the group can trade with each other as long as: 
     * the `addressTimelock` and `groupTimeLock` times have passed; and 
     * the recipient of a token transfer does not exceeded the `maxTokens` in their account address.
@@ -98,7 +98,7 @@ To allow trading in a group:
 To allow trading between Foreign Reg S account addresses but forbid flow back to US Reg D account addresses until the end of the Reg D lockup period
 * Call `setRestrictions(address, groupIDForRegS, shorterTimeLock, maxTokens)` for Reg S investors
 * Call `setRestrictions(address, groupIDForRegD, longerTimeLock, maxTokens)` for Reg D investors
-* `allowGroupTransfer(groupIDForRegS, groupIDForRegS, groupTimeLock)` allow Reg S trading 
+* `setAllowGroupTransfer(groupIDForRegS, groupIDForRegS, groupTimeLock)` allow Reg S trading 
 * The token holders in the group can trade with each other as long as: 
     * the `addressTimelock` and `groupTimeLock` times have passed; and 
     * the recipient of a token transfer does not exceeded the `maxTokens` in their account address.h

@@ -28,7 +28,7 @@ contract TransferRestrictionsTest {
     }
 
     function testTransferRestrictionsBetweenUsersNotOnWhitelist() public {
-        token.allowGroupTransfer(groupA, groupB, transferTimeIsNow);
+        token.setAllowGroupTransfer(groupA, groupB, transferTimeIsNow);
         uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), maxTokens + 1);
         Assert.equal(uint(restrictionCode), 1, "should fail if max balance would be exceeded in transfer");
     }
@@ -39,18 +39,18 @@ contract TransferRestrictionsTest {
     }
 
     function testGroupsWithoutTransferAuthorizationFaileTransfer() public {
-        token.allowGroupTransfer(groupA, groupB, transferTimeIsNow + 1 days);
+        token.setAllowGroupTransfer(groupA, groupB, transferTimeIsNow + 1 days);
         uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);
         Assert.equal(uint(restrictionCode), 8, "approved transfers should not work before the specified time");
     }
     function testGroupsWithApprovedTransfersTransfer() public {
-        token.allowGroupTransfer(groupA, groupB, transferTimeIsNow);
+        token.setAllowGroupTransfer(groupA, groupB, transferTimeIsNow);
         uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);
         Assert.equal(uint(restrictionCode), 0, "approved transfers should work after the specified time");
     }
 
     function testReverseOfTransferApprovalIsNotApproved() public {
-        token.allowGroupTransfer(groupA, groupB, transferTimeIsNow);
+        token.setAllowGroupTransfer(groupA, groupB, transferTimeIsNow);
         uint8 restrictionCode = token.detectTransferRestriction(address(bob), address(alice), 17); // reversed transfer direction!
         Assert.equal(uint(restrictionCode), 7, "approved transfers should not work when transfer between groups is not approved");
     }

@@ -8,7 +8,7 @@ actor "Reserve\nAdmin" as RAdmin
 actor "Hot Wallet\nAdmin" as HAdmin
 
 Deployer -> Token: constructor(\nreserveAddress,\ntransferAdminAddress,\nsymbol,\ndecimals,\ntotalSupply,\n...)
-TAdmin -> Token: allowGroupTransfer(\nreserveTransferGroup,\nhotWalletTransferGroup,\nunrestrictedAddressTimeLock)
+TAdmin -> Token: setAllowGroupTransfer(\nreserveTransferGroup,\nhotWalletTransferGroup,\nunrestrictedAddressTimeLock)
 TAdmin -> Token: setRestrictions(\nreserveAddress,\nreserveTransferGroup,\nunrestrictedAddressTimelock,\nunrestrictedMaxTokenAmount)
 TAdmin -> Token: setRestrictions(\nreserveAddress,\nhotWalletTransferGroup,\nunrestrictedAddressTimeLock,\nsensibleMaxAmountInHotWallet)
 RAdmin -> Token: transfer(\nhotWallet,\namount)
@@ -53,7 +53,7 @@ TAdmin -> Token: setRestrictions(buyerAddress, transferGroup, addressTimeLock, m
 
 Buyer -> TAdmin: send AML/KYC and accreditation info
 TAdmin -> Token: setRestrictions(sellerAddress, transferGroup, addressTimeLock, maxTokens)
-TAdmin -> Token: allowGroupTransfer(fromGroup, toGroup, afterTimestamp)
+TAdmin -> Token: setAllowGroupTransfer(fromGroup, toGroup, afterTimestamp)
 
 Investor -> Token: transfer(buyerAddress, amount)
 activate Token

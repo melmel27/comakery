@@ -27,7 +27,7 @@ contract ERC1404 {
   mapping(address => uint256) public maxBalances; // TODO: may want to map address => uint256 for max holdings
   mapping(address => uint256) public timeLock; // unix timestamp to lock funds until
   mapping(address => uint256) public transferGroups; // restricted groups like Reg S, Reg D and Reg CF
-  mapping(uint256 => mapping(uint256 => uint256)) public allowGroupTransfers; // approve transfers between groups: from => to => TimeLockUntil
+  mapping(uint256 => mapping(uint256 => uint256)) private _allowGroupTransfers; // approve transfers between groups: from => to => TimeLockUntil
   mapping(address => bool) public frozenAddresses;
   bool public isPaused = false;
 
@@ -79,8 +79,8 @@ contract ERC1404 {
     if (value > maxBalances[to]) return GREATER_THAN_RECIPIENT_MAX_BALANCE;
     if (now < timeLock[from]) return SENDER_TOKENS_TIME_LOCKED;
     if (frozenAddresses[from]) return SENDER_ADDRESS_FROZEN;
-    if (0 == allowGroupTransfers[transferGroups[from]][transferGroups[to]]) return TRANSFER_GROUP_NOT_APPROVED;
-    if (now < allowGroupTransfers[transferGroups[from]][transferGroups[to]]) return TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER;
+    if (0 == _allowGroupTransfers[transferGroups[from]][transferGroups[to]]) return TRANSFER_GROUP_NOT_APPROVED;
+    if (now < _allowGroupTransfers[transferGroups[from]][transferGroups[to]]) return TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER;
 
     return SUCCESS_CODE;
   }
@@ -143,15 +143,15 @@ contract ERC1404 {
       setMaxBalance(addr, maxTokens);
   }
 
-  function allowGroupTransfer(uint256 groupA, uint256 groupB, uint256 transferAfter ) public {
+  function setAllowGroupTransfer(uint256 groupA, uint256 groupB, uint256 transferAfter ) public {
       // TODO: if 0 no transfer; update README
       // TODO: if 1 any transfer works; update README
-      allowGroupTransfers[groupA][groupB] = transferAfter;
+      _allowGroupTransfers[groupA][groupB] = transferAfter;
   }
 
   function getAllowGroupTransfer(uint256 from, uint256 to, uint256 timestamp) public view returns(bool) {
-    if(allowGroupTransfers[from][to] == 0) return false ;
-    return allowGroupTransfers[from][to] < timestamp;    
+    if(_allowGroupTransfers[from][to] == 0) return false ;
+    return _allowGroupTransfers[from][to] < timestamp;    
   }
 
   function getAllowTransfer(address from, address to, uint256 atTimestamp) public view returns(bool) {

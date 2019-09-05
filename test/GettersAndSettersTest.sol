@@ -39,7 +39,7 @@ contract GettersAndSettersTest {
         bool allowed = token.getAllowGroupTransfer(defaultGroup, defaultGroup, now);
         allowed.isFalse("should not allow transfers between groups by default");
 
-        token.allowGroupTransfer(defaultGroup,defaultGroup,1); // allow transfers in default group 1 second after the start of time
+        token.setAllowGroupTransfer(defaultGroup,defaultGroup,1); // allow transfers in default group 1 second after the start of time
         token.getAllowGroupTransfer(defaultGroup,defaultGroup,now).isTrue("should allow transfer after first second of all time");
     }
 
