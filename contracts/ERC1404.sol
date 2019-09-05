@@ -28,7 +28,7 @@ contract ERC1404 {
   mapping(address => uint256) public timeLock; // unix timestamp to lock funds until
   mapping(address => uint256) public transferGroups; // restricted groups like Reg S, Reg D and Reg CF
   mapping(uint256 => mapping(uint256 => uint256)) public allowGroupTransfers; // approve transfers between groups: from => to => TimeLockUntil
-  mapping(address => bool) public frozen;
+  mapping(address => bool) public frozenAddresses;
   bool public isPaused = false;
 
   event Transfer(address indexed from, address indexed to, uint256 value);
@@ -78,7 +78,7 @@ contract ERC1404 {
 
     if (value > maxBalances[to]) return GREATER_THAN_RECIPIENT_MAX_BALANCE;
     if (now < timeLock[from]) return SENDER_TOKENS_TIME_LOCKED;
-    if (frozen[from]) return SENDER_ADDRESS_FROZEN;
+    if (frozenAddresses[from]) return SENDER_ADDRESS_FROZEN;
     if (0 == allowGroupTransfers[transferGroups[from]][transferGroups[to]]) return TRANSFER_GROUP_NOT_APPROVED;
     if (now < allowGroupTransfers[transferGroups[from]][transferGroups[to]]) return TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER;
 
@@ -145,6 +145,12 @@ contract ERC1404 {
       allowGroupTransfers[groupA][groupB] = transferAfter;
   }
 
+  function getAllowGroupTransfer(uint256 from, uint256 to, uint256 timestamp) public view returns(bool) {
+    if(allowGroupTransfers[from][to] == 0) return false ;
+    
+    return allowGroupTransfers[from][to] < timestamp;    
+  }
+
   /******* Mint, Burn, Freeze ***********/
   // For Token owner
 
@@ -160,7 +166,11 @@ contract ERC1404 {
   }
 
   function freeze(address addr, bool status) public {
-    frozen[addr] = status;
+    frozenAddresses[addr] = status;
+  }
+
+  function frozen(address addr) public view returns (bool) {
+    return frozenAddresses[addr];
   }
   /******* ERC20 FUNCTIONS ***********/
 
