@@ -84,6 +84,19 @@ The Transfer Admin for the Token Contract can provision account addresses to tra
 | Issuer | Reg CF with > maximum value of tokens allowed | Forbid transfers increasing token balances above max balance | `setMaxBalance(amount)` |
 | Any Address During Regulatory Freeze| Anyone | Forbid all transfers while paused | `pause()` |
 
+## Lockup Periods
+
+There are a few ways that lockup periods are enforced:
+* By default all account addresses are locked. They require permissions to be transferred. Permissions can be granted on the account level or per address groups.
+* `setTimeLock(account, unixTimestamp)` locks all tokens in an account until the unix timestamp. Unix timestamps are indicated as the number of seconds since midnight UTC on January 1, 1970.
+* `setAllowGroupTransfer(fromGroup, toGroup, unixTimestamp)` allows transfers from a group of addresses to another group of addresses after the unixTimestamp. If the unixTimestamp is 0, then no transfer is allowed. This is because any uninitialized combination of addresses and timestamp will have a default value of 0.
+* There is a convenience method for setting group, timelock and the maximum number of tokens for an account.
+
+## Maximum Token Balance
+
+When transfering tokens to unaccredited investors or in the case that you wish to limit maximum number of tokens that an individual can obtaim:
+* You can set the maximum number of tokens that an account can **receive** using `setMaxBalance(address _account, uint256 _updatedValue)`
+
 ## Investors Can Trade With Other Investors In The Same Group (e.g. Reg S)
 
 To allow trading in a group:
