@@ -1,5 +1,6 @@
 pragma solidity ^ 0.5 .8;
 
+import "./ITransferRules.sol";
 import "./TransferRules.sol";
 
 contract ERC1404 {
@@ -8,7 +9,7 @@ contract ERC1404 {
   uint8 public decimals;
   uint256 public totalSupply;
   address public contractOwner;
-  TransferRules public transferRules;
+  ITransferRules public transferRules;
 
   mapping(address => uint256) private _balances;
   mapping(address => mapping(address => uint256)) private _allowed;
@@ -58,6 +59,10 @@ contract ERC1404 {
   // TODO: consider potential reentrancy issues
   function detectTransferRestriction(address from, address to, uint256 value) public view returns(uint8) {
     return transferRules.detectTransferRestriction(this, from, to, value);
+  }
+
+  function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory) {
+    return transferRules.messageForTransferRestriction(restrictionCode);
   }
 
   // Transfer rule getters and setters
@@ -118,6 +123,10 @@ contract ERC1404 {
 
   function getAllowTransfer(address from, address to, uint256 atTimestamp) public view returns(bool) {
     getAllowGroupTransfer(getTransferGroup(from), getTransferGroup(to), atTimestamp);
+  }
+
+  function setTransferRules(ITransferRules newTransferRules) public {
+    transferRules = newTransferRules;
   }
 
   // note the transfer time default is 0 for transfers between all addresses

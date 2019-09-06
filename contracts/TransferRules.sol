@@ -1,7 +1,8 @@
 pragma solidity ^ 0.5 .8;
 import './ERC1404.sol';
+import './ITransferRules.sol';
 
-contract TransferRules {
+contract TransferRules is ITransferRules {
     uint8 public constant SUCCESS = 0;
     uint8 public constant GREATER_THAN_RECIPIENT_MAX_BALANCE = 1;
     uint8 public constant SENDER_TOKENS_TIME_LOCKED = 2;

@@ -57,14 +57,14 @@ contract TransferRestrictionsTest {
     }
 
     function testMessageForTransferRestrictionSuccess() public {
-        Assert.equal(token.transferRules().messageForTransferRestriction(0), "SUCCESS", "wrong message");
-        Assert.equal(token.transferRules().messageForTransferRestriction(1), "GREATER THAN RECIPIENT MAX BALANCE", "wrong message");
-        Assert.equal(token.transferRules().messageForTransferRestriction(2), "SENDER TOKENS LOCKED", "wrong message");
-        Assert.equal(token.transferRules().messageForTransferRestriction(3), "DO NOT SEND TO TOKEN CONTRACT", "wrong message");
-        Assert.equal(token.transferRules().messageForTransferRestriction(4), "DO NOT SEND TO EMPTY ADDRESS", "wrong message");
-        Assert.equal(token.transferRules().messageForTransferRestriction(5), "SENDER ADDRESS IS FROZEN", "wrong message");
-        Assert.equal(token.transferRules().messageForTransferRestriction(6), "ALL TRANSFERS PAUSED", "wrong message");
-        Assert.equal(token.transferRules().messageForTransferRestriction(7), "TRANSFER GROUP NOT APPROVED", "wrong message");
-        Assert.equal(token.transferRules().messageForTransferRestriction(8), "TRANSFER GROUP NOT ALLOWED UNTIL LATER", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(0), "SUCCESS", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(1), "GREATER THAN RECIPIENT MAX BALANCE", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(2), "SENDER TOKENS LOCKED", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(3), "DO NOT SEND TO TOKEN CONTRACT", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(4), "DO NOT SEND TO EMPTY ADDRESS", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(5), "SENDER ADDRESS IS FROZEN", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(6), "ALL TRANSFERS PAUSED", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(7), "TRANSFER GROUP NOT APPROVED", "wrong message");
+        Assert.equal(token.messageForTransferRestriction(8), "TRANSFER GROUP NOT ALLOWED UNTIL LATER", "wrong message");
     }
 }
