@@ -9,15 +9,15 @@ contract ERC1404BasicsTest {
     ERC1404 token;
     address tokenContractOwner;
     address reserveAdmin;
-    TransferRules transferRules;
 
     function beforeEach() public {
         tokenContractOwner = address(this);
+
         reserveAdmin = address(0x1);
         token = new ERC1404(tokenContractOwner, reserveAdmin, "xyz", "Ex Why Zee", 6, 1234567);
         
-        transferRules = token.transferRules();
-        transferRules.setAllowGroupTransfer(0, 0, now); // don't restrict default group transfers
+        token.setMaxBalance(tokenContractOwner, 1e18); 
+        token.setAllowGroupTransfer(0, 0, now); // don't restrict default group transfers
     }
 
     function testTokenInitialization() public {
@@ -26,7 +26,7 @@ contract ERC1404BasicsTest {
         Assert.equal(uint(token.decimals()), 6, "should return the token decimals");
         Assert.equal(uint(token.totalSupply()), 1234567, "should return the totalSupply");
         Assert.equal(token.contractOwner(), tokenContractOwner, "wrong contract owner");
-        Assert.equal(transferRules.MAX_UINT(), uint(0) - uint(1), "MAX_UINT should be largest possible uint256");        
+        Assert.equal(token.MAX_UINT(), uint(0) - uint(1), "MAX_UINT should be largest possible uint256");        
     }
 
     function testTokenAdminSetup() public {
@@ -37,8 +37,7 @@ contract ERC1404BasicsTest {
     }
 
     function testTransferRestrictionSuccess() public {
-        token.transferRules().setMaxBalance(tokenContractOwner, 1e18);
-        uint8 restrictionCode = transferRules.detectTransferRestriction(tokenContractOwner, tokenContractOwner, 17);
+        uint8 restrictionCode = token.detectTransferRestriction(tokenContractOwner, tokenContractOwner, 17);
         Assert.equal(uint(restrictionCode), 0, "not the transfer SUCCESS code");
     }
 }
