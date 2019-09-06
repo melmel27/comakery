@@ -13,6 +13,6 @@ contract UserProxy {
     }
 
     function setMaxBalance(address _account, uint256 _updatedValue) public {
-        token.setMaxBalance(_account, _updatedValue);
+        token.transferRules().setMaxBalance(_account, _updatedValue);
     }
 }
