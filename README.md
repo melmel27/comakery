@@ -54,13 +54,10 @@ Then the Hot Wallet Admin can distribute tokens to investors and stakeholders as
 ![](docs/plant-uml-diagrams/basic-issuance.png)
 
 1. The Transfer Admin gathers AML/KYC and accreditation information from investors and stakeholders who will receive tokens directly from the issuer (the Primary Issuance).
-1. Transfer Admin then configures approved blockchain account addresses for investor and stakholders with `h`. Based on the AML/KYC and accreditation process the investor can provision the account address with a maximum number of tokens; a transfer group designating a regulatory class like "Reg D", "Reg CF" or "Reg S"; and a date that the tokens in the address will be locked until.
-1. The tokens can then be transferred to the provisioned addresses.
+1. Transfer Admin then configures approved blockchain account addresses for investor and stakeholders with `setAccountPermissions(address, transferGroup, LockupUntil, maxBalance)` . Based on the AML/KYC and accreditation process the investor can provision the account address with a maximum number of tokens; a transfer group designating a regulatory class like "Reg D", "Reg CF" or "Reg S"; and a date that the tokens in the address will be locked until.
+1. The tokens can then be transferred from the issuers hot wallet to the provisioned addresses.
 
-Note that there are no transfers yet authorized between accounts. By default all transfers are restricted.
-
-1. Token Lockup Period Based On Jurisdiction
-1. Unaccredited (Everyday) Investors Can Acquire a Limited Amount of Tokens
+Note that there are no transfers yet authorized between accounts. By default no transfers are allowed - all transfer groups are restricted.
 
 # Transfer Restrictions
 
@@ -68,10 +65,10 @@ Note that there are no transfers yet authorized between accounts. By default all
 
 The Transfer Admin for the Token Contract can provision account addresses to transfer and receive tokens under certain conditions. This is the process for configuring transfer restrictions and transferring tokens:
 1. An Investor sends their Anti Money Laundering and Know Your Customer (AML/KYC) information to the Transfer Admin or to a proxy vetting service to verify this information. The benefit of using a qualified third party provider is to avoid needing to store privately identifiable information.
-1. The Transfer Admin calls `setAccountPermissions(investorAddress, transferGroup, addressTimeLock, maxTokens)` to provision their account. Initially this will be done for the Primary Issuance of tokens to investors where tokens are distributed directly from the issuer to holder accounts.
-1. A potential buyer sends their AML/KYC information to the Transfer Admin.
-1. The Transfer Admin calls `setAccountPermissions(buyerAddress, transferGroup, addressTimeLock, maxTokens)` to provision the Buyer account.
-1. At this time or before, the Transfer Admin authorizes the transfer of tokens between account groups with `setAllowGroupTransfer(fromGroup, toGroup, afterTimestamp)` . Note that allowing a transfer from group A to group B does not allow a transfer from group B to group B. This would have to be done separately. An example is that Reg CF unaccredited investors may be allowed to sell to Accredited US investors but not vice versa.
+2. The Transfer Admin calls `setAccountPermissions(investorAddress, transferGroup, addressTimeLock, maxTokens)` to provision their account. Initially this will be done for the Primary Issuance of tokens to investors where tokens are distributed directly from the issuer to holder accounts.
+3. A potential buyer sends their AML/KYC information to the Transfer Admin.
+4. The Transfer Admin calls `setAccountPermissions(buyerAddress, transferGroup, addressTimeLock, maxTokens)` to provision the Buyer account.
+5. At this time or before, the Transfer Admin authorizes the transfer of tokens between account groups with `setAllowGroupTransfer(fromGroup, toGroup, afterTimestamp)` . Note that allowing a transfer from group A to group B does not allow a transfer from group B to group B. This would have to be done separately. An example is that Reg CF unaccredited investors may be allowed to sell to Accredited US investors but not vice versa.
 
 ## Overview of Transfer Restriction Enforcement Methods
 
