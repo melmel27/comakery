@@ -34,17 +34,6 @@ contract ERC1404 {
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
 
-  /// @notice Checks if a transfer is restricted, reverts if it is
-  /// @param from Sending address
-  /// @param to Receiving address
-  /// @param value Amount of tokens being transferred
-  /// @dev Defining this modifier is not required by the standard, using detectTransferRestriction and appropriately emitting TransferRestricted is however
-  modifier checkRestrictions(address from, address to, uint256 value) {
-    uint8 restrictionCode = detectTransferRestriction(from, to, value);
-    require(restrictionCode == SUCCESS_CODE, messageForTransferRestriction(restrictionCode));
-    _;
-  }
-
   constructor(
     address _contractOwner,
     address _tokenReserveAdmin,
@@ -64,7 +53,18 @@ contract ERC1404 {
     _balances[_tokenReserveAdmin] = _totalSupply;
     totalSupply = _balances[_tokenReserveAdmin];
   }
+
   /******* ERC1404 FUNCTIONS ***********/
+
+  /// @notice Checks if a transfer is restricted, reverts if it is
+  /// @param from Sending address
+  /// @param to Receiving address
+  /// @param value Amount of tokens being transferred
+  /// @dev Defining this modifier is not required by the standard, using detectTransferRestriction and appropriately emitting TransferRestricted is however
+  function enforceTransferRestrictions(address from, address to, uint256 value) public {
+    uint8 restrictionCode = detectTransferRestriction(from, to, value);
+    require(restrictionCode == SUCCESS_CODE, messageForTransferRestriction(restrictionCode));
+  }
 
   /// @notice Detects if a transfer will be reverted and if so returns an appropriate reference code
   /// @param from Sending address
@@ -112,6 +112,7 @@ contract ERC1404 {
     return maxBalances[_account];
   }
 
+  // TODO: should timestamp 0 be locked? ie should tokens be locked by default? probably yes.
   function setTimeLock(address _account, uint256 _timestamp) public {
     timeLock[_account] = _timestamp;
   }
@@ -199,6 +200,7 @@ contract ERC1404 {
   }
 
   function transfer(address to, uint256 value) public returns(bool success) {
+    enforceTransferRestrictions(msg.sender, to, value);
     _transfer(msg.sender, to, value);
     return true;
   }
@@ -226,13 +228,15 @@ contract ERC1404 {
     return (_allowance, _nonce);
   }
 
-  /********** INTERNAL FUNCTIONS **********/
-  function transferFrom(address from, address to, uint256 value) public checkRestrictions(from, to, value) returns(bool success) {
+  function transferFrom(address from, address to, uint256 value) public returns(bool success) {
+    enforceTransferRestrictions(from, to, value);
     require(value <= _allowed[from][to], "The approved allowance is lower than the transfer amount");
     _allowed[from][msg.sender] = sub(_allowed[from][msg.sender], value);
     _transfer(from, to, value);
     return true;
   }
+
+  /********** INTERNAL FUNCTIONS **********/
 
   function _approve(address spender, uint256 value) internal returns(bool success) {
     // use a nonce to enforce expected approval amounts for the approve and safeApprove functions
@@ -242,7 +246,8 @@ contract ERC1404 {
     return true;
   }
 
-  function _transfer(address from, address to, uint256 value) internal checkRestrictions(from, to, value) {
+  // if you call this function call forceRestriction before it
+  function _transfer(address from, address to, uint256 value) internal {
     require(value <= _balances[from], "Insufficent tokens");
     _balances[from] = sub(_balances[from], value);
     _balances[to] = add(_balances[to], value);
