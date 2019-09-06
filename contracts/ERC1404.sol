@@ -7,8 +7,7 @@ contract ERC1404 {
   uint256 public totalSupply;
   address public contractOwner;
 
-
-  uint8 public constant SUCCESS_CODE = 0;
+  uint8 public constant SUCCESS = 0;
   uint8 public constant GREATER_THAN_RECIPIENT_MAX_BALANCE = 1;
   uint8 public constant SENDER_TOKENS_TIME_LOCKED = 2;
   uint8 public constant DO_NOT_SEND_TO_TOKEN_CONTRACT = 3;
@@ -18,7 +17,7 @@ contract ERC1404 {
   uint8 public constant TRANSFER_GROUP_NOT_APPROVED = 7;
   uint8 public constant TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER = 8;
 
-  uint256 public constant MAX_UINT = ((2**255 - 1) * 2) + 1; // get max uint256 without overflow
+  uint256 public constant MAX_UINT = ((2 ** 255 - 1) * 2) + 1; // get max uint256 without overflow
 
   mapping(address => uint256) private _balances;
   mapping(address => mapping(address => uint256)) private _allowed;
@@ -47,7 +46,7 @@ contract ERC1404 {
     symbol = _symbol;
     name = _name;
     decimals = _decimals;
-    
+
     contractOwner = _contractOwner;
 
     _balances[_tokenReserveAdmin] = _totalSupply;
@@ -61,9 +60,9 @@ contract ERC1404 {
   /// @param to Receiving address
   /// @param value Amount of tokens being transferred
   /// @dev Defining this modifier is not required by the standard, using detectTransferRestriction and appropriately emitting TransferRestricted is however
-  function enforceTransferRestrictions(address from, address to, uint256 value) public {
+  function enforceTransferRestrictions(address from, address to, uint256 value) public view {
     uint8 restrictionCode = detectTransferRestriction(from, to, value);
-    require(restrictionCode == SUCCESS_CODE, messageForTransferRestriction(restrictionCode));
+    require(restrictionCode == SUCCESS, messageForTransferRestriction(restrictionCode));
   }
 
   /// @notice Detects if a transfer will be reverted and if so returns an appropriate reference code
@@ -72,20 +71,20 @@ contract ERC1404 {
   /// @param value Amount of tokens being transferred
   /// @return Code by which to reference message for rejection reasoning
   function detectTransferRestriction(address from, address to, uint256 value) public view returns(uint8) {
-    if(isPaused) return ALL_TRANSFERS_PAUSED;
+    if (isPaused) return ALL_TRANSFERS_PAUSED;
     if (to == address(0)) return DO_NOT_SEND_TO_EMPTY_ADDRESS;
     if (to == address(this)) return DO_NOT_SEND_TO_TOKEN_CONTRACT;
-    if (from == contractOwner) return SUCCESS_CODE;
+    if (from == contractOwner) return SUCCESS;
 
     if (value > getMaxBalance(to)) return GREATER_THAN_RECIPIENT_MAX_BALANCE;
     if (now < getTimeLock(from)) return SENDER_TOKENS_TIME_LOCKED;
     if (frozen(from)) return SENDER_ADDRESS_FROZEN;
-    
-    uint256 _allowedTransferTime = getAllowTransferTime(from,to);
+
+    uint256 _allowedTransferTime = getAllowTransferTime(from, to);
     if (0 == _allowedTransferTime) return TRANSFER_GROUP_NOT_APPROVED;
     if (now < _allowedTransferTime) return TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER;
 
-    return SUCCESS_CODE;
+    return SUCCESS;
   }
 
   /// @notice Returns a human-readable message for a given restriction code
@@ -137,25 +136,25 @@ contract ERC1404 {
     transferGroups[addr] = groupID;
   }
 
-  function getTransferGroup(address addr) public view returns (uint256 groupID) {
+  function getTransferGroup(address addr) public view returns(uint256 groupID) {
     return transferGroups[addr];
   }
 
   function setAccountPermissions(address addr, uint256 groupID, uint256 timeLockUntil, uint256 maxTokens) public {
-      setGroup(addr, groupID);  
-      setTimeLock(addr, timeLockUntil);
-      setMaxBalance(addr, maxTokens);
+    setGroup(addr, groupID);
+    setTimeLock(addr, timeLockUntil);
+    setMaxBalance(addr, maxTokens);
   }
 
-  function setAllowGroupTransfer(uint256 groupA, uint256 groupB, uint256 transferAfter ) public {
-      // TODO: if 0 no transfer; update README
-      // TODO: if 1 any transfer works; update README
-      _allowGroupTransfers[groupA][groupB] = transferAfter;
+  function setAllowGroupTransfer(uint256 groupA, uint256 groupB, uint256 transferAfter) public {
+    // TODO: if 0 no transfer; update README
+    // TODO: if 1 any transfer works; update README
+    _allowGroupTransfers[groupA][groupB] = transferAfter;
   }
 
   function getAllowGroupTransfer(uint256 from, uint256 to, uint256 timestamp) public view returns(bool) {
-    if(_allowGroupTransfers[from][to] == 0) return false ;
-    return _allowGroupTransfers[from][to] < timestamp;    
+    if (_allowGroupTransfers[from][to] == 0) return false;
+    return _allowGroupTransfers[from][to] < timestamp;
   }
 
   function getAllowTransfer(address from, address to, uint256 atTimestamp) public view returns(bool) {
@@ -165,7 +164,7 @@ contract ERC1404 {
   // note the transfer time default is 0 for transfers between all addresses
   // a transfer time of 0 is treated as not allowed
   function getAllowTransferTime(address from, address to) public view returns(uint timestamp) {
-      return _allowGroupTransfers[transferGroups[from]][transferGroups[to]];
+    return _allowGroupTransfers[transferGroups[from]][transferGroups[to]];
   }
 
   /******* Mint, Burn, Freeze ***********/
@@ -186,7 +185,7 @@ contract ERC1404 {
     frozenAddresses[addr] = status;
   }
 
-  function frozen(address addr) public view returns (bool) {
+  function frozen(address addr) public view returns(bool) {
     return frozenAddresses[addr];
   }
   /******* ERC20 FUNCTIONS ***********/
