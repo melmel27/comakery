@@ -20,30 +20,30 @@ This open source software is provided with no warranty. This is not legal advice
 
 ![](docs/plant-uml-diagrams/setup.png)
 
-1. The Deployer configures the parameters and deploys the smart contracts to a public blockchain. The deployment allows configuration of a separate reserve address and Transfer Administrator address. This allows the reserve security tokens to be stored in cold storage since the treasury reserve address private keys are not needed for everyday use by the Transfer Admin.
-2. The Transfer Admin can then provisions a hot wallet address for distributing tokens to investors or other stakeholders. The Transfer Admin uses `setAccountPermissions(investorAddress, transferGroup, addressTimeLock, maxTokens)` to set address restrictions.
+1. The Deployer configures the parameters and deploys the smart contracts to a public blockchain. At the time of deployment, the deployer configures a separate token reserve address and Transfer Administrator address. This allows the reserve security tokens to be stored in cold storage since the treasury reserve address private keys are not needed for everyday use by the Transfer Admin.
+2. The Transfer Admin then provisions a hot wallet address for distributing tokens to investors or other stakeholders. The Transfer Admin uses `setAccountPermissions(investorAddress, transferGroup, addressTimeLock, maxTokens)` to set address restrictions.
 3. The Transfer Admin authorizes the transfer of tokens between account groups with `setAllowGroupTransfer(fromGroup, toGroup, afterTimestamp)` .
-4. The Reserve Admin can then transfer tokens to the Hot Wallet address.
-5. The Hot Wallet Admin can then transfer tokens to investors or other stakeholders who are entitled to tokens.
+4. The Reserve Admin then transfers tokens to the Hot Wallet address.
+5. The Hot Wallet Admin then transfers tokens to investors or other stakeholders who are entitled to tokens.
 
 
 ## Setup For Separate Issuer Private Key Management Roles
 
-By default the reserve tokens cannot be transferred to any address. To allow transfers the Transfer Admin must configure transfer rules using both `setAccountPermissions(account, ...)` and `setAllowGroupTransfer(...)`.
+By default the reserve tokens cannot be transferred to. To allow transfers the Transfer Admin must configure transfer rules using both `setAccountPermissions(account, ...)` to configure the individual account rules and `setAllowGroupTransfer(...)` to configure transfers between accounts in a group. A group represents a category like US accredited investors (Reg D) or foreign investors (Reg S).
 
-During the setup process for added security, the Transfer Admin can setup rules that only allow the Reserve Admin to transfer tokens to the hot wallet address first. The Hot Wallet is also restricted to a limited max balance. This enforces transfer approvals for multiple private key holders for token transfers of large size - and a limited loss from any single account with a single transfer. The use of a hot wallet for small balances also makes everyday token administration easier without exposing the issuer's reserve of tokens to the risk of total theft in a single transaction.
+During the setup process to split transfer oversight across three private key holders, the Transfer Admin can setup rules that only allow the Reserve Admin to **only** transfer tokens to the Hot Wallet admin address. The Hot Wallet should be restricted to a limited maximum balance necessary for doing one batch of token distributions - rather than the whole reserve. The use of a hot wallet for small balances also makes everyday token administration easier without exposing the issuer's reserve of tokens to the risk of total theft in a single transaction. Each of these private keys may also be managed with a multi-sig solution for added security. Multi-sig is especially important for the token reserve admin.
 
-The Reserve Account restriction configuration can be accomplished in this manner:
+Here is how these restricted admin accounts can be configured:
 1. Transfer Admin, Reserve Admin and Hot Wallet admin accounts are managed by separate users with separate keys. For example, separate Nano Ledger S hardware wallets.
-1. Reserve and Hot Wallet addresses have their own separate transfer groups
+2. Reserve and Hot Wallet addresses have their own separate transfer groups
     * `unrestrictedAddressTimeLock = 0` this timestamp will always have passed
     * `unrestrictedMaxTokenAmount = 2**256 -1` is the largest number storable this number is available as the `MAX_UNIT()` constant.
     * `setAccountPermissions(reserveAddress, reserveTransferGroup, unrestrictedAddressTimelock, unrestrictedMaxTokenAmount)`
     * `setAccountPermissions(reserveAddress, hotWalletTransferGroup, unrestrictedAddressTimeLock, sensibleMaxAmountInHotWallet)`
-1. Reserve Address can only transfer to Hot Wallet Groups
+3. Reserve Address can only transfer to Hot Wallet Groups
     * `setAllowGroupTransfer(reserveTransferGroup, hotWalletTransferGroup, unrestrictedAddressTimeLock)`
     * `setAccountPermissions(reserveAddress, hotWalletTransferGroup, unrestrictedAddressTimeLock, sensibleMaxAmountInHotWallet)`
-1. Hot Wallet Address can transfer to investor groups like Reg D and Reg S.
+4. Hot Wallet Address can transfer to investor groups like Reg D and Reg S.
     * `setAllowGroupTransfer(hotWalletTransferGroup, regD_TransferGroup, unrestrictedAddressTimeLock)`
     * `setAllowGroupTransfer(hotWalletTransferGroup, regS_TransferGroup, unrestrictedAddressTimeLock)`
 
@@ -68,7 +68,7 @@ The Transfer Admin for the Token Contract can provision account addresses to tra
 2. The Transfer Admin calls `setAccountPermissions(investorAddress, transferGroup, addressTimeLock, maxTokens)` to provision their account. Initially this will be done for the Primary Issuance of tokens to investors where tokens are distributed directly from the issuer to holder accounts.
 3. A potential buyer sends their AML/KYC information to the Transfer Admin.
 4. The Transfer Admin calls `setAccountPermissions(buyerAddress, transferGroup, addressTimeLock, maxTokens)` to provision the Buyer account.
-5. At this time or before, the Transfer Admin authorizes the transfer of tokens between account groups with `setAllowGroupTransfer(fromGroup, toGroup, afterTimestamp)` . Note that allowing a transfer from group A to group B does not allow a transfer from group B to group B. This would have to be done separately. An example is that Reg CF unaccredited investors may be allowed to sell to Accredited US investors but not vice versa.
+5. At this time or before, the Transfer Admin authorizes the transfer of tokens between account groups with `setAllowGroupTransfer(fromGroup, toGroup, afterTimestamp)` . Note that allowing a transfer from group A to group B by default does not allow the reverse transfer from group B to group A. This would have to be done separately. An example is that Reg CF unaccredited investors may be allowed to sell to Accredited US investors but not vice versa.
 
 ## Overview of Transfer Restriction Enforcement Methods
 
@@ -99,25 +99,25 @@ When transfering tokens to unaccredited investors or in the case that you wish t
 To allow trading in a group:
 * Call `setAccountPermissions(address, transferGroup, addressTimeLock, maxTokens)` for traders in the group 
 * `setAllowGroupTransfer(fromGroupX, toGroupX, groupTimeLock)` for account addresses associated with groupIDs like Reg S 
-* The token holders in the group can trade with each other as long as: 
+* A token transfer for an allowed group will succeed if:
     * the `addressTimelock` and `groupTimeLock` times have passed; and 
     * the recipient of a token transfer does not exceeded the `maxTokens` in their account address.
 
 ## Avoiding Flow Back of Reg S Assets
 
 To allow trading between Foreign Reg S account addresses but forbid flow back to US Reg D account addresses until the end of the Reg D lockup period
-* Call `setAccountPermissions(address, groupIDForRegS, shorterTimeLock, maxTokens)` for Reg S investors
-* Call `setAccountPermissions(address, groupIDForRegD, longerTimeLock, maxTokens)` for Reg D investors
+* Call `setAccountPermissions(address, groupIDForRegS, shorterTimeLock, maxTokens)` to configure settings for Reg S investors
+* Call `setAccountPermissions(address, groupIDForRegD, longerTimeLock, maxTokens)` to configure settings for Reg D investors
 * `setAllowGroupTransfer(groupIDForRegS, groupIDForRegS, groupTimeLock)` allow Reg S trading 
-* The token holders in the group can trade with each other as long as: 
+* A token transfer for an allowed group will succeed if: 
     * the `addressTimelock` and `groupTimeLock` times have passed; and 
-    * the recipient of a token transfer does not exceeded the `maxTokens` in their account address.h
+    * the recipient of a token transfer does not exceeded the `maxTokens` in their account address.
 
 ## Enforcing Maximum Holders Rules
 
 By default blockchain addresses cannot receive tokens. To receive tokens the issuer gathers AML/KYC information and then calls `setAccountPermissions()`. A single user may have multiple addresses. The issuer can track the number of holders offline and stop authorizing holders when the maximum holders amount has been reached.
 
-If you need tracking for max number of holders implemented contact noah@comakery.com
+If you need online enforcement for the maximum number of holders implemented contact noah@comakery.com
 
 ## Exchanges Can Register Omnibus Accounts
 
@@ -129,15 +129,15 @@ Talk to a lawyer about when exchange accounts may or may not exceed the maximum 
 
 ## Transfers Can Be Paused To Comply With Regulatory Action
 
-If there is a regulatory issue with the token, all transfers may be paused by calling `pause()`. During normal functioning of the contract, `pause()` should never need to be called.
+If there is a regulatory issue with the token, all transfers may be paused by calling `pause()`. During normal functioning of the contract `pause()` should never need to be called.
 
 ## Recovery From A Blockchain Fork
 
 Issuers should have a plan for what to do during a blockchain fork. Often security tokens represent a scarce off chain asset and a fork in the blockchain may present ambiguity about who can claim an off chain asset. For example, if 1 token represents 1 ounce of gold, a fork introduces 2 competing claims for 1 ounce of gold. 
 
 In the advent of a blockchain fork, the issuer should do something like the following:
-- have a clear way of signaling which branch of the blockchain is valid
-- signal which branch is the system of record
+- have a clear and previously defined way of signaling which branch of the blockchain is valid
+- signal which branch is the system of record at the time of the fork
 - call `pause()` on the invalid fork
 - use `burn()` and `mint()` to fix errors that have been agreed to by both parties involved or ruled by a court in the issuers jurisdiction
 
@@ -155,32 +155,5 @@ Once again, although this is not in the spirit of a cryptocurrency, it is availa
 
 # Compatible With Dividend Distribution and Staking Contracts
 
-Although this code does not implement dividend distribution or staking, it can be used with staking and dividend contracts. Contact noah@comakery.com for further details.
-
-# Dev Setup
-
-Install: 
-
-* Node.js
-* Yarn package management for Node.js
-* MetaMask chrome browser extension. This is your Ethereum Wallet. You will need this for deployment and the demo.
-* Ganache (a test blockchain). Launch it. Set your ganache RPC port to `HTTP://0.0.0.0:8545`
-
-## MetaMask Setup
-
-* Set your MetaMask wallet to point to your Ganache blockchain at http://localhost:8545
-* Create a new account from "import". Paste in the private key from the generated test accounts in your Ganache blockchain test simulator.
-* When you reload the Ganache test blockchain you will need to delete the transaction information from previous interactions with the old blockchain test data. To do this go to Account > Settings > Advance > Reset Account.
-
-## Setup this code
-```
-git clone git@github.com:CoMakery/comakery-security-token.git
-cd comakery-security-token
-
-yarn install
-yarn setup
-yarn dev
-
-open http://localhost:8080
-```
+Although this code does not implement dividend distribution or staking, it can be used with staking and dividend contracts with payments in stable coins like USDC, DAI as well as ETH or ERC20 tokens. Contact noah@comakery.com for further details.
 
