@@ -2,11 +2,11 @@ pragma solidity ^ 0.5 .8;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
-import "../contracts/ERC1404.sol";
+import "../contracts/RestrictedToken.sol";
 import "./support/UserProxy.sol";
 
 contract TimeLockTest {
-    ERC1404 token;
+    RestrictedToken token;
     address tokenContractOwner;
     UserProxy public alice;
     UserProxy public bob;
@@ -16,7 +16,7 @@ contract TimeLockTest {
     function beforeEach() public {
         tokenContractOwner = address(this);
         reserveAdmin = address(0x1);
-        token = new ERC1404(tokenContractOwner, reserveAdmin, "xyz", "Ex Why Zee", 6, 1234567);
+        token = new RestrictedToken(tokenContractOwner, reserveAdmin, "xyz", "Ex Why Zee", 6, 1234567);
 
 
         alice = new UserProxy(token);

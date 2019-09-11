@@ -2,11 +2,11 @@ pragma solidity ^ 0.5 .8;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
-import "../contracts/ERC1404.sol";
+import "../contracts/RestrictedToken.sol";
 import "./support/UserProxy.sol";
 
 contract TransferRestrictionsTest {
-    ERC1404 token;
+    RestrictedToken token;
     address tokenContractOwner;
     address alice;
     address bob;
@@ -19,7 +19,7 @@ contract TransferRestrictionsTest {
 
     function beforeEach() public {
         tokenContractOwner = address(this);
-        token = new ERC1404(tokenContractOwner, tokenContractOwner, "xyz", "Ex Why Zee", 6, 1234567);
+        token = new RestrictedToken(tokenContractOwner, tokenContractOwner, "xyz", "Ex Why Zee", 6, 1234567);
 
         alice = address(0x1);
         bob = address(0x2);

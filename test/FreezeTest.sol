@@ -3,16 +3,16 @@ pragma solidity ^0.5.8;
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "./support/UserProxy.sol";
-import "../contracts/ERC1404.sol";
+import "../contracts/RestrictedToken.sol";
 
 contract FreezeTest {
-    ERC1404 public token;
+    RestrictedToken public token;
     address tokenContractOwner;
     UserProxy public alice;
 
     function beforeEach() public {
         tokenContractOwner = address(this);
-        token = new ERC1404(tokenContractOwner, tokenContractOwner, "xyz", "Ex Why Zee", 6, 100);
+        token = new RestrictedToken(tokenContractOwner, tokenContractOwner, "xyz", "Ex Why Zee", 6, 100);
         alice = new UserProxy(token);
         token.setMaxBalance(address(alice), 1000);
         token.setAllowGroupTransfer(0, 0, now); // don't restrict default group transfers

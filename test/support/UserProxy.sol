@@ -1,10 +1,10 @@
 pragma solidity ^0.5.8;
 
-import "../../contracts/ERC1404.sol";
+import "../../contracts/RestrictedToken.sol";
 contract UserProxy {
-    ERC1404 public token;
+    RestrictedToken public token;
     
-    constructor(ERC1404 _token) public {
+    constructor(RestrictedToken _token) public {
         token = _token;
     }
 

@@ -1,5 +1,5 @@
-const ERC1404 = artifacts.require("ERC1404");
+const RestrictedToken = artifacts.require("RestrictedToken");
 
 module.exports = function(deployer) {
-  // deployer.deploy(ERC1404);
+  // deployer.deploy(RestrictedToken);
 };

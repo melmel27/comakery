@@ -1,4 +1,4 @@
-var ERC1404 = artifacts.require("ERC1404");
+var RestrictedToken = artifacts.require("RestrictedToken");
 
 contract("Access control tests", function(accounts) {
   var owner;
@@ -7,7 +7,7 @@ contract("Access control tests", function(accounts) {
   beforeEach(async function() {
     owner = accounts[0]
     reserveAdmin = accounts[1]
-    token = await ERC1404.new(owner, reserveAdmin, "xyz", "Ex Why Zee", 6, 100);
+    token = await RestrictedToken.new(owner, reserveAdmin, "xyz", "Ex Why Zee", 6, 100);
   })
 
   it("sets up contract correctly based on constructor arguments", async () => {

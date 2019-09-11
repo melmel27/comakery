@@ -2,11 +2,11 @@ pragma solidity ^0.5.8;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
-import "../contracts/ERC1404.sol";
+import "../contracts/RestrictedToken.sol";
 import "./support/UserProxy.sol";
 
-contract ERC1404BasicsTest {
-    ERC1404 token;
+contract RestrictedTokenBasicsTest {
+    RestrictedToken token;
     address tokenContractOwner;
     address reserveAdmin;
 
@@ -14,7 +14,7 @@ contract ERC1404BasicsTest {
         tokenContractOwner = address(this);
 
         reserveAdmin = address(0x1);
-        token = new ERC1404(tokenContractOwner, reserveAdmin, "xyz", "Ex Why Zee", 6, 1234567);
+        token = new RestrictedToken(tokenContractOwner, reserveAdmin, "xyz", "Ex Why Zee", 6, 1234567);
         
         token.setMaxBalance(tokenContractOwner, 1e18); 
         token.setAllowGroupTransfer(0, 0, now); // don't restrict default group transfers

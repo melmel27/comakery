@@ -2,14 +2,15 @@ pragma solidity ^0.5.8;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
-import "../contracts/ERC1404.sol";
+import "../contracts/RestrictedToken.sol";
 import '../contracts/ITransferRules.sol';
 
 import "./support/UserProxy.sol";
 
 
 contract TransferRulesUpgrade is ITransferRules {
- function detectTransferRestriction(ERC1404 token, address from, address to, uint256 value) public view returns(uint8) {
+ function detectTransferRestriction(address _token, address from, address to, uint256 value) public view returns(uint8) {
+    RestrictedToken token = RestrictedToken(_token);
     if(from == to && value > 0) return token.decimals(); // prove we are using all the arguments
     return 17; // grab an arbitrary value from the injected token contract
   }
@@ -20,13 +21,13 @@ contract TransferRulesUpgrade is ITransferRules {
 }
 
 contract TransferRulesUpgradeTest {
-    ERC1404 token;
+    RestrictedToken token;
     address owner;
 
     function beforeEach() public {
         owner = address(this);
         uint8 decimalsWeWillPassToTransferRules = 6;
-        token = new ERC1404(owner, owner, "xyz", "Ex Why Zee", decimalsWeWillPassToTransferRules, 22);
+        token = new RestrictedToken(owner, owner, "xyz", "Ex Why Zee", decimalsWeWillPassToTransferRules, 22);
         token.setMaxBalance(owner, 100);
         token.setAllowGroupTransfer(0, 0, 1); // don't restrict default group transfers
     }

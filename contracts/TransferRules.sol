@@ -1,5 +1,5 @@
 pragma solidity ^ 0.5 .8;
-import './ERC1404.sol';
+import './RestrictedToken.sol';
 import './ITransferRules.sol';
 
 contract TransferRules is ITransferRules {
@@ -13,14 +13,15 @@ contract TransferRules is ITransferRules {
     uint8 public constant TRANSFER_GROUP_NOT_APPROVED = 7;
     uint8 public constant TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER = 8;
 
-    /******* ERC1404 FUNCTIONS ***********/
+    /******* RestrictedToken FUNCTIONS ***********/
 
   /// @notice Detects if a transfer will be reverted and if so returns an appropriate reference code
   /// @param from Sending address
   /// @param to Receiving address
   /// @param value Amount of tokens being transferred
   /// @return Code by which to reference message for rejection reasoning
-  function detectTransferRestriction(ERC1404 token, address from, address to, uint256 value) public view returns(uint8) {
+  function detectTransferRestriction(address _token, address from, address to, uint256 value) public view returns(uint8) {
+    RestrictedToken token = RestrictedToken(_token);
     if (token.isPaused()) return ALL_TRANSFERS_PAUSED;
     if (to == address(0)) return DO_NOT_SEND_TO_EMPTY_ADDRESS;
     if (to == address(token)) return DO_NOT_SEND_TO_TOKEN_CONTRACT;

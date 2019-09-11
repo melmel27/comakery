@@ -3,19 +3,19 @@ pragma solidity ^0.5.8;
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "./support/UserProxy.sol";
-import "../contracts/ERC1404.sol";
+import "../contracts/RestrictedToken.sol";
 
 contract GettersAndSettersTest {
     using Assert for uint256;
     using Assert for bool;
 
-    ERC1404 public token;
+    RestrictedToken public token;
     address public owner;
     
 
     function beforeEach() public {
         owner = address(this);
-        token = new ERC1404(owner, owner, "xyz", "Ex Why Zee", 0, 100);        
+        token = new RestrictedToken(owner, owner, "xyz", "Ex Why Zee", 0, 100);        
     }
 
     function testGettersAndSetters() public {

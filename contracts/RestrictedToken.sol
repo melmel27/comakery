@@ -4,7 +4,7 @@ import "./ITransferRules.sol";
 import "./TransferRules.sol";
 // import "@openzeppelin/contracts/access/Roles.sol";
 
-contract ERC1404 {
+contract RestrictedToken {
   string public symbol;
   string public name;
   uint8 public decimals;
@@ -59,7 +59,7 @@ contract ERC1404 {
 
   // TODO: consider potential reentrancy issues
   function detectTransferRestriction(address from, address to, uint256 value) public view returns(uint8) {
-    return transferRules.detectTransferRestriction(this, from, to, value);
+    return transferRules.detectTransferRestriction(address(this), from, to, value);
   }
 
   function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory) {
