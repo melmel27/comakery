@@ -1,6 +1,6 @@
 var ERC1404 = artifacts.require("ERC1404");
 
-contract("ERC1404", function(accounts) {
+contract("Access control tests", function(accounts) {
   var owner;
   var reserveAdmin;
   var token;
