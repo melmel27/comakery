@@ -26,6 +26,62 @@ This open source software is provided with no warranty. This is not legal advice
 4. The Reserve Admin then transfers tokens to the Hot Wallet address.
 5. The Hot Wallet Admin then transfers tokens to investors or other stakeholders who are entitled to tokens.
 
+## Roles and The Functions They Can Perform
+
+The smart contract enforces specific admin roles that are intended to reduce abuse scenarios by segmenting decision making. Ideally each role should be managed by a separate admin with separate key control. In some cases, such as the Super Admin and Token Treasury Wallet Manager, it is recommended that the role's private key is managed through multi signature (e.g. 2 of 3 or 4 of 6).  That way approvals for one role requires confirmation from multiple administrators.
+
+## Admin Roles
+
+| Function | Super Admin | Transfer Admin |
+|-|-|-|
+| pause() | **yes** | no |
+| unpause() | **yes** | no |
+| grantSuperAdmin() | **yes** | no |
+| removeSuperAdmin() | **yes** | no |
+| grantTransferAdmin() | **yes** | no |
+| removeTransferAdmin() | **yes** | no |
+| mint() | **yes** | no |
+| burnFrom() | **yes** | no |
+| freeze() | **yes** | **yes** |
+| setMaxBalance() | no | **yes** |
+| setTimeLock() | no | **yes** |
+| removeTimeLock() | no | **yes** |
+| setGroup() | no | **yes** |
+| setAccountPermissions() | no | **yes** |
+| setAllowGroupTransfer() | no | **yes** |
+| setTransferRules() | no | **yes** |
+
+## Wallet Account Address Managers
+
+The wallet account address holding all of the initially issued tokens should not have any admin roles associated with them.
+
+The transfer admin role may have some tokens in it for hot wallet administration. It is probably safer for the transfer admin and hot wallets to be separate human administrators - especially if multi-signature wallets are not used for the Hot Wallet or Transfer Admin roles.
+
+## Individual Account Permissions
+
+Individual token holders have accounts that are provisioned by the transfer admin as described below...
+
+# Transfer Restrictions
+
+![](docs/plant-uml-diagrams/transfer-restrictions.png)
+
+The Transfer Admin for the Token Contract can provision account addresses to transfer and receive tokens under certain conditions. This is the process for configuring transfer restrictions and transferring tokens:
+1. An Investor sends their Anti Money Laundering and Know Your Customer (AML/KYC) information to the Transfer Admin or to a proxy vetting service to verify this information. The benefit of using a qualified third party provider is to avoid needing to store privately identifiable information.
+2. The Transfer Admin calls `setAccountPermissions(investorAddress, transferGroup, addressTimeLock, maxTokens)` to provision their account. Initially this will be done for the Primary Issuance of tokens to investors where tokens are distributed directly from the issuer to holder accounts.
+3. A potential buyer sends their AML/KYC information to the Transfer Admin.
+4. The Transfer Admin calls `setAccountPermissions(buyerAddress, transferGroup, addressTimeLock, maxTokens)` to provision the Buyer account.
+5. At this time or before, the Transfer Admin authorizes the transfer of tokens between account groups with `setAllowGroupTransfer(fromGroup, toGroup, afterTimestamp)` . Note that allowing a transfer from group A to group B by default does not allow the reverse transfer from group B to group A. This would have to be done separately. An example is that Reg CF unaccredited investors may be allowed to sell to Accredited US investors but not vice versa.
+
+## Overview of Transfer Restriction Enforcement Methods
+
+| From | To | Restrict | Enforced By | Admin Role |
+|:-|:-|:-|:-|:-|
+| Reg D/S/CF | Anyone | Until TimeLock ends | `setTimeLock(investorAddress)` | Transfer Admin |
+| Reg S Group | US Accredited | Forbidden During Flowback Restriction Period | `setAllowGroupTransfer(fromGroupS, toGroupD, afterTime)` | Transfer Admin |
+| Reg S Group | Reg S Group | Forbidden Until Shorter Reg S TimeLock Ended | `setAllowGroupTransfer(fromGroupS, toGroupS, afterTime)` | Transfer Admin |
+| Issuer | Reg CF with > maximum value of tokens allowed | Forbid transfers increasing token balances above max balance | `setMaxBalance(amount)` | Transfer Admin |
+| Stolen Tokens | Anyone | Fix With Freeze, Burn, Reissue| `freeze(stolenTokenAddress);`<br /> `burnFrom(address, amount);`<br />`mint(newOwnerAddress);` | Transfer Admin can `freeze()` and Super Admin can do `mint()` `burnFrom()` and `freeze()` |
+| Any Address During Regulatory Freeze| Anyone | Forbid all transfers while paused | `pause()` | Super Admin |
 
 ## Setup For Separate Issuer Private Key Management Roles
 
@@ -58,28 +114,6 @@ Then the Hot Wallet Admin can distribute tokens to investors and stakeholders as
 1. The tokens can then be transferred from the issuers hot wallet to the provisioned addresses.
 
 Note that there are no transfers yet authorized between accounts. By default no transfers are allowed - all transfer groups are restricted.
-
-# Transfer Restrictions
-
-![](docs/plant-uml-diagrams/transfer-restrictions.png)
-
-The Transfer Admin for the Token Contract can provision account addresses to transfer and receive tokens under certain conditions. This is the process for configuring transfer restrictions and transferring tokens:
-1. An Investor sends their Anti Money Laundering and Know Your Customer (AML/KYC) information to the Transfer Admin or to a proxy vetting service to verify this information. The benefit of using a qualified third party provider is to avoid needing to store privately identifiable information.
-2. The Transfer Admin calls `setAccountPermissions(investorAddress, transferGroup, addressTimeLock, maxTokens)` to provision their account. Initially this will be done for the Primary Issuance of tokens to investors where tokens are distributed directly from the issuer to holder accounts.
-3. A potential buyer sends their AML/KYC information to the Transfer Admin.
-4. The Transfer Admin calls `setAccountPermissions(buyerAddress, transferGroup, addressTimeLock, maxTokens)` to provision the Buyer account.
-5. At this time or before, the Transfer Admin authorizes the transfer of tokens between account groups with `setAllowGroupTransfer(fromGroup, toGroup, afterTimestamp)` . Note that allowing a transfer from group A to group B by default does not allow the reverse transfer from group B to group A. This would have to be done separately. An example is that Reg CF unaccredited investors may be allowed to sell to Accredited US investors but not vice versa.
-
-## Overview of Transfer Restriction Enforcement Methods
-
-| From | To | Restrict | Enforced By |
-|:-|:-|:-|:-|
-| Reg D/S/CF | Anyone | Until TimeLock ends | `setTimeLock(investorAddress)` |
-| Reg S Group | US Accredited | Forbidden During Flowback Restriction Period | `setAllowGroupTransfer(fromGroupS, toGroupD, afterTime)` |
-| Reg S Group | Reg S Group | Forbidden Until Shorter Reg S TimeLock Ended | `setAllowGroupTransfer(fromGroupS, toGroupS, afterTime)` |
-| Stolen Tokens | Anyone | Fix With Freeze, Burn, Reissue| `freeze(stolenTokenAddress);`<br /> `burnFrom(address, amount);`<br />`mint(newOwnerAddress);` |
-| Issuer | Reg CF with > maximum value of tokens allowed | Forbid transfers increasing token balances above max balance | `setMaxBalance(amount)` |
-| Any Address During Regulatory Freeze| Anyone | Forbid all transfers while paused | `pause()` |
 
 ## Lockup Periods
 
