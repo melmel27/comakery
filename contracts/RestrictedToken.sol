@@ -2,7 +2,7 @@ pragma solidity ^ 0.5 .8;
 
 import "./ITransferRules.sol";
 import "./TransferRules.sol";
-// import "@openzeppelin/contracts/access/Roles.sol";
+import "@openzeppelin/contracts/access/Roles.sol";
 
 contract RestrictedToken {
   string public symbol;
@@ -12,11 +12,12 @@ contract RestrictedToken {
   address public contractOwner;
   ITransferRules public transferRules;
 
+  using Roles for Roles.Role;
+  Roles.Role private _contractAdmins;
+
   mapping(address => uint256) private _balances;
   mapping(address => mapping(address => uint256)) private _allowed;
-  mapping(address => mapping(address => uint8)) private _approvalNonces;
-  
-  mapping(address => bool) private _transferAdmins;
+  mapping(address => mapping(address => uint8)) private _approvalNonces;  
 
   // transfer restriction storage
   uint256 public constant MAX_UINT = ((2 ** 255 - 1) * 2) + 1; // get max uint256 without overflow
@@ -49,6 +50,7 @@ contract RestrictedToken {
     decimals = _decimals;
 
     contractOwner = _contractOwner;
+    _contractAdmins.add(_contractOwner);
 
     _balances[_tokenReserveAdmin] = _totalSupply;
     totalSupply = _balances[_tokenReserveAdmin];
@@ -98,12 +100,12 @@ contract RestrictedToken {
   }
 
   function pause() public {
-    require(msg.sender == contractOwner, "only the contractOwner can call this function");
+    require(_contractAdmins.has(msg.sender), "DOES_NOT_HAVE_CONTRACT_OWNER_ROLE");
     isPaused = true;
   }
 
   function unpause() public {
-    require(msg.sender == contractOwner, "only the contractOwner can call this function");
+    require(_contractAdmins.has(msg.sender), "DOES_NOT_HAVE_CONTRACT_OWNER_ROLE");
     isPaused = false;
   }
 

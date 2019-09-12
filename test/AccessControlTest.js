@@ -70,10 +70,10 @@ contract("Access control tests", function (accounts) {
     
     await truffleAssert.reverts(token.pause({
       from: unprivileged
-    }), "only the contractOwner can call this function")
+    }), "DOES_NOT_HAVE_CONTRACT_OWNER_ROLE")
 
     await truffleAssert.reverts(token.unpause({
       from: unprivileged
-    }), "only the contractOwner can call this function")
+    }), "DOES_NOT_HAVE_CONTRACT_OWNER_ROLE")
   })
 })
