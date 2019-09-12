@@ -60,6 +60,11 @@ contract RestrictedToken {
     _;
   }
 
+   modifier onlyTransferAdmin() {
+    require(_transferAdmins.has(msg.sender), "DOES NOT HAVE TRANSFER ADMIN ROLE");
+    _;
+  }
+
   modifier onlyTransferAdminOrContractAdmin() {
     require((_contractAdmins.has(msg.sender) || _transferAdmins.has(msg.sender)), 
     "DOES NOT HAVE TRANSFER ADMIN OR CONTRACT ADMIN ROLE");
@@ -99,7 +104,7 @@ contract RestrictedToken {
 
   // Transfer rule getters and setters
 
-  function setMaxBalance(address _account, uint256 _updatedValue) public {
+  function setMaxBalance(address _account, uint256 _updatedValue) public onlyTransferAdmin {
     maxBalances[_account] = _updatedValue;
   }
 
@@ -108,11 +113,11 @@ contract RestrictedToken {
   }
 
   // TODO: should timestamp 0 be locked? ie should tokens be locked by default? probably yes.
-  function setTimeLock(address _account, uint256 _timestamp) public {
+  function setTimeLock(address _account, uint256 _timestamp) public onlyTransferAdmin {
     timeLock[_account] = _timestamp;
   }
 
-  function removeTimeLock(address _account) public {
+  function removeTimeLock(address _account) public onlyTransferAdmin {
     timeLock[_account] = 0;
   }
 
@@ -128,7 +133,7 @@ contract RestrictedToken {
     isPaused = false;
   }
 
-  function setGroup(address addr, uint256 groupID) public {
+  function setGroup(address addr, uint256 groupID) public onlyTransferAdmin {
     transferGroups[addr] = groupID;
   }
 
@@ -136,13 +141,13 @@ contract RestrictedToken {
     return transferGroups[addr];
   }
 
-  function setAccountPermissions(address addr, uint256 groupID, uint256 timeLockUntil, uint256 maxTokens) public {
+  function setAccountPermissions(address addr, uint256 groupID, uint256 timeLockUntil, uint256 maxTokens) public onlyTransferAdmin {
     setGroup(addr, groupID);
     setTimeLock(addr, timeLockUntil);
     setMaxBalance(addr, maxTokens);
   }
 
-  function setAllowGroupTransfer(uint256 groupA, uint256 groupB, uint256 transferAfter) public {
+  function setAllowGroupTransfer(uint256 groupA, uint256 groupB, uint256 transferAfter) public onlyTransferAdmin {
     // TODO: if 0 no transfer; update README
     // TODO: if 1 any transfer works; update README
     _allowGroupTransfers[groupA][groupB] = transferAfter;
@@ -157,7 +162,7 @@ contract RestrictedToken {
     getAllowGroupTransfer(getTransferGroup(from), getTransferGroup(to), atTimestamp);
   }
 
-  function setTransferRules(ITransferRules newTransferRules) onlyContractAdmin public {
+  function setTransferRules(ITransferRules newTransferRules) public onlyContractAdmin {
     transferRules = newTransferRules;
   }
 

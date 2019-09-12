@@ -226,4 +226,100 @@ contract("Access control tests", function (accounts) {
     await checkRevertsFor(reserveAdmin)
     await checkRevertsFor(unprivileged)
   })
+
+  it("only transferAdmin can setMaxBalance", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.setMaxBalance(unprivileged, 100, {
+        from: from
+      }), "DOES NOT HAVE TRANSFER ADMIN ROLE")
+    }
+
+    await checkRevertsFor(contractAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    await truffleAssert.passes(token.setMaxBalance(unprivileged, 100, {
+      from: transferAdmin
+    }))
+  })
+
+  it("only transferAdmin can setTimeLock", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.setTimeLock(unprivileged, 17, {
+        from: from
+      }), "DOES NOT HAVE TRANSFER ADMIN ROLE")
+    }
+
+    await checkRevertsFor(contractAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    await truffleAssert.passes(token.setTimeLock(unprivileged, 17, {
+      from: transferAdmin
+    }))
+  })
+
+  it("only transferAdmin can removeTimeLock", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.removeTimeLock(unprivileged, {
+        from: from
+      }), "DOES NOT HAVE TRANSFER ADMIN ROLE")
+    }
+
+    await checkRevertsFor(contractAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    await truffleAssert.passes(token.removeTimeLock(unprivileged, {
+      from: transferAdmin
+    }))
+  })
+
+  it("only transferAdmin can setGroup", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.setGroup(unprivileged, 1, {
+        from: from
+      }), "DOES NOT HAVE TRANSFER ADMIN ROLE")
+    }
+
+    await checkRevertsFor(contractAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    await truffleAssert.passes(token.setGroup(unprivileged, 1, {
+      from: transferAdmin
+    }))
+  })
+
+  it("only transferAdmin can setAccountPermissions", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.setAccountPermissions(unprivileged, 1, 17, 100, {
+        from: from
+      }), "DOES NOT HAVE TRANSFER ADMIN ROLE")
+    }
+
+    await checkRevertsFor(contractAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    await truffleAssert.passes(token.setAccountPermissions(unprivileged, 1, 17, 100, {
+      from: transferAdmin
+    }))
+  })
+
+  it("only transferAdmin can setAllowGroupTransfer", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.setAllowGroupTransfer(0,1,17, {
+        from: from
+      }), "DOES NOT HAVE TRANSFER ADMIN ROLE")
+    }
+
+    await checkRevertsFor(contractAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    await truffleAssert.passes(token.setAllowGroupTransfer(0,1,17, {
+      from: transferAdmin
+    }))
+  })
 })
