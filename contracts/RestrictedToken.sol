@@ -15,6 +15,8 @@ contract RestrictedToken {
   mapping(address => uint256) private _balances;
   mapping(address => mapping(address => uint256)) private _allowed;
   mapping(address => mapping(address => uint8)) private _approvalNonces;
+  
+  mapping(address => bool) private _transferAdmins;
 
   // transfer restriction storage
   uint256 public constant MAX_UINT = ((2 ** 255 - 1) * 2) + 1; // get max uint256 without overflow
@@ -52,6 +54,12 @@ contract RestrictedToken {
     totalSupply = _balances[_tokenReserveAdmin];
   }
 
+  // Access controls
+  // function grantTransferAdmin(address _account) public {
+  //   _transferAdmins[_account] = true;
+  // }
+
+  // Enforce transfer restrictions
   function enforceTransferRestrictions(address from, address to, uint256 value) public view {
     uint8 restrictionCode = detectTransferRestriction(from, to, value);
     require(restrictionCode == 0, transferRules.messageForTransferRestriction(restrictionCode));
@@ -90,10 +98,12 @@ contract RestrictedToken {
   }
 
   function pause() public {
+    require(msg.sender == contractOwner, "only the contractOwner can call this function");
     isPaused = true;
   }
 
   function unpause() public {
+    require(msg.sender == contractOwner, "only the contractOwner can call this function");
     isPaused = false;
   }
 
