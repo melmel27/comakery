@@ -141,7 +141,7 @@ contract("Access control tests", function (accounts) {
     }), "DOES NOT HAVE TRANSFER ADMIN OR CONTRACT ADMIN ROLE")
   })
 
-  it("only contractAdmin can grant transfer admin privileges", async () => {
+  it("only contractAdmin can grant transferAdmin privileges", async () => {
     let checkRevertsFor = async (from) => {
       await truffleAssert.reverts(token.grantTransferAdmin(unprivileged, {
         from: from
@@ -157,7 +157,7 @@ contract("Access control tests", function (accounts) {
     }))
   })
 
-  it("only contractAdmin can revoke transfer admin privileges", async () => {
+  it("only contractAdmin can revoke transferAdmin privileges", async () => {
     let checkRevertsFor = async (from) => {
       await truffleAssert.reverts(token.revokeTransferAdmin(transferAdmin, {
         from: from
@@ -169,6 +169,40 @@ contract("Access control tests", function (accounts) {
     await checkRevertsFor(unprivileged)
 
     await truffleAssert.passes(token.revokeTransferAdmin(transferAdmin, {
+      from: contractAdmin
+    }))
+  })
+
+
+
+  it("only contractAdmin can grant contractAdmin privileges", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.grantContractAdmin(unprivileged, {
+        from: from
+      }), "DOES NOT HAVE CONTRACT OWNER ROLE")
+    }
+
+    await checkRevertsFor(transferAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    await truffleAssert.passes(token.grantContractAdmin(unprivileged, {
+      from: contractAdmin
+    }))
+  })
+
+  it("only contractAdmin can revoke contractAdmin privileges", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.revokeContractAdmin(contractAdmin, {
+        from: from
+      }), "DOES NOT HAVE CONTRACT OWNER ROLE")
+    }
+
+    await checkRevertsFor(transferAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    await truffleAssert.passes(token.revokeContractAdmin(contractAdmin, {
       from: contractAdmin
     }))
   })

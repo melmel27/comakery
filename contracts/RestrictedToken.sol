@@ -74,6 +74,14 @@ contract RestrictedToken {
     _transferAdmins.remove(_account);
   }
 
+    function grantContractAdmin(address _account) onlyContractAdmin public {
+    _contractAdmins.add(_account);
+  }
+
+  function revokeContractAdmin(address _account) onlyContractAdmin public {
+    _contractAdmins.remove(_account);
+  }
+
   // Enforce transfer restrictions
   function enforceTransferRestrictions(address from, address to, uint256 value) public view {
     uint8 restrictionCode = detectTransferRestriction(from, to, value);
