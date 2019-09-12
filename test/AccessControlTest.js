@@ -1,5 +1,6 @@
 const truffleAssert = require('truffle-assertions');
 var RestrictedToken = artifacts.require("RestrictedToken");
+var TransferRules = artifacts.require("TransferRules");
 
 contract("Access control tests", function (accounts) {
   var contractAdmin
@@ -205,5 +206,24 @@ contract("Access control tests", function (accounts) {
     await truffleAssert.passes(token.revokeContractAdmin(contractAdmin, {
       from: contractAdmin
     }))
+  })
+
+  it("only contractAdmin can change and upgrade the transfer rules with setTransferRules", async () => {
+    let nextTransferRules = await TransferRules.new()
+    let transferRulesAddress = nextTransferRules.address
+    await truffleAssert.passes(token.setTransferRules(transferRulesAddress, {
+      from: contractAdmin
+    }))
+
+    let checkRevertsFor = async (from) => {
+      
+      await truffleAssert.reverts(token.setTransferRules(transferRulesAddress, {
+        from: from
+      }), "DOES NOT HAVE CONTRACT OWNER ROLE")
+    }
+
+    await checkRevertsFor(transferAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
   })
 })

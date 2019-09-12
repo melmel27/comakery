@@ -157,7 +157,7 @@ contract RestrictedToken {
     getAllowGroupTransfer(getTransferGroup(from), getTransferGroup(to), atTimestamp);
   }
 
-  function setTransferRules(ITransferRules newTransferRules) public {
+  function setTransferRules(ITransferRules newTransferRules) onlyContractAdmin public {
     transferRules = newTransferRules;
   }
 

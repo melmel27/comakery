@@ -56,6 +56,7 @@ The roles fall into two categories Admin Roles and Wallet Account Address Manage
 | removeSuperAdmin() | **yes** | no |
 | grantTransferAdmin() | **yes** | no |
 | removeTransferAdmin() | **yes** | no |
+| setTransferRules() | **yes** | no |
 | mint() | **yes** | no |
 | burnFrom() | **yes** | no |
 | freeze() | **yes** | **yes** |
@@ -65,7 +66,7 @@ The roles fall into two categories Admin Roles and Wallet Account Address Manage
 | setGroup() | no | **yes** |
 | setAccountPermissions() | no | **yes** |
 | setAllowGroupTransfer() | no | **yes** |
-| setTransferRules() | no | **yes** |
+
 
 ## Wallet Account Address Managers
 
