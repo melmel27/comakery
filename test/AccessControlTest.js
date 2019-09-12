@@ -102,7 +102,7 @@ contract("Access control tests", function (accounts) {
     await checkRevertsFor(unprivileged)
   })
 
-  it("only contractAdmin can burnFrom transfers", async () => {
+  it("only contractAdmin can burnFrom", async () => {
     await truffleAssert.passes(token.burnFrom(reserveAdmin, 1, {
       from: contractAdmin
     }))

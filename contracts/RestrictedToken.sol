@@ -54,6 +54,11 @@ contract RestrictedToken {
     totalSupply = _balances[_tokenReserveAdmin];
   }
 
+  modifier onlyContractAdmin() {
+    require(_contractAdmins.has(msg.sender), "DOES_NOT_HAVE_CONTRACT_OWNER_ROLE");
+    _;
+  }
+
   // Access controls
   // function grantTransferAdmin(address _account) public {
   //   _transferAdmins[_account] = true;
@@ -97,13 +102,11 @@ contract RestrictedToken {
     return timeLock[_account];
   }
 
-  function pause() public {
-    require(_contractAdmins.has(msg.sender), "DOES_NOT_HAVE_CONTRACT_OWNER_ROLE");
+  function pause() public onlyContractAdmin() {
     isPaused = true;
   }
 
-  function unpause() public {
-    require(_contractAdmins.has(msg.sender), "DOES_NOT_HAVE_CONTRACT_OWNER_ROLE");
+  function unpause() public onlyContractAdmin() {
     isPaused = false;
   }
 
@@ -156,15 +159,13 @@ contract RestrictedToken {
 
   /******* Mint, Burn, Freeze ***********/
   // For Token owner
-  function burnFrom(address from, uint256 value) public {
-    require(_contractAdmins.has(msg.sender), "DOES_NOT_HAVE_CONTRACT_OWNER_ROLE");
+  function burnFrom(address from, uint256 value) public onlyContractAdmin {
     require(value <= _balances[from], "Insufficent tokens to burn");
     _balances[from] = sub(_balances[from], value);
     totalSupply = sub(totalSupply, value);
   }
 
-  function mint(address to, uint256 value) public {
-    require(_contractAdmins.has(msg.sender), "DOES_NOT_HAVE_CONTRACT_OWNER_ROLE");
+  function mint(address to, uint256 value) public onlyContractAdmin  {
     _balances[to] = add(_balances[to], value);
     totalSupply = add(totalSupply, value);
   }
