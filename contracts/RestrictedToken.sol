@@ -13,6 +13,7 @@ contract RestrictedToken {
 
   using Roles for Roles.Role;
   Roles.Role private _contractAdmins;
+  Roles.Role private _transferAdmins;
 
   mapping(address => uint256) private _balances;
   mapping(address => mapping(address => uint256)) private _allowed;
@@ -55,14 +56,23 @@ contract RestrictedToken {
   }
 
   modifier onlyContractAdmin() {
-    require(_contractAdmins.has(msg.sender), "DOES_NOT_HAVE_CONTRACT_OWNER_ROLE");
+    require(_contractAdmins.has(msg.sender), "DOES NOT HAVE CONTRACT OWNER ROLE");
     _;
   }
 
-  // Access controls
-  // function grantTransferAdmin(address _account) public {
-  //   _transferAdmins[_account] = true;
-  // }
+  modifier onlyTransferAdminOrContractAdmin() {
+    require((_contractAdmins.has(msg.sender) || _transferAdmins.has(msg.sender)), 
+    "DOES NOT HAVE TRANSFER ADMIN OR CONTRACT ADMIN ROLE");
+    _;
+  }
+
+  function grantTransferAdmin(address _account) onlyContractAdmin public {
+    _transferAdmins.add(_account);
+  }
+
+  function revokeTransferAdmin(address _account) onlyContractAdmin public {
+    _transferAdmins.remove(_account);
+  }
 
   // Enforce transfer restrictions
   function enforceTransferRestrictions(address from, address to, uint256 value) public view {
@@ -149,7 +159,7 @@ contract RestrictedToken {
     return _allowGroupTransfers[transferGroups[from]][transferGroups[to]];
   }
 
-  function freeze(address addr, bool status) public {
+  function freeze(address addr, bool status) public onlyTransferAdminOrContractAdmin {
     frozenAddresses[addr] = status;
   }
 
