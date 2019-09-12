@@ -20,7 +20,8 @@ contract TransferRestrictionsTest {
     function beforeEach() public {
         tokenContractOwner = address(this);
         token = new RestrictedToken(tokenContractOwner, tokenContractOwner, "xyz", "Ex Why Zee", 6, 1234567);
-
+        token.grantTransferAdmin(tokenContractOwner);
+        
         alice = address(0x1);
         bob = address(0x2);
 

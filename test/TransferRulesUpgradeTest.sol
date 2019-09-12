@@ -28,6 +28,8 @@ contract TransferRulesUpgradeTest {
         owner = address(this);
         uint8 decimalsWeWillPassToTransferRules = 6;
         token = new RestrictedToken(owner, owner, "xyz", "Ex Why Zee", decimalsWeWillPassToTransferRules, 22);
+        
+        token.grantTransferAdmin(owner);
         token.setMaxBalance(owner, 100);
         token.setAllowGroupTransfer(0, 0, 1); // don't restrict default group transfers
     }

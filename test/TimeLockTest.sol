@@ -17,7 +17,7 @@ contract TimeLockTest {
         tokenContractOwner = address(this);
         reserveAdmin = address(0x1);
         token = new RestrictedToken(tokenContractOwner, reserveAdmin, "xyz", "Ex Why Zee", 6, 1234567);
-
+        token.grantTransferAdmin(tokenContractOwner);
 
         alice = new UserProxy(token);
         bob = new UserProxy(token);

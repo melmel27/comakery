@@ -15,6 +15,7 @@ contract RestrictedTokenBasicsTest {
 
         reserveAdmin = address(0x1);
         token = new RestrictedToken(tokenContractOwner, reserveAdmin, "xyz", "Ex Why Zee", 6, 1234567);
+        token.grantTransferAdmin(tokenContractOwner);
         
         token.setMaxBalance(tokenContractOwner, 1e18); 
         token.setAllowGroupTransfer(0, 0, now); // don't restrict default group transfers

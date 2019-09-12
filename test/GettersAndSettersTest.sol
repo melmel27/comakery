@@ -15,7 +15,8 @@ contract GettersAndSettersTest {
 
     function beforeEach() public {
         owner = address(this);
-        token = new RestrictedToken(owner, owner, "xyz", "Ex Why Zee", 0, 100);        
+        token = new RestrictedToken(owner, owner, "xyz", "Ex Why Zee", 0, 100);
+        token.grantTransferAdmin(owner);
     }
 
     function testGettersAndSetters() public {
