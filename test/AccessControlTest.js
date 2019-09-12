@@ -2,25 +2,23 @@ const truffleAssert = require('truffle-assertions');
 var RestrictedToken = artifacts.require("RestrictedToken");
 
 contract("Access control tests", function (accounts) {
-  var owner
+  var contractAdmin
   var reserveAdmin
   var unprivileged
   var token
   var transferAdmin
 
   beforeEach(async function () {
-    owner = accounts[0]
+    contractAdmin = accounts[0]
     reserveAdmin = accounts[1]
     transferAdmin = accounts[2]
     unprivileged = accounts[5]
 
-    token = await RestrictedToken.new(owner, reserveAdmin, "xyz", "Ex Why Zee", 6, 100);
+    token = await RestrictedToken.new(contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100);
   })
 
-  it('contract owner is not the same address as treasury admin', async () => {
-    assert.equal(await token.contractOwner.call(), owner, 'sets the owner')
-    assert.equal(await token.balanceOf.call(owner), 0, 'allocates no balance to the owner')
-    assert.notEqual(await token.contractOwner.call(), reserveAdmin, 'sets the owner')
+  it('contract contractAdmin is not the same address as treasury admin', async () => {
+    assert.equal(await token.balanceOf.call(contractAdmin), 0, 'allocates no balance to the contractAdmin')
     assert.equal(await token.balanceOf.call(reserveAdmin), 100, 'allocates all tokens to the token reserve admin')
   })
 
@@ -37,12 +35,9 @@ contract("Access control tests", function (accounts) {
     assert.equal(await token.totalSupply.call({
       from: unprivileged
     }), 100)
-    assert.equal(await token.contractOwner.call({
+    assert.equal(await token.balanceOf.call(contractAdmin, {
       from: unprivileged
-    }), owner, 'sets the owner')
-    assert.equal(await token.balanceOf.call(owner, {
-      from: unprivileged
-    }), 0, 'allocates no balance to the owner')
+    }), 0, 'allocates no balance to the contractAdmin')
     assert.equal(await token.balanceOf.call(reserveAdmin, {
       from: unprivileged
     }), 100, 'allocates all tokens to the token reserve admin')
@@ -50,7 +45,7 @@ contract("Access control tests", function (accounts) {
 
   it("an unprivileged user can check transfer restrictions", async () => {
     assert.equal(await token.detectTransferRestriction
-      .call(owner, reserveAdmin, 1, {
+      .call(contractAdmin, reserveAdmin, 1, {
         from: unprivileged
       }), 1)
 
@@ -59,13 +54,13 @@ contract("Access control tests", function (accounts) {
     }), "GREATER THAN RECIPIENT MAX BALANCE")
   })
 
-  it("only owner can pause/unpause transfers", async () => {
+  it("only contractAdmin can pause/unpause transfers", async () => {
     await truffleAssert.passes(token.pause({
-      from: owner
+      from: contractAdmin
     }))
 
     await truffleAssert.passes(token.unpause({
-      from: owner
+      from: contractAdmin
     }))
     
     await truffleAssert.reverts(token.pause({

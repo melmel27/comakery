@@ -25,13 +25,11 @@ contract RestrictedTokenBasicsTest {
         Assert.equal(token.name(), "Ex Why Zee", "should return the token name");
         Assert.equal(uint(token.decimals()), 6, "should return the token decimals");
         Assert.equal(uint(token.totalSupply()), 1234567, "should return the totalSupply");
-        Assert.equal(token.contractOwner(), tokenContractOwner, "wrong contract owner");
         Assert.equal(token.MAX_UINT(), uint(0) - uint(1), "MAX_UINT should be largest possible uint256");        
     }
 
     function testTokenAdminSetup() public {
         Assert.isTrue(token.totalSupply() > 1, "there should be tokens issued");
-        Assert.equal(token.contractOwner(), tokenContractOwner, "contract owner should be assigned");
         Assert.equal(token.balanceOf(tokenContractOwner), 0, "contract owner should get 0 balance");
         Assert.equal(token.balanceOf(address(reserveAdmin)), token.totalSupply(), "reserve admin should get the initial token balance");
     }

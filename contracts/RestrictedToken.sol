@@ -9,7 +9,6 @@ contract RestrictedToken {
   string public name;
   uint8 public decimals;
   uint256 public totalSupply;
-  address public contractOwner;
   ITransferRules public transferRules;
 
   using Roles for Roles.Role;
@@ -32,7 +31,7 @@ contract RestrictedToken {
   event Approval(address indexed owner, address indexed spender, uint256 value);
 
   constructor(
-    address _contractOwner,
+    address _contractAdmin,
     address _tokenReserveAdmin,
     string memory _symbol,
     string memory _name,
@@ -40,7 +39,7 @@ contract RestrictedToken {
     uint256 _totalSupply
   ) public {
 
-    require(_contractOwner != address(0), "Token owner address cannot be 0x0");
+    require(_contractAdmin != address(0), "Token owner address cannot be 0x0");
 
     // transfer rules can be swapped out
     // the storage stays in the ERC20
@@ -49,8 +48,7 @@ contract RestrictedToken {
     name = _name;
     decimals = _decimals;
 
-    contractOwner = _contractOwner;
-    _contractAdmins.add(_contractOwner);
+    _contractAdmins.add(_contractAdmin);
 
     _balances[_tokenReserveAdmin] = _totalSupply;
     totalSupply = _balances[_tokenReserveAdmin];
