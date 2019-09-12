@@ -54,21 +54,51 @@ contract("Access control tests", function (accounts) {
     }), "GREATER THAN RECIPIENT MAX BALANCE")
   })
 
-  it("only contractAdmin can pause/unpause transfers", async () => {
+  it("only contractAdmin can pause transfers", async () => {
     await truffleAssert.passes(token.pause({
       from: contractAdmin
     }))
 
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.pause({
+        from: from
+      }), "DOES_NOT_HAVE_CONTRACT_OWNER_ROLE")
+    }
+
+    await checkRevertsFor(transferAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+  })
+
+  it("only contractAdmin can unpause transfers", async () => {
     await truffleAssert.passes(token.unpause({
       from: contractAdmin
     }))
-    
-    await truffleAssert.reverts(token.pause({
-      from: unprivileged
-    }), "DOES_NOT_HAVE_CONTRACT_OWNER_ROLE")
 
-    await truffleAssert.reverts(token.unpause({
-      from: unprivileged
-    }), "DOES_NOT_HAVE_CONTRACT_OWNER_ROLE")
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.unpause({
+        from: from
+      }), "DOES_NOT_HAVE_CONTRACT_OWNER_ROLE")
+    }
+    
+    await checkRevertsFor(transferAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+  })
+
+  it("only contractAdmin can mint transfers", async () => {
+    await truffleAssert.passes(token.mint(unprivileged, 123, {
+      from: contractAdmin
+    }))
+
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.mint(unprivileged, 123, {
+        from: from
+      }), "DOES_NOT_HAVE_CONTRACT_OWNER_ROLE")
+    }
+    
+    await checkRevertsFor(transferAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
   })
 })

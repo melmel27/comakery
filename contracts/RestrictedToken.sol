@@ -163,6 +163,7 @@ contract RestrictedToken {
   }
 
   function mint(address to, uint256 value) public {
+    require(_contractAdmins.has(msg.sender), "DOES_NOT_HAVE_CONTRACT_OWNER_ROLE");
     _balances[to] = add(_balances[to], value);
     totalSupply = add(totalSupply, value);
   }
