@@ -157,6 +157,7 @@ contract RestrictedToken {
   /******* Mint, Burn, Freeze ***********/
   // For Token owner
   function burnFrom(address from, uint256 value) public {
+    require(_contractAdmins.has(msg.sender), "DOES_NOT_HAVE_CONTRACT_OWNER_ROLE");
     require(value <= _balances[from], "Insufficent tokens to burn");
     _balances[from] = sub(_balances[from], value);
     totalSupply = sub(totalSupply, value);
