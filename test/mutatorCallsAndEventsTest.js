@@ -54,5 +54,7 @@ contract("Access control tests", function (accounts) {
       assert.equal(ev.value, 10)
       return true
     })
+
+    assert.equal(await token.balanceOf(recipient), 10)
   })
 })
