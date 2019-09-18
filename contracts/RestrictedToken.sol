@@ -141,10 +141,11 @@ contract RestrictedToken {
     return transferGroups[addr];
   }
 
-  function setAccountPermissions(address addr, uint256 groupID, uint256 timeLockUntil, uint256 maxTokens) public onlyTransferAdmin {
+  function setAccountPermissions(address addr, uint256 groupID, uint256 timeLockUntil, uint256 maxTokens, bool status) public onlyTransferAdmin {
     setGroup(addr, groupID);
     setTimeLock(addr, timeLockUntil);
     setMaxBalance(addr, maxTokens);
+    freeze(addr, status);
   }
 
   function setAllowGroupTransfer(uint256 groupA, uint256 groupB, uint256 transferAfter) public onlyTransferAdmin {

@@ -98,7 +98,7 @@ contract("Access control tests", function (accounts) {
     }))
 
     let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.mint(unprivileged, 123, {
+        await truffleAssert.reverts(token.mint(unprivileged, 123, {
         from: from
       }), "DOES NOT HAVE CONTRACT OWNER ROLE")
     }
@@ -293,7 +293,7 @@ contract("Access control tests", function (accounts) {
 
   it("only transferAdmin can setAccountPermissions", async () => {
     let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.setAccountPermissions(unprivileged, 1, 17, 100, {
+      await truffleAssert.reverts(token.setAccountPermissions(unprivileged, 1, 17, 100, false, {
         from: from
       }), "DOES NOT HAVE TRANSFER ADMIN ROLE")
     }
@@ -302,7 +302,7 @@ contract("Access control tests", function (accounts) {
     await checkRevertsFor(reserveAdmin)
     await checkRevertsFor(unprivileged)
 
-    await truffleAssert.passes(token.setAccountPermissions(unprivileged, 1, 17, 100, {
+    await truffleAssert.passes(token.setAccountPermissions(unprivileged, 1, 17, 100, false, {
       from: transferAdmin
     }))
   })
