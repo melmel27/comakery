@@ -1,17 +1,18 @@
 pragma solidity ^ 0.5 .8;
 import './RestrictedToken.sol';
 import './ITransferRules.sol';
+import { FISSION } from "/fission-codes/contracts/FISSION.sol";
 
 contract TransferRules is ITransferRules {
-    uint8 public constant SUCCESS = 0;
-    uint8 public constant GREATER_THAN_RECIPIENT_MAX_BALANCE = 1;
-    uint8 public constant SENDER_TOKENS_TIME_LOCKED = 2;
-    uint8 public constant DO_NOT_SEND_TO_TOKEN_CONTRACT = 3;
-    uint8 public constant DO_NOT_SEND_TO_EMPTY_ADDRESS = 4;
-    uint8 public constant SENDER_ADDRESS_FROZEN = 5;
-    uint8 public constant ALL_TRANSFERS_PAUSED = 6;
-    uint8 public constant TRANSFER_GROUP_NOT_APPROVED = 7;
-    uint8 public constant TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER = 8;
+    uint8 public constant SUCCESS = 0x0;
+    uint8 public constant GREATER_THAN_RECIPIENT_MAX_BALANCE = 0x1;
+    uint8 public constant SENDER_TOKENS_TIME_LOCKED = 0x2;
+    uint8 public constant DO_NOT_SEND_TO_TOKEN_CONTRACT = 0x3;
+    uint8 public constant DO_NOT_SEND_TO_EMPTY_ADDRESS = 0x4;
+    uint8 public constant SENDER_ADDRESS_FROZEN = 0x5;
+    uint8 public constant ALL_TRANSFERS_PAUSED = 0x6;
+    uint8 public constant TRANSFER_GROUP_NOT_APPROVED = 0x7;
+    uint8 public constant TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER = 0x8;
 
     /******* RestrictedToken FUNCTIONS ***********/
 

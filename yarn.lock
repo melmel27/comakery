@@ -1599,6 +1599,10 @@ find-up@^3.0.0:
   dependencies:
     locate-path "^3.0.0"
 
+"fission-codes@https://github.com/CoMakery/fission-codes":
+  version "1.0.0-rc.2"
+  resolved "https://github.com/CoMakery/fission-codes#7f59a300bf06fa8cb20f0b529f675f3637276ba3"
+
 flat-cache@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/flat-cache/-/flat-cache-2.0.1.tgz#5d296d6f04bda44a4630a301413bdbc2ec085ec0"
