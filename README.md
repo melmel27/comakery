@@ -8,9 +8,11 @@
 
 This is an open source Security Token from CoMakery. The core purpose of the token is to enforce transfer restrictions for certain groups.
 
-It implements the **ERC-20** token standard and the **ERC-1404** security token standard. It attempts to balance simplicity and sufficiency for smart contract tokens that need to comply with regulatory authorities. 
+This implementation attempts to balance simplicity and sufficiency for smart contract security tokens that need to comply with regulatory authorities - without adding unnecessary complexity for simple use cases. It implements the [**ERC-20**](https://eips.ethereum.org/EIPS/eip-20) token standard with transfer restrictions implemented in compliance with [**ERC-1066**](https://eips.ethereum.org/EIPS/eip-1066) error codes and [**ERC-902**](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-902.md) transfer validation checks. 
 
-Simplicity is necessary to make the full operations of the contract clear to users of the smart contracts. Simplicity also reduces the number of smart contract lines that need to be secured (each line of a smart contract is a security liability).
+This approach takes into account yet to be standardized guidance from ERC-1400 (which has additional recommendations for more complex security token needs) and ERC-1404 which offers an approach similar to ERC-902 but with limited and conflicting guidance on error codes and function names. Since these standards have not reached wide adoption and do not agree with each other, the token optimizes for a broad, simple and sufficient implementation.
+
+Simplicity is necessary to make the full operations of the contract clear to users of the smart contracts. It also reduces the number of smart contract lines that need to be secured (each line of a smart contract is a security liability).
 
 ## Disclaimer
 
