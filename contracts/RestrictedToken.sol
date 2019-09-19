@@ -3,8 +3,11 @@ pragma solidity ^ 0.5 .8;
 import "./ITransferRules.sol";
 import "./TransferRules.sol";
 import "@openzeppelin/contracts/access/Roles.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
 contract RestrictedToken {
+  using SafeMath for uint256;
+
   string public symbol;
   string public name;
   uint8 public decimals;
@@ -185,13 +188,13 @@ contract RestrictedToken {
   // For Token owner
   function burnFrom(address from, uint256 value) public onlyContractAdmin {
     require(value <= _balances[from], "Insufficent tokens to burn");
-    _balances[from] = sub(_balances[from], value);
-    totalSupply = sub(totalSupply, value);
+    _balances[from] = _balances[from].sub(value);
+    totalSupply = totalSupply.sub(value);
   }
 
   function mint(address to, uint256 value) public onlyContractAdmin  {
-    _balances[to] = add(_balances[to], value);
-    totalSupply = add(totalSupply, value);
+    _balances[to] = _balances[to].add(value);
+    totalSupply = totalSupply.add(value);
   }
 
   /******* ERC20 FUNCTIONS ***********/
@@ -236,7 +239,7 @@ contract RestrictedToken {
   function transferFrom(address from, address to, uint256 value) public returns(bool success) {
     enforceTransferRestrictions(from, to, value);
     require(value <= _allowed[from][to], "The approved allowance is lower than the transfer amount");
-    _allowed[from][msg.sender] = sub(_allowed[from][msg.sender], value);
+    _allowed[from][msg.sender] = _allowed[from][msg.sender].sub(value);
     _transfer(from, to, value);
     return true;
   }
@@ -254,21 +257,8 @@ contract RestrictedToken {
   // if you call this function call forceRestriction before it
   function _transfer(address from, address to, uint256 value) internal {
     require(value <= _balances[from], "Insufficent tokens");
-    _balances[from] = sub(_balances[from], value);
-    _balances[to] = add(_balances[to], value);
+    _balances[from] = _balances[from].sub(value);
+    _balances[to] = _balances[to].add(value);
     emit Transfer(from, to, value);
-  }
-
-  /********** SAFE MATH **********/
-  function sub(uint256 a, uint256 b) internal pure returns(uint256 result) {
-    require(b <= a, "Underflow error");
-    uint256 c = a - b;
-    return c;
-  }
-
-  function add(uint256 a, uint256 b) internal pure returns(uint256 result) {
-    uint256 c = a + b;
-    require(c >= a, "Overflow error");
-    return c;
   }
 }
