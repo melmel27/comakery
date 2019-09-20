@@ -196,4 +196,20 @@ contract("Access control tests", function (accounts) {
 
     assert.equal(await token.getTransferGroup(recipient), 9)
   })
+
+  it("setAllowGroupTransfer with events", async () => {
+    let tx = await token.setAllowGroupTransfer(0, 1, 203, {
+      from: transferAdmin
+    })
+
+    truffleAssert.eventEmitted(tx, 'AllowGroupTransfer', (ev) => {
+      assert.equal(ev.admin, transferAdmin)
+      assert.equal(ev.fromGroup, 0)
+      assert.equal(ev.toGroup, 1)
+      assert.equal(ev.transferAfter, 203)
+      return true
+    })
+
+    assert.equal(await token.getAllowGroupTransfer(0, 1, 204), true)
+  })
 })

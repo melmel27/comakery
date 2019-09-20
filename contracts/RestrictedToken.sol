@@ -37,6 +37,7 @@ contract RestrictedToken {
   event MaxBalanceSet(address indexed admin, address indexed account, uint256 indexed value);
   event TimeLockSet(address indexed admin, address indexed account, uint256 indexed value);
   event TransferGroupSet(address indexed admin, address indexed account, uint256 indexed value);
+  event AllowGroupTransfer(address indexed admin, uint256 indexed fromGroup, uint256 indexed toGroup, uint256 transferAfter);
 
   constructor(
     address _transferRules,
@@ -155,6 +156,7 @@ contract RestrictedToken {
   // TODO: if transferAfter = 1 any transfer works; update README
   function setAllowGroupTransfer(uint256 groupA, uint256 groupB, uint256 transferAfter) public onlyTransferAdmin {
     _allowGroupTransfers[groupA][groupB] = transferAfter;
+    emit AllowGroupTransfer(msg.sender, groupA, groupB, transferAfter);
   }
 
   function getAllowGroupTransfer(uint256 from, uint256 to, uint256 timestamp) public view returns(bool) {
