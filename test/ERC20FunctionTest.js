@@ -54,8 +54,10 @@ contract("ERC20 functionality", function (accounts) {
     })
 
     it('can approve someone else', async () => {
-        let tx = await token.approve(bob, 20, {from: alice})
-        
+        let tx = await token.approve(bob, 20, {
+            from: alice
+        })
+
         truffleAssert.eventEmitted(tx, 'Approval', (ev) => {
             assert.equal(ev.owner, alice)
             assert.equal(ev.spender, bob)
@@ -67,11 +69,73 @@ contract("ERC20 functionality", function (accounts) {
         assert.equal(await token.balanceOf.call(bob), 0)
         assert.equal(await token.balanceOf.call(alice), 100)
 
-        await token.transferFrom(alice, bob, 20, {from: bob})
+        await token.transferFrom(alice, bob, 20, {
+            from: bob
+        })
 
         assert.equal(await token.balanceOf.call(bob), 20)
         assert.equal(await token.balanceOf.call(alice), 80)
 
-        await truffleAssert.reverts(token.transferFrom(alice, bob, 1, {from: bob}), "The approved allowance is lower than the transfer amount")
+        await truffleAssert.reverts(token.transferFrom(alice, bob, 1, {
+            from: bob
+        }), "The approved allowance is lower than the transfer amount")
     })
+
+    it('can safeApprove an account with allowanceAndNonce checks', async () => {
+        let allowanceAndNonce = await token.allowanceAndNonce(bob, {
+            from: alice
+        })
+        assert.equal(allowanceAndNonce[0], 0)
+        assert.equal(allowanceAndNonce[1], 0)
+        let tx = await token.safeApprove(bob, 20, allowanceAndNonce[0], allowanceAndNonce[1], {
+            from: alice
+        })
+
+        truffleAssert.eventEmitted(tx, 'Approval', (ev) => {
+            assert.equal(ev.owner, alice)
+            assert.equal(ev.spender, bob)
+            assert.equal(ev.value, 20)
+            return true
+        })
+
+        let allowanceAndNonce2 = await token.allowanceAndNonce(bob, {
+            from: alice
+        })
+        assert.equal(allowanceAndNonce2[0], 20)
+        assert.equal(allowanceAndNonce2[1], 1)
+
+        await token.transferFrom(alice, bob, 9, {
+            from: bob
+        })
+
+        assert.equal(await token.balanceOf.call(bob), 9)
+        assert.equal(await token.balanceOf.call(alice), 91)
+
+
+        // await truffleAssert.reverts(token.transferFrom(alice, bob, 1, {from: bob}), "The approved allowance is lower than the transfer amount")
+    })
+
+    it('cannot safeApprove with the wrong nonce', async () => {
+        await token.safeApprove(bob, 20, 0, 0, {
+            from: alice
+        })
+        await truffleAssert.reverts(token.safeApprove(bob, 20, 20, 0, {
+            from: alice
+        }), "The nonce does not match the current transfer approval nonce")
+    })
+
+    it('cannot safeApprove with the wrong expected approval amount', async () => {
+        await token.safeApprove(bob, 20, 0, 0, {
+            from: alice
+        })
+        
+        await token.transferFrom(alice, bob, 9, {
+            from: bob
+        })
+
+        await truffleAssert.reverts(token.safeApprove(bob, 20, 20, 1, {
+            from: alice
+        }), "The expected approved amount does not match the actual approved amount")
+    })
+    // can't transfer more than you have
 })
