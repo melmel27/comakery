@@ -9,13 +9,13 @@ import "./support/UserProxy.sol";
 
 
 contract TransferRulesUpgrade is ITransferRules {
- function detectTransferRestriction(address _token, address from, address to, uint256 value) public view returns(uint8) {
+ function detectTransferRestriction(address _token, address from, address to, uint256 value) public view returns(byte) {
     RestrictedToken token = RestrictedToken(_token);
     if(from == to && value > 0) return token.decimals(); // prove we are using all the arguments
     return 17; // grab an arbitrary value from the injected token contract
   }
 
-  function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory) {
+  function messageForTransferRestriction(byte restrictionCode) public view returns(string memory) {
     return "HELLO UPGRADE";
   }
 }

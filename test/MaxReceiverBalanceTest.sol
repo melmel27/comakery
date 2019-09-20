@@ -25,16 +25,16 @@ contract MaxReceiverBalanceTest {
     }
 
     function testAdminCanAddAccountToWhitelistAndBeApprovedForTransfer() public {       
-        uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);
+        byte restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);
         
 
         token.setMaxBalance(address(bob), 10);
         restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 10);
-        Assert.equal(uint(restrictionCode), 0, "should allow max value");
+        Assert.equal(restrictionCode, hex"00", "should allow max value");
 
         token.setMaxBalance(address(bob), 0);
         restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 10);
-        Assert.equal(uint(restrictionCode), 1, "should not allow a value transfer above the max for the recipient address");
+        Assert.equal(restrictionCode, hex"01", "should not allow a value transfer above the max for the recipient address");
     }
 
     function testGetMaxBalance() public {

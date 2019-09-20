@@ -9,10 +9,10 @@ contract ITransferRules {
   /// @return Code by which to reference message for rejection reasoning
 
   // TODO: require that address token is of tyle RestrictedToken instead?
-  function detectTransferRestriction(address token, address from, address to, uint256 value) public view returns(uint8);
+  function detectTransferRestriction(address token, address from, address to, uint256 value) public view returns(byte);
 
   /// @notice Returns a human-readable message for a given restriction code
   /// @param restrictionCode Identifier for looking up a message
   /// @return Text showing the restriction's reasoning
-  function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory);
+  function messageForTransferRestriction(byte restrictionCode) public view returns(string memory);
 }

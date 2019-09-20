@@ -3,28 +3,28 @@ import './RestrictedToken.sol';
 import './ITransferRules.sol';
 
 contract TransferRules is ITransferRules {
-    mapping(uint8 => string) internal errorMessage;
+    mapping(byte => string) internal errorMessage;
     
-    uint8 public constant SUCCESS = 0;
-    uint8 public constant GREATER_THAN_RECIPIENT_MAX_BALANCE = 1;
-    uint8 public constant SENDER_TOKENS_TIME_LOCKED = 2;
-    uint8 public constant DO_NOT_SEND_TO_TOKEN_CONTRACT = 3;
-    uint8 public constant DO_NOT_SEND_TO_EMPTY_ADDRESS = 4;
-    uint8 public constant SENDER_ADDRESS_FROZEN = 5;
-    uint8 public constant ALL_TRANSFERS_PAUSED = 6;
-    uint8 public constant TRANSFER_GROUP_NOT_APPROVED = 7;
-    uint8 public constant TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER = 8;
+    byte public constant SUCCESS = hex"00";
+    byte public constant GREATER_THAN_RECIPIENT_MAX_BALANCE = hex"01";
+    byte public constant SENDER_TOKENS_TIME_LOCKED = hex"02";
+    byte public constant DO_NOT_SEND_TO_TOKEN_CONTRACT = hex"03";
+    byte public constant DO_NOT_SEND_TO_EMPTY_ADDRESS = hex"04";
+    byte public constant SENDER_ADDRESS_FROZEN = hex"05";
+    byte public constant ALL_TRANSFERS_PAUSED = hex"06";
+    byte public constant TRANSFER_GROUP_NOT_APPROVED = hex"07";
+    byte public constant TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER = hex"08";
 
   constructor() public {
-    errorMessage[SUCCESS] = "SUCCESS";
-    errorMessage[GREATER_THAN_RECIPIENT_MAX_BALANCE] = "GREATER THAN RECIPIENT MAX BALANCE";
-    errorMessage[SENDER_TOKENS_TIME_LOCKED] = "SENDER TOKENS LOCKED";
-    errorMessage[DO_NOT_SEND_TO_TOKEN_CONTRACT] = "DO NOT SEND TO TOKEN CONTRACT";
-    errorMessage[DO_NOT_SEND_TO_EMPTY_ADDRESS] = "DO NOT SEND TO EMPTY ADDRESS";
-    errorMessage[SENDER_ADDRESS_FROZEN] = "SENDER ADDRESS IS FROZEN";
-    errorMessage[ALL_TRANSFERS_PAUSED] = "ALL TRANSFERS PAUSED";
-    errorMessage[TRANSFER_GROUP_NOT_APPROVED] = "TRANSFER GROUP NOT APPROVED";
-    errorMessage[TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER] = "TRANSFER GROUP NOT ALLOWED UNTIL LATER";
+    // errorMessage[SUCCESS] = "SUCCESS";
+    // errorMessage[GREATER_THAN_RECIPIENT_MAX_BALANCE] = "GREATER THAN RECIPIENT MAX BALANCE";
+    // errorMessage[SENDER_TOKENS_TIME_LOCKED] = "SENDER TOKENS LOCKED";
+    // errorMessage[DO_NOT_SEND_TO_TOKEN_CONTRACT] = "DO NOT SEND TO TOKEN CONTRACT";
+    // errorMessage[DO_NOT_SEND_TO_EMPTY_ADDRESS] = "DO NOT SEND TO EMPTY ADDRESS";
+    // errorMessage[SENDER_ADDRESS_FROZEN] = "SENDER ADDRESS IS FROZEN";
+    // errorMessage[ALL_TRANSFERS_PAUSED] = "ALL TRANSFERS PAUSED";
+    // errorMessage[TRANSFER_GROUP_NOT_APPROVED] = "TRANSFER GROUP NOT APPROVED";
+    // errorMessage[TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER] = "TRANSFER GROUP NOT ALLOWED UNTIL LATER";
   }
 
   /// @notice Detects if a transfer will be reverted and if so returns an appropriate reference code
@@ -32,7 +32,7 @@ contract TransferRules is ITransferRules {
   /// @param to Receiving address
   /// @param value Amount of tokens being transferred
   /// @return Code by which to reference message for rejection reasoning
-  function detectTransferRestriction(address _token, address from, address to, uint256 value) public view returns(uint8) {
+  function detectTransferRestriction(address _token, address from, address to, uint256 value) public view returns(byte) {
     RestrictedToken token = RestrictedToken(_token);
     if (token.isPaused()) return ALL_TRANSFERS_PAUSED;
     if (to == address(0)) return DO_NOT_SEND_TO_EMPTY_ADDRESS;
@@ -52,7 +52,7 @@ contract TransferRules is ITransferRules {
   /// @notice Returns a human-readable message for a given restriction code
   /// @param restrictionCode Identifier for looking up a message
   /// @return Text showing the restriction's reasoning
-  function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory) {
+  function messageForTransferRestriction(byte restrictionCode) public view returns(string memory) {
     return errorMessage[restrictionCode];
   }
 }

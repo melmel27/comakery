@@ -92,16 +92,16 @@ contract RestrictedToken {
 
   // Enforce transfer restrictions
   function enforceTransferRestrictions(address from, address to, uint256 value) public view {
-    uint8 restrictionCode = detectTransferRestriction(from, to, value);
-    require(restrictionCode == 0, transferRules.messageForTransferRestriction(restrictionCode));
+    byte restrictionCode = detectTransferRestriction(from, to, value);
+    require(restrictionCode == hex"00", transferRules.messageForTransferRestriction(restrictionCode));
   }
 
   // TODO: consider potential reentrancy issues
-  function detectTransferRestriction(address from, address to, uint256 value) public view returns(uint8) {
+  function detectTransferRestriction(address from, address to, uint256 value) public view returns(byte) {
     return transferRules.detectTransferRestriction(address(this), from, to, value);
   }
 
-  function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory) {
+  function messageForTransferRestriction(byte restrictionCode) public view returns(string memory) {
     return transferRules.messageForTransferRestriction(restrictionCode);
   }
 
