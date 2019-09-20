@@ -33,6 +33,8 @@ contract RestrictedToken {
 
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
+
+  event Burn(address indexed admin, address indexed account, uint256 indexed value);
   
   event RoleChange(address indexed grantor, address indexed grantee, string role, bool indexed status);
   event AddressMaxBalance(address indexed admin, address indexed account, uint256 indexed value);
@@ -190,6 +192,7 @@ contract RestrictedToken {
     require(value <= _balances[from], "Insufficent tokens to burn");
     _balances[from] = _balances[from].sub(value);
     totalSupply = totalSupply.sub(value);
+    emit Burn(msg.sender, from, value);
   }
 
   function mint(address to, uint256 value) public onlyContractAdmin  {

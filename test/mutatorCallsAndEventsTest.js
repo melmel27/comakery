@@ -240,4 +240,19 @@ contract("Access control tests", function (accounts) {
 
     assert.equal(await token.getAllowGroupTransfer(0, 1, 204), true)
   })
+
+  it("burnFrom with events", async () => {
+    let tx = await token.burnFrom(reserveAdmin, 17, {
+      from: contractAdmin
+    })
+
+    truffleAssert.eventEmitted(tx, 'Burn', (ev) => {
+      assert.equal(ev.admin, contractAdmin)
+      assert.equal(ev.account, reserveAdmin)
+      assert.equal(ev.value, 17)
+      return true
+    })
+
+    assert.equal(await token.balanceOf(reserveAdmin), 83)
+  })
 })
