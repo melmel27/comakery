@@ -27,7 +27,7 @@ contract("ERC20 functionality", function (accounts) {
             from: contractAdmin
         })
 
-        await token.setAccountPermissions(bob, defaultGroup, 1, 100, false, {
+        await token.setAccountPermissions(bob, defaultGroup, 1, 200, false, {
             from: contractAdmin
         })
     })
@@ -110,9 +110,6 @@ contract("ERC20 functionality", function (accounts) {
 
         assert.equal(await token.balanceOf.call(bob), 9)
         assert.equal(await token.balanceOf.call(alice), 91)
-
-
-        // await truffleAssert.reverts(token.transferFrom(alice, bob, 1, {from: bob}), "The approved allowance is lower than the transfer amount")
     })
 
     it('cannot safeApprove with the wrong nonce', async () => {
@@ -137,5 +134,20 @@ contract("ERC20 functionality", function (accounts) {
             from: alice
         }), "The expected approved amount does not match the actual approved amount")
     })
-    // can't transfer more than you have
+
+    it('cannot transfer more tokens than you have', async () => {
+        await truffleAssert.reverts(token.transfer(bob, 101, {from: alice}), "Insufficent tokens")
+    })
+
+    it('cannot transfer more tokens than the account you are transferring from has', async () => {
+        assert.equal(await token.balanceOf.call(alice), 100)
+        await token.safeApprove(bob, 150, 0, 0, {
+            from: alice
+        })
+
+        await truffleAssert.reverts(token.transferFrom(alice, bob, 101, {
+            from: bob
+        }), "Insufficent tokens")
+        assert.equal(await token.balanceOf.call(alice), 100)
+    })
 })
