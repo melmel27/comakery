@@ -71,5 +71,7 @@ contract("ERC20 functionality", function (accounts) {
 
         assert.equal(await token.balanceOf.call(bob), 20)
         assert.equal(await token.balanceOf.call(alice), 80)
+
+        await truffleAssert.reverts(token.transferFrom(alice, bob, 1, {from: bob}), "The approved allowance is lower than the transfer amount")
     })
 })
