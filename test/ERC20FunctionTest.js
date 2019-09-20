@@ -52,4 +52,17 @@ contract("ERC20 functionality", function (accounts) {
 
         assert.equal(await token.balanceOf.call(bob), 50)
     })
+
+    it('can approve someone else', async () => {
+        let tx = await token.approve(bob, 20, {from: alice})
+        
+        truffleAssert.eventEmitted(tx, 'Approval', (ev) => {
+            assert.equal(ev.owner, alice)
+            assert.equal(ev.spender, bob)
+            assert.equal(ev.value, 20)
+            return true
+        })
+
+        assert.equal(await token.allowance.call(alice, bob), 20)
+    })
 })
