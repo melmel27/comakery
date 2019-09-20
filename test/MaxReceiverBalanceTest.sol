@@ -3,6 +3,7 @@ pragma solidity ^0.5.8;
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "../contracts/RestrictedToken.sol";
+import "truffle/DeployedAddresses.sol";
 import "./support/UserProxy.sol";
 
 contract MaxReceiverBalanceTest {
@@ -15,7 +16,8 @@ contract MaxReceiverBalanceTest {
     function beforeEach() public {
         tokenContractOwner = address(this);
         reserveAdmin = address(0x1);
-        token = new RestrictedToken(tokenContractOwner, reserveAdmin, "xyz", "Ex Why Zee", 6, 1234567);
+        TransferRules rules = new TransferRules();
+        token = new RestrictedToken(address(rules), tokenContractOwner, tokenContractOwner, "xyz", "Ex Why Zee", 0, 100);
         token.grantTransferAdmin(tokenContractOwner);
         
         alice = new UserProxy(token);

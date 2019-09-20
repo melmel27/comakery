@@ -2,13 +2,15 @@ pragma solidity ^ 0.5 .8;
 
 import "truffle/Assert.sol";
 import "../contracts/RestrictedToken.sol";
+import "../contracts/TransferRules.sol";
 
 contract MintBurnTest {
     RestrictedToken public token;
     address alice = address(0x1);
 
     function beforeEach() public {
-        token = new RestrictedToken(address(this), address(this), "xyz", "Ex Why Zee", 6, 100);
+        TransferRules rules = new TransferRules();
+        token = new RestrictedToken(address(rules), address(this), address(this), "xyz", "Ex Why Zee", 0, 100);
         token.grantTransferAdmin(address(this));
 
     }

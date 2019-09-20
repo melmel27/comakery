@@ -1,9 +1,9 @@
 pragma solidity ^0.5.8;
 
 import "truffle/Assert.sol";
-import "truffle/DeployedAddresses.sol";
 import "./support/UserProxy.sol";
 import "../contracts/RestrictedToken.sol";
+import "../contracts/TransferRules.sol";
 
 contract GettersAndSettersTest {
     using Assert for uint256;
@@ -15,7 +15,8 @@ contract GettersAndSettersTest {
 
     function beforeEach() public {
         owner = address(this);
-        token = new RestrictedToken(owner, owner, "xyz", "Ex Why Zee", 0, 100);
+        TransferRules rules = new TransferRules();
+        token = new RestrictedToken(address(rules), owner, owner, "xyz", "Ex Why Zee", 0, 100);
         token.grantTransferAdmin(owner);
     }
 

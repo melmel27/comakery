@@ -3,6 +3,7 @@ pragma solidity ^ 0.5 .8;
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "../contracts/RestrictedToken.sol";
+import "truffle/DeployedAddresses.sol";
 import "./support/UserProxy.sol";
 
 contract MessagesForTransferRestrictionsTest {
@@ -19,7 +20,8 @@ contract MessagesForTransferRestrictionsTest {
 
     function beforeEach() public {
         tokenContractOwner = address(this);
-        token = new RestrictedToken(tokenContractOwner, tokenContractOwner, "xyz", "Ex Why Zee", 6, 1234567);
+        TransferRules rules = new TransferRules();
+        token = new RestrictedToken(address(rules), tokenContractOwner, tokenContractOwner, "xyz", "Ex Why Zee", 0, 100);
         token.grantTransferAdmin(tokenContractOwner);
         
         alice = address(0x1);

@@ -3,6 +3,7 @@ pragma solidity ^0.5.8;
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "../contracts/RestrictedToken.sol";
+import "../contracts/TransferRules.sol";
 import '../contracts/ITransferRules.sol';
 
 import "./support/UserProxy.sol";
@@ -31,7 +32,8 @@ contract TransferRulesUpgradeTest {
     function beforeEach() public {
         owner = address(this);
         uint8 decimalsWeWillPassToTransferRules = 6;
-        token = new RestrictedToken(owner, owner, "xyz", "Ex Why Zee", decimalsWeWillPassToTransferRules, 22);
+        TransferRules rules = new TransferRules();
+        token = new RestrictedToken(address(rules), owner, owner, "xyz", "Ex Why Zee", decimalsWeWillPassToTransferRules, 100);
         
         token.grantTransferAdmin(owner);
         token.setMaxBalance(owner, 100);

@@ -17,11 +17,12 @@ contract("Access control tests", function (accounts) {
     transferAdmin = accounts[2]
 
     unprivileged = accounts[5]
+    let rules = await TransferRules.new()
+    token = await RestrictedToken.new(rules.address, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100)
 
-    token = await RestrictedToken.new(contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100)
     await token.grantTransferAdmin(transferAdmin, {
       from: contractAdmin
-    })
+    })  
 
   })
 

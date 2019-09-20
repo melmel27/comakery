@@ -35,6 +35,7 @@ contract RestrictedToken {
   event Approval(address indexed owner, address indexed spender, uint256 value);
 
   constructor(
+    address _transferRules,
     address _contractAdmin,
     address _tokenReserveAdmin,
     string memory _symbol,
@@ -47,7 +48,7 @@ contract RestrictedToken {
 
     // transfer rules can be swapped out
     // the storage stays in the ERC20
-    transferRules = new TransferRules();
+    transferRules = ITransferRules(_transferRules);
     symbol = _symbol;
     name = _name;
     decimals = _decimals;
