@@ -42,6 +42,7 @@ contract RestrictedToken {
   event AddressTimeLock(address indexed admin, address indexed account, uint256 indexed value);
   event AddressTransferGroup(address indexed admin, address indexed account, uint256 indexed value);
   event AddressFrozen(address indexed admin, address indexed account, bool indexed status);
+  event Paused(address admin, bool status);
   
   event AllowGroupTransfer(address indexed admin, uint256 indexed fromGroup, uint256 indexed toGroup, uint256 transferAfter);
 
@@ -204,10 +205,12 @@ contract RestrictedToken {
 
   function pause() public onlyContractAdmin() {
     isPaused = true;
+    emit Paused(msg.sender, true);
   }
 
   function unpause() public onlyContractAdmin() {
     isPaused = false;
+    emit Paused(msg.sender, false);
   }
 
 

@@ -271,4 +271,32 @@ contract("Mutator calls and events", function (accounts) {
 
     assert.equal(await token.balanceOf(recipient), 17)
   })
+
+  it("pause/unpause with events", async () => {
+    assert.equal(await token.isPaused(), false)
+
+    let tx = await token.pause({
+      from: contractAdmin
+    })
+
+    truffleAssert.eventEmitted(tx, 'Paused', (ev) => {
+      assert.equal(ev.admin, contractAdmin)
+      assert.equal(ev.status, true)
+      return true
+    })
+
+    assert.equal(await token.isPaused(), true)
+
+    let tx2 = await token.unpause({
+      from: contractAdmin
+    })
+
+    truffleAssert.eventEmitted(tx2, 'Paused', (ev) => {
+      assert.equal(ev.admin, contractAdmin)
+      assert.equal(ev.status, false)
+      return true
+    })
+
+    assert.equal(await token.isPaused(), false)
+  })
 })
