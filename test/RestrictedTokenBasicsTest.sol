@@ -16,38 +16,82 @@ contract RestrictedTokenBasicsTest {
 
         reserveAdmin = address(0x1);
         TransferRules rules = new TransferRules();
-        token = new RestrictedToken(address(rules), tokenContractOwner, reserveAdmin, "xyz", "Ex Why Zee", 6, 1234567);
+        token = new RestrictedToken(
+            address(rules),
+            tokenContractOwner,
+            reserveAdmin,
+            "xyz",
+            "Ex Why Zee",
+            6,
+            1234567
+        );
         token.grantTransferAdmin(tokenContractOwner);
-        
-        token.setMaxBalance(tokenContractOwner, 1e18); 
+
+        token.setMaxBalance(tokenContractOwner, 1e18);
         token.setAllowGroupTransfer(0, 0, now); // don't restrict default group transfers
     }
 
     function testTokenInitialization() public {
         Assert.equal(token.symbol(), "xyz", "should return the token symbol");
-        Assert.equal(token.name(), "Ex Why Zee", "should return the token name");
-        Assert.equal(uint(token.decimals()), 6, "should return the token decimals");
-        Assert.equal(uint(token.totalSupply()), 1234567, "should return the totalSupply");
-        Assert.equal(token.MAX_UINT(), uint(0) - uint(1), "MAX_UINT should be largest possible uint256");        
+        Assert.equal(
+            token.name(),
+            "Ex Why Zee",
+            "should return the token name"
+        );
+        Assert.equal(
+            uint256(token.decimals()),
+            6,
+            "should return the token decimals"
+        );
+        Assert.equal(
+            uint256(token.totalSupply()),
+            1234567,
+            "should return the totalSupply"
+        );
+        Assert.equal(
+            token.MAX_UINT(),
+            uint256(0) - uint256(1),
+            "MAX_UINT should be largest possible uint256"
+        );
     }
 
     function testTokenAdminSetup() public {
         Assert.isTrue(token.totalSupply() > 1, "there should be tokens issued");
-        Assert.equal(token.balanceOf(tokenContractOwner), 0, "contract owner should get 0 balance");
-        Assert.equal(token.balanceOf(address(reserveAdmin)), token.totalSupply(), "reserve admin should get the initial token balance");
+        Assert.equal(
+            token.balanceOf(tokenContractOwner),
+            0,
+            "contract owner should get 0 balance"
+        );
+        Assert.equal(
+            token.balanceOf(address(reserveAdmin)),
+            token.totalSupply(),
+            "reserve admin should get the initial token balance"
+        );
     }
 
     function testTransferRestrictionSuccess() public {
-        uint8 restrictionCode = token.detectTransferRestriction(tokenContractOwner, tokenContractOwner, 17);
-        Assert.equal(uint(restrictionCode), 0, "not the transfer SUCCESS code");
+        uint8 restrictionCode = token.detectTransferRestriction(
+            tokenContractOwner,
+            tokenContractOwner,
+            17
+        );
+        Assert.equal(
+            uint256(restrictionCode),
+            0,
+            "not the transfer SUCCESS code"
+        );
     }
 
     function testTotalSupply() public {
-        Assert.equal(token.totalSupply(), uint(1234567), "billion tokens to start");
+        Assert.equal(
+            token.totalSupply(),
+            uint256(1234567),
+            "billion tokens to start"
+        );
     }
 
     function testBalanceOf() public {
-        uint balance = token.balanceOf(address(reserveAdmin));
+        uint256 balance = token.balanceOf(address(reserveAdmin));
         Assert.equal(balance, token.totalSupply(), "correct initial balance");
     }
 }

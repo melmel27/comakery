@@ -18,6 +18,8 @@
     "setup": "cd contracts && truffle compile && truffle deploy && cd - && yarn build"
   },
   "devDependencies": {
-    "eslint": "^6.1.0"
+    "eslint": "^6.1.0",
+    "prettier": "^1.18.2",
+    "prettier-plugin-solidity": "^1.0.0-alpha.32"
   }
 }
