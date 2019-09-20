@@ -24,7 +24,7 @@ contract RestrictedToken {
 
   // transfer restriction storage
   uint256 public constant MAX_UINT = ((2 ** 255 - 1) * 2) + 1; // get max uint256 without overflow
-  mapping(address => uint256) public maxBalances; // TODO: may want to map address => uint256 for max holdings
+  mapping(address => uint256) public maxBalances;
   mapping(address => uint256) public timeLock; // unix timestamp to lock funds until
   mapping(address => uint256) public transferGroups; // restricted groups like Reg S, Reg D and Reg CF
   mapping(uint256 => mapping(uint256 => uint256)) private _allowGroupTransfers; // approve transfers between groups: from => to => TimeLockUntil
@@ -90,13 +90,11 @@ contract RestrictedToken {
     _contractAdmins.remove(_account);
   }
 
-  // Enforce transfer restrictions
   function enforceTransferRestrictions(address from, address to, uint256 value) public view {
     uint8 restrictionCode = detectTransferRestriction(from, to, value);
     require(restrictionCode == 0, transferRules.messageForTransferRestriction(restrictionCode));
   }
 
-  // TODO: consider potential reentrancy issues
   function detectTransferRestriction(address from, address to, uint256 value) public view returns(uint8) {
     return transferRules.detectTransferRestriction(address(this), from, to, value);
   }
@@ -104,8 +102,6 @@ contract RestrictedToken {
   function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory) {
     return transferRules.messageForTransferRestriction(restrictionCode);
   }
-
-  // Transfer rule getters and setters
 
   function setMaxBalance(address _account, uint256 _updatedValue) public onlyTransferAdmin {
     maxBalances[_account] = _updatedValue;
@@ -115,7 +111,6 @@ contract RestrictedToken {
     return maxBalances[_account];
   }
 
-  // TODO: should timestamp 0 be locked? ie should tokens be locked by default? probably yes.
   function setTimeLock(address _account, uint256 _timestamp) public onlyTransferAdmin {
     timeLock[_account] = _timestamp;
   }
@@ -151,9 +146,10 @@ contract RestrictedToken {
     freeze(addr, status);
   }
 
+  // TODO: if transferAfter = 0 no transfer; update README
+  // TODO: if transferAfter = 1 any transfer works; update README
   function setAllowGroupTransfer(uint256 groupA, uint256 groupB, uint256 transferAfter) public onlyTransferAdmin {
-    // TODO: if 0 no transfer; update README
-    // TODO: if 1 any transfer works; update README
+    
     _allowGroupTransfers[groupA][groupB] = transferAfter;
   }
 
@@ -184,8 +180,6 @@ contract RestrictedToken {
     return frozenAddresses[addr];
   }
 
-  /******* Mint, Burn, Freeze ***********/
-  // For Token owner
   function burnFrom(address from, uint256 value) public onlyContractAdmin {
     require(value <= _balances[from], "Insufficent tokens to burn");
     _balances[from] = _balances[from].sub(value);
