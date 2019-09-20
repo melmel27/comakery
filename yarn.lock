@@ -1353,6 +1353,28 @@ eth-lib@^0.1.26:
     ws "^3.0.0"
     xhr-request-promise "^0.1.2"
 
+ethereum-common@^0.0.18:
+  version "0.0.18"
+  resolved "https://registry.yarnpkg.com/ethereum-common/-/ethereum-common-0.0.18.tgz#2fdc3576f232903358976eb39da783213ff9523f"
+  integrity sha1-L9w1dvIykDNYl26znaeDIT/5Uj8=
+
+ethereum-localized-messaging@^2.1.4:
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/ethereum-localized-messaging/-/ethereum-localized-messaging-2.1.4.tgz#e03817771b6e713450a3944416c4eb20f36ffdc7"
+  integrity sha512-gbq1FWI1tjXciopPtBe1R2DA83WUeMPqLUgx621jNIRSQUri7v791cSGv4gLW9/9kG/1e3IKAYIrhssdtd9nOw==
+  dependencies:
+    ethereumjs-tx "^1.3.7"
+    truffle "^5.0.1"
+    web3 "^1.0.0-beta.37"
+
+ethereumjs-tx@^1.3.7:
+  version "1.3.7"
+  resolved "https://registry.yarnpkg.com/ethereumjs-tx/-/ethereumjs-tx-1.3.7.tgz#88323a2d875b10549b8347e09f4862b546f3d89a"
+  integrity sha512-wvLMxzt1RPhAQ9Yi3/HKZTn0FZYpnsmQdbKYfUUpi4j1SEIcbkd9tndVjcPrufY3V7j2IebOpC00Zp2P/Ay2kA==
+  dependencies:
+    ethereum-common "^0.0.18"
+    ethereumjs-util "^5.0.0"
+
 ethereumjs-util@6.1.0:
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/ethereumjs-util/-/ethereumjs-util-6.1.0.tgz#e9c51e5549e8ebd757a339cc00f5380507e799c8"
@@ -1360,6 +1382,19 @@ ethereumjs-util@6.1.0:
     bn.js "^4.11.0"
     create-hash "^1.1.2"
     ethjs-util "0.1.6"
+    keccak "^1.0.2"
+    rlp "^2.0.0"
+    safe-buffer "^5.1.1"
+    secp256k1 "^3.0.1"
+
+ethereumjs-util@^5.0.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/ethereumjs-util/-/ethereumjs-util-5.2.0.tgz#3e0c0d1741471acf1036052d048623dee54ad642"
+  integrity sha512-CJAKdI0wgMbQFLlLRtZKGcy/L6pzVRgelIZqRqNbuVFM3K9VEnyfbcvz0ncWMRNCe4kaHWjwRYQcYMucmwsnWA==
+  dependencies:
+    bn.js "^4.11.0"
+    create-hash "^1.1.2"
+    ethjs-util "^0.1.3"
     keccak "^1.0.2"
     rlp "^2.0.0"
     safe-buffer "^5.1.1"
@@ -1387,7 +1422,7 @@ ethjs-unit@0.1.6:
     bn.js "4.11.6"
     number-to-bn "1.7.0"
 
-ethjs-util@0.1.6:
+ethjs-util@0.1.6, ethjs-util@^0.1.3:
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/ethjs-util/-/ethjs-util-0.1.6.tgz#f308b62f185f9fe6237132fb2a9818866a5cd536"
   dependencies:
@@ -4031,6 +4066,15 @@ truffle-assertions@^0.9.1:
     assertion-error "^1.1.0"
     lodash.isequal "^4.5.0"
 
+truffle@^5.0.1:
+  version "5.0.37"
+  resolved "https://registry.yarnpkg.com/truffle/-/truffle-5.0.37.tgz#10da6f1bb9e661c4ccec75c295554bc4434f6b18"
+  integrity sha512-od3mnu6sCV7sYbJCLSDV66RZ4bYeuLQ1QDpjGQHyJMB5AIw+u8GnxBmj6MKBOWHC+zixnwkRwS9yTYpj5IObFg==
+  dependencies:
+    app-module-path "^2.2.0"
+    mocha "5.2.0"
+    original-require "1.0.1"
+
 truffle@^5.0.35:
   version "5.0.35"
   resolved "https://registry.yarnpkg.com/truffle/-/truffle-5.0.35.tgz#5c93522c3a0915567b2e5c7811934e0ee6e8a2bd"
@@ -4462,7 +4506,7 @@ web3-utils@1.2.1:
     underscore "1.9.1"
     utf8 "3.0.0"
 
-web3@^1.2.1:
+web3@^1.0.0-beta.37, web3@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/web3/-/web3-1.2.1.tgz#5d8158bcca47838ab8c2b784a2dee4c3ceb4179b"
   dependencies:

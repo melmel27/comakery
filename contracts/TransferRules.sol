@@ -52,5 +52,6 @@ contract TransferRules is ITransferRules {
       "TRANSFER GROUP NOT APPROVED",
       "TRANSFER GROUP NOT ALLOWED UNTIL LATER"
     ][restrictionCode];
+    // return FISSION.code(restrictionCode);
   }
 }
