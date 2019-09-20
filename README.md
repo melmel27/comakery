@@ -65,7 +65,7 @@ The roles fall into two categories Admin Roles and Wallet Account Address Manage
 | setMaxBalance() | no | **yes** |
 | setTimeLock() | no | **yes** |
 | removeTimeLock() | no | **yes** |
-| setGroup() | no | **yes** |
+| setTransferGroup() | no | **yes** |
 | setAccountPermissions() | no | **yes** |
 | setAllowGroupTransfer() | no | **yes** |
 

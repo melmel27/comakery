@@ -277,9 +277,9 @@ contract("Access control tests", function (accounts) {
     }))
   })
 
-  it("only transferAdmin can setGroup", async () => {
+  it("only transferAdmin can setTransferGroup", async () => {
     let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.setGroup(unprivileged, 1, {
+      await truffleAssert.reverts(token.setTransferGroup(unprivileged, 1, {
         from: from
       }), "DOES NOT HAVE TRANSFER ADMIN ROLE")
     }
@@ -288,7 +288,7 @@ contract("Access control tests", function (accounts) {
     await checkRevertsFor(reserveAdmin)
     await checkRevertsFor(unprivileged)
 
-    await truffleAssert.passes(token.setGroup(unprivileged, 1, {
+    await truffleAssert.passes(token.setTransferGroup(unprivileged, 1, {
       from: transferAdmin
     }))
   })

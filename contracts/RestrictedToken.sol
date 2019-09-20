@@ -144,7 +144,7 @@ contract RestrictedToken {
     return timeLock[account];
   }
 
-  function setGroup(address addr, uint256 groupID) public onlyTransferAdmin {
+  function setTransferGroup(address addr, uint256 groupID) public onlyTransferAdmin {
     transferGroups[addr] = groupID;
     emit AddressTransferGroup(msg.sender, addr, groupID);
   }
@@ -163,7 +163,7 @@ contract RestrictedToken {
   }
 
   function setAccountPermissions(address addr, uint256 groupID, uint256 timeLockUntil, uint256 maxTokens, bool status) public onlyTransferAdmin {
-    setGroup(addr, groupID);
+    setTransferGroup(addr, groupID);
     setTimeLock(addr, timeLockUntil);
     setMaxBalance(addr, maxTokens);
     freeze(addr, status);

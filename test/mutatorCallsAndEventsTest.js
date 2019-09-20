@@ -183,8 +183,8 @@ contract("Mutator calls and events", function (accounts) {
     assert.equal(await token.getTimeLock(recipient), 0)
   })
 
-  it("setGroup with events", async () => {
-    let tx = await token.setGroup(recipient, 9, {
+  it("setTransferGroup with events", async () => {
+    let tx = await token.setTransferGroup(recipient, 9, {
       from: transferAdmin
     })
 
