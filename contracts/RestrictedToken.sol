@@ -38,6 +38,7 @@ contract RestrictedToken {
   event TimeLockSet(address indexed admin, address indexed account, uint256 indexed value);
   event TransferGroupSet(address indexed admin, address indexed account, uint256 indexed value);
   event AllowGroupTransfer(address indexed admin, uint256 indexed fromGroup, uint256 indexed toGroup, uint256 transferAfter);
+  event AddressFrozen(address indexed admin, address indexed account, bool indexed status);
 
   constructor(
     address _transferRules,
@@ -145,6 +146,15 @@ contract RestrictedToken {
     return transferGroups[addr];
   }
 
+  function freeze(address addr, bool status) public onlyTransferAdminOrContractAdmin {
+    frozenAddresses[addr] = status;
+    emit AddressFrozen(msg.sender, addr, status);
+  }
+
+  function frozen(address addr) public view returns(bool) {
+    return frozenAddresses[addr];
+  }
+
   function setAccountPermissions(address addr, uint256 groupID, uint256 timeLockUntil, uint256 maxTokens, bool status) public onlyTransferAdmin {
     setGroup(addr, groupID);
     setTimeLock(addr, timeLockUntil);
@@ -176,14 +186,6 @@ contract RestrictedToken {
   // a transfer time of 0 is treated as not allowed
   function getAllowTransferTime(address from, address to) public view returns(uint timestamp) {
     return _allowGroupTransfers[transferGroups[from]][transferGroups[to]];
-  }
-
-  function freeze(address addr, bool status) public onlyTransferAdminOrContractAdmin {
-    frozenAddresses[addr] = status;
-  }
-
-  function frozen(address addr) public view returns(bool) {
-    return frozenAddresses[addr];
   }
 
   function burnFrom(address from, uint256 value) public onlyContractAdmin {

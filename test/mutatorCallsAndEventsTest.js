@@ -197,6 +197,34 @@ contract("Access control tests", function (accounts) {
     assert.equal(await token.getTransferGroup(recipient), 9)
   })
 
+  it("freeze with events", async () => {
+    let tx = await token.freeze(recipient, true, {
+      from: transferAdmin
+    })
+
+    truffleAssert.eventEmitted(tx, 'AddressFrozen', (ev) => {
+      assert.equal(ev.admin, transferAdmin)
+      assert.equal(ev.account, recipient)
+      assert.equal(ev.status, true)
+      return true
+    })
+
+    assert.equal(await token.frozen(recipient), true)
+
+    let tx2 = await token.freeze(recipient, false, {
+      from: transferAdmin
+    })
+
+    truffleAssert.eventEmitted(tx2, 'AddressFrozen', (ev) => {
+      assert.equal(ev.admin, transferAdmin)
+      assert.equal(ev.account, recipient)
+      assert.equal(ev.status, false)
+      return true
+    })
+
+    assert.equal(await token.frozen(recipient), false)
+  })
+
   it("setAllowGroupTransfer with events", async () => {
     let tx = await token.setAllowGroupTransfer(0, 1, 203, {
       from: transferAdmin
