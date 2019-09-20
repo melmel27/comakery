@@ -34,7 +34,8 @@ contract RestrictedToken {
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
   event RoleChange(address indexed grantor, address indexed grantee, string role, bool indexed status);
-  event MaxBalanceSet(address indexed admin, address indexed account, uint256 indexed maxBalance);
+  event MaxBalanceSet(address indexed admin, address indexed account, uint256 indexed value);
+  event TimeLockSet(address indexed admin, address indexed account, uint256 indexed value);
 
   constructor(
     address _transferRules,
@@ -121,6 +122,7 @@ contract RestrictedToken {
 
   function setTimeLock(address _account, uint256 _timestamp) public onlyTransferAdmin {
     timeLock[_account] = _timestamp;
+    emit TimeLockSet(msg.sender, _account, _timestamp);
   }
 
   function removeTimeLock(address _account) public onlyTransferAdmin {
@@ -129,14 +131,6 @@ contract RestrictedToken {
 
   function getTimeLock(address _account) public view returns(uint256) {
     return timeLock[_account];
-  }
-
-  function pause() public onlyContractAdmin() {
-    isPaused = true;
-  }
-
-  function unpause() public onlyContractAdmin() {
-    isPaused = false;
   }
 
   function setGroup(address addr, uint256 groupID) public onlyTransferAdmin {
@@ -196,6 +190,14 @@ contract RestrictedToken {
   function mint(address to, uint256 value) public onlyContractAdmin  {
     _balances[to] = _balances[to].add(value);
     totalSupply = totalSupply.add(value);
+  }
+
+  function pause() public onlyContractAdmin() {
+    isPaused = true;
+  }
+
+  function unpause() public onlyContractAdmin() {
+    isPaused = false;
   }
 
   /******* ERC20 FUNCTIONS ***********/

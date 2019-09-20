@@ -147,10 +147,25 @@ contract("Access control tests", function (accounts) {
     truffleAssert.eventEmitted(tx, 'MaxBalanceSet', (ev) => {
       assert.equal(ev.admin, transferAdmin)
       assert.equal(ev.account, recipient)
-      assert.equal(ev.maxBalance, 100)
+      assert.equal(ev.value, 100)
       return true
     })
 
     assert.equal(await token.getMaxBalance(recipient), 100)
+  })
+
+  it("setTimeLock with events", async () => {
+    let tx = await token.setTimeLock(recipient, 97, {
+      from: transferAdmin
+    })
+
+    truffleAssert.eventEmitted(tx, 'TimeLockSet', (ev) => {
+      assert.equal(ev.admin, transferAdmin)
+      assert.equal(ev.account, recipient)
+      assert.equal(ev.value, 97)
+      return true
+    })
+
+    assert.equal(await token.getTimeLock(recipient), 97)
   })
 })
