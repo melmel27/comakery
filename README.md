@@ -8,9 +8,9 @@
 
 This is an open source Security Token from CoMakery. The core purpose of the token is to enforce transfer restrictions for certain groups.
 
-This implementation attempts to balance simplicity and sufficiency for smart contract security tokens that need to comply with regulatory authorities - without adding unnecessary complexity for simple use cases. It implements the [**ERC-20**](https://eips.ethereum.org/EIPS/eip-20) token standard with [ERC-1404](https://github.com/ethereum/EIPs/issues/1404) security token transfer restrictions.
+This implementation attempts to balance simplicity and sufficiency for smart contract security tokens that need to comply with regulatory authorities - without adding unnecessary complexity for simple use cases. It implements the [**ERC-20**](https://eips.ethereum.org/EIPS/eip-20) token standard with [**ERC-1404**](https://github.com/ethereum/EIPs/issues/1404) security token transfer restrictions.
 
-This approach takes into account yet to be standardized guidance from [**ERC-1400**](https://github.com/ethereum/EIPs/issues/1411) (which has additional recommendations for more complex security token needs) and ERC-1404 which offers an approach similar to [**ERC-902**](https://eips.ethereum.org/EIPS/eip-902). Unfortuntately ERC-1404 does not adopt [ERC-1066](https://eips.ethereum.org/EIPS/eip-1066) standard error codes - which this project may adopt in the future. Since no security token standards have reached mass adoption or maturity and they do not fully agree with each other, the token optimizes for a simple and sufficient implementation.
+This approach takes into account yet to be standardized guidance from [**ERC-1400**](https://github.com/ethereum/EIPs/issues/1411) (which has additional recommendations for more complex security token needs) and ERC-1404 which offers an approach similar to [**ERC-902**](https://eips.ethereum.org/EIPS/eip-902). Unfortuntately ERC-1404 does not adopt [**ERC-1066**](https://eips.ethereum.org/EIPS/eip-1066) standard error codes - which this project may adopt in the future. Since no security token standards have reached mass adoption or maturity and they do not fully agree with each other, the token optimizes for a simple and sufficient implementation.
 
 Simplicity is desirable to make the full operations of the contract clear to users of the smart contracts. It also reduces the number of smart contract lines that need to be secured (each line of a smart contract is a security liability).
 
@@ -114,13 +114,13 @@ Here is how these restricted admin accounts can be configured:
 
 Then the Hot Wallet Admin can distribute tokens to investors and stakeholders as described below...
 
-## Issuer Issues the Token To AML / KYC'd Recipients
+## Issuing the Token To AML / KYC'd Recipients
 
 ![](docs/plant-uml-diagrams/basic-issuance.png)
 
 1. The Transfer Admin gathers AML/KYC and accreditation information from investors and stakeholders who will receive tokens directly from the issuer (the Primary Issuance).
-1. Transfer Admin then configures approved blockchain account addresses for investor and stakeholders with `setAccountPermissions(address, transferGroup, LockupUntil, maxBalance)` . Based on the AML/KYC and accreditation process the investor can provision the account address with a maximum number of tokens; a transfer group designating a regulatory class like "Reg D", "Reg CF" or "Reg S"; and a date that the tokens in the address will be locked until.
-1. The tokens can then be transferred from the issuers hot wallet to the provisioned addresses.
+2. Transfer Admin then configures approved blockchain account addresses for investor and stakeholders with `setAccountPermissions(address, transferGroup, LockupUntil, maxBalance)` . Based on the AML/KYC and accreditation process the investor can provision the account address with a maximum number of tokens; a transfer group designating a regulatory class like "Reg D", "Reg CF" or "Reg S"; and a date that the tokens in the address will be locked until.
+3. The tokens can then be transferred from the issuers hot wallet to the provisioned addresses.
 
 Note that there are no transfers yet authorized between accounts. By default no transfers are allowed - all transfer groups are restricted.
 
@@ -146,7 +146,7 @@ To allow trading in a group:
     * the `addressTimelock` and `groupTimeLock` times have passed; and 
     * the recipient of a token transfer does not exceeded the `maxTokens` in their account address.
 
-## Avoiding Flow Back of Reg S Assets
+## Avoiding Flowback of Reg S "Foreign" Assets
 
 To allow trading between Foreign Reg S account addresses but forbid flow back to US Reg D account addresses until the end of the Reg D lockup period
 * Call `setAccountPermissions(address, groupIDForRegS, shorterTimeLock, maxTokens)` to configure settings for Reg S investors
@@ -190,7 +190,7 @@ In the case of stolen assets with sufficient legal reason to be returned to thei
 
 Although this is not in the spirit of a cryptocurrency, it is available as a response to requirements that some regulators impose on blockchain security token projects.
 
-## Lost Key Token Recovery
+## Asset Recovery In The Case of Lost Keys
 
 In the case of lost keys with sufficient legal reason to be returned to their owner, the issuer can call `freeze()`, `burn()`, and `mint()` to transfer the assets to the appropriate account. This opens the issuer up to potential cases of fraud. Handle with care.
 
