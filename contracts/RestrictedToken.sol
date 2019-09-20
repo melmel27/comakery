@@ -34,6 +34,7 @@ contract RestrictedToken {
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
   event RoleChange(address indexed grantor, address indexed grantee, string role, bool indexed status);
+  event MaxBalanceSet(address indexed admin, address indexed account, uint256 indexed maxBalance);
 
   constructor(
     address _transferRules,
@@ -111,6 +112,7 @@ contract RestrictedToken {
 
   function setMaxBalance(address _account, uint256 _updatedValue) public onlyTransferAdmin {
     maxBalances[_account] = _updatedValue;
+    emit MaxBalanceSet(msg.sender, _account, _updatedValue);
   }
 
   function getMaxBalance(address _account) public view returns(uint256) {
@@ -155,7 +157,6 @@ contract RestrictedToken {
   // TODO: if transferAfter = 0 no transfer; update README
   // TODO: if transferAfter = 1 any transfer works; update README
   function setAllowGroupTransfer(uint256 groupA, uint256 groupB, uint256 transferAfter) public onlyTransferAdmin {
-    
     _allowGroupTransfers[groupA][groupB] = transferAfter;
   }
 

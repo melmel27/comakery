@@ -137,4 +137,20 @@ contract("Access control tests", function (accounts) {
       return true
     })
   })
+
+
+  it("setMaxBalance with events", async () => {
+    let tx = await token.setMaxBalance(recipient, 100, {
+      from: transferAdmin
+    })
+
+    truffleAssert.eventEmitted(tx, 'MaxBalanceSet', (ev) => {
+      assert.equal(ev.admin, transferAdmin)
+      assert.equal(ev.account, recipient)
+      assert.equal(ev.maxBalance, 100)
+      return true
+    })
+
+    assert.equal(await token.getMaxBalance(recipient), 100)
+  })
 })
