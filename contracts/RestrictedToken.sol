@@ -35,6 +35,7 @@ contract RestrictedToken {
   event Approval(address indexed owner, address indexed spender, uint256 value);
 
   event Burn(address indexed admin, address indexed account, uint256 indexed value);
+  event Mint(address indexed admin, address indexed account, uint256 indexed value);
   
   event RoleChange(address indexed grantor, address indexed grantee, string role, bool indexed status);
   event AddressMaxBalance(address indexed admin, address indexed account, uint256 indexed value);
@@ -198,6 +199,7 @@ contract RestrictedToken {
   function mint(address to, uint256 value) public onlyContractAdmin  {
     _balances[to] = _balances[to].add(value);
     totalSupply = totalSupply.add(value);
+    emit Mint(msg.sender, to, value);
   }
 
   function pause() public onlyContractAdmin() {

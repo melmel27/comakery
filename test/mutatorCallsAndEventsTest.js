@@ -2,7 +2,7 @@ const truffleAssert = require('truffle-assertions');
 var RestrictedToken = artifacts.require("RestrictedToken");
 var TransferRules = artifacts.require("TransferRules");
 
-contract("Access control tests", function (accounts) {
+contract("Mutator calls and events", function (accounts) {
   var contractAdmin
   var reserveAdmin
   var transferAdmin
@@ -254,5 +254,21 @@ contract("Access control tests", function (accounts) {
     })
 
     assert.equal(await token.balanceOf(reserveAdmin), 83)
+    assert.equal(await token.totalSupply(), 83)
+  })
+
+  it("mint with events", async () => {
+    let tx = await token.mint(recipient, 17, {
+      from: contractAdmin
+    })
+
+    truffleAssert.eventEmitted(tx, 'Mint', (ev) => {
+      assert.equal(ev.admin, contractAdmin)
+      assert.equal(ev.account, recipient)
+      assert.equal(ev.value, 17)
+      return true
+    })
+
+    assert.equal(await token.balanceOf(recipient), 17)
   })
 })
