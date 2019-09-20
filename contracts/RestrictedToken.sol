@@ -25,7 +25,7 @@ contract RestrictedToken {
   // transfer restriction storage
   uint256 public constant MAX_UINT = ((2 ** 255 - 1) * 2) + 1; // get max uint256 without overflow
   mapping(address => uint256) public maxBalances;
-  mapping(address => uint256) public timeLock; // unix timestamp to lock funds until
+  mapping(address => uint256) public timeLocks; // unix timestamp to lock funds until
   mapping(address => uint256) public transferGroups; // restricted groups like Reg S, Reg D and Reg CF
   mapping(uint256 => mapping(uint256 => uint256)) private allowGroupTransfers; // approve transfers between groups: from => to => TimeLockUntil
   mapping(address => bool) public frozenAddresses;
@@ -131,17 +131,17 @@ contract RestrictedToken {
   }
 
   function setTimeLock(address account, uint256 timestamp) public onlyTransferAdmin {
-    timeLock[account] = timestamp;
+    timeLocks[account] = timestamp;
     emit AddressTimeLock(msg.sender, account, timestamp);
   }
 
   function removeTimeLock(address account) public onlyTransferAdmin {
-    timeLock[account] = 0;
+    timeLocks[account] = 0;
     emit AddressTimeLock(msg.sender, account, 0);
   }
 
   function getTimeLock(address account) public view returns(uint256) {
-    return timeLock[account];
+    return timeLocks[account];
   }
 
   function setTransferGroup(address addr, uint256 groupID) public onlyTransferAdmin {

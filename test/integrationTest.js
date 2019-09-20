@@ -14,7 +14,6 @@ contract("Integrated Scenarios", function (accounts) {
     var groupReserve
     var groupExchange
     var groupForeignS
-    var groupDomesticD
     var token
 
 
@@ -30,7 +29,6 @@ contract("Integrated Scenarios", function (accounts) {
         groupReserve = 1
         groupExchange = 2
         groupForeignS = 3
-        groupDomesticD = 4
 
         let rules = await TransferRules.new()
         token = await RestrictedToken.new(rules.address, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100)

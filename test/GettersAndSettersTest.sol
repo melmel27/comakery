@@ -34,7 +34,7 @@ contract GettersAndSettersTest {
         number = token.maxBalances(owner);
         number.equal(0, "bad getter value");
 
-        number = token.timeLock(owner);
+        number = token.timeLocks(owner);
         number.equal(0, "bad getter value");
 
         number = token.transferGroups(owner);
@@ -52,7 +52,8 @@ contract GettersAndSettersTest {
         );
         allowed.isFalse("should not allow transfers between groups by default");
 
-        token.setAllowGroupTransfer(defaultGroup, defaultGroup, 1); // allow transfers in default group 1 second after the start of time
+        // allow transfers in default group 1 second after the start of time
+        token.setAllowGroupTransfer(defaultGroup, defaultGroup, 1); 
         token.getAllowGroupTransfer(defaultGroup, defaultGroup, now).isTrue(
             "should allow transfer after first second of all time"
         );

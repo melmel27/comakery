@@ -27,7 +27,8 @@ contract FreezeTest {
         uint8 code = token.detectTransferRestriction(alice, address(bob), 1);
         Assert.equal(uint256(code), 5, "wrong transfer restriction code for frozen account");
 
-        Assert.equal(token.transferRules().messageForTransferRestriction(code), "SENDER ADDRESS IS FROZEN", "wrong transfer restriction code for frozen account");
+        Assert.equal(token.transferRules().messageForTransferRestriction(code), 
+        "SENDER ADDRESS IS FROZEN", "wrong transfer restriction code for frozen account");
     }
 
     function testCanPauseTransfers() public {
