@@ -2,60 +2,112 @@ const truffleAssert = require('truffle-assertions');
 var RestrictedToken = artifacts.require("RestrictedToken");
 var TransferRules = artifacts.require("TransferRules");
 
-contract("Mutator calls and events", function (accounts) {
+contract("Integrated Scenarios", function (accounts) {
     var contractAdmin
     var reserveAdmin
     var transferAdmin
     var exchangeOmnibus
     var foreignInvestorS
-    var domesticInvestorD
-    
+    var foreignInvestorS2
+
     var groupDefault
     var groupReserve
     var groupExchange
     var groupForeignS
     var groupDomesticD
+    var token
 
-    
-  beforeEach(async function () {
-    contractAdmin = accounts[0]
-    reserveAdmin = accounts[1]
-    transferAdmin = accounts[2]
-    exchangeOmnibus = accounts[3]
-    foreignInvestorS = accounts[5]
-    domesticInvestorD = accounts[5]
-    
-    groupDefault = 0
-    groupReserve = 1
-    groupExchange = 2
-    groupForeignS = 3
-    groupDomesticD = 4
 
-    token = await RestrictedToken.deployed()
-  })
+    beforeEach(async function () {
+        contractAdmin = accounts[0]
+        reserveAdmin = accounts[1]
+        transferAdmin = accounts[2]
+        exchangeOmnibus = accounts[3]
+        foreignInvestorS = accounts[4]
+        foreignInvestorS2 = accounts[5]
 
-  it('initial setup after migrations', async () => {
-    assert.equal(await token.totalSupply.call(), 100)
-    assert.equal(await token.balanceOf.call(contractAdmin), 0, 'allocates no balance to the contractAdmin')
-    assert.equal(await token.balanceOf.call(reserveAdmin), 100, 'allocates all tokens to the reserve admin')
-  })
+        groupDefault = 0
+        groupReserve = 1
+        groupExchange = 2
+        groupForeignS = 3
+        groupDomesticD = 4
 
-  it('can be setup correctly for transfer restrictions', async() => {
-    // configure initial transferAdmin
-    await token.grantTransferAdmin(transferAdmin, {from: contractAdmin})
+        let rules = await TransferRules.new()
+        token = await RestrictedToken.new(rules.address, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100)
 
-    // setup initial transfers groups
-    // reserve account can transfer to anyone right away
-    token.setAllowGroupTransfer(groupReserve, groupExchange, 1, {from: transferAdmin})
-    token.setAllowGroupTransfer(groupReserve, groupDomesticD, 1, {from: transferAdmin})
-    token.setAllowGroupTransfer(groupReserve, groupForeignS, 1, {from: transferAdmin})
+        // configure initial transferAdmin
+        await token.grantTransferAdmin(transferAdmin, {
+            from: contractAdmin
+        })
+    })
 
-    // exchange allows Reg S to withdraw to their own accounts
-    token.setAllowGroupTransfer(groupExchange, groupForeignS, 1, {from: transferAdmin})
+    it('initial setup after migrations', async () => {
+        let migratedToken = await RestrictedToken.deployed()
+        assert.equal(await migratedToken.totalSupply.call(), 100)
+        assert.equal(await migratedToken.balanceOf.call(contractAdmin), 0, 'allocates no balance to the contractAdmin')
+        assert.equal(await migratedToken.balanceOf.call(reserveAdmin), 100, 'allocates all tokens to the reserve admin')
+    })
 
-    // foreign Reg S can deposit into exchange accounts for trading on exchanges
-    token.setAllowGroupTransfer(groupForeignS, groupExchange, 1, {from: transferAdmin})
-    
-    // distribute tokens to the exchange for regulated token sale
-  })
+    it('can be setup correctly for Exchange and Reg S transfer restrictions with separate admin roles', async () => {
+        // setup initial transfers groups
+        // reserve account can transfer to anyone right away
+        await token.setAllowGroupTransfer(groupReserve, groupExchange, 1, {
+            from: transferAdmin
+        })
+
+        await token.setAllowGroupTransfer(groupReserve, groupForeignS, 1, {
+            from: transferAdmin
+        })
+        await token.setAccountPermissions(reserveAdmin, groupReserve, 1, 100, false, {
+            from: transferAdmin
+        })
+
+        // // exchange allows Reg S to withdraw to their own accounts
+        await token.setAllowGroupTransfer(groupExchange, groupForeignS, 1, {
+            from: transferAdmin
+        })
+        await token.setAccountPermissions(exchangeOmnibus, groupExchange, 1, 100, false, {
+            from: transferAdmin
+        })
+
+        // // foreign Reg S can deposit into exchange accounts for trading on exchanges
+        await token.setAllowGroupTransfer(groupForeignS, groupExchange, 1, {
+            from: transferAdmin
+        })
+        await token.setAccountPermissions(foreignInvestorS, groupForeignS, 1, 10, false, {
+            from: transferAdmin
+        })
+
+        // // distribute tokens to the exchange for regulated token sale
+        await token.transfer(exchangeOmnibus, 50, {
+            from: reserveAdmin
+        })
+        assert.equal(await token.balanceOf.call(exchangeOmnibus), 50)
+
+        await token.transfer(foreignInvestorS, 3, {
+            from: exchangeOmnibus
+        })
+        assert.equal(await token.balanceOf.call(exchangeOmnibus), 47)
+        assert.equal(await token.balanceOf.call(foreignInvestorS), 3)
+
+        // Reg S can transfer back to the exchange
+        await token.setAllowGroupTransfer(groupForeignS, groupExchange, 1, {
+            from: transferAdmin
+        })
+
+        await token.transfer(exchangeOmnibus, 1, {
+            from: foreignInvestorS
+        })
+
+        await token.transfer(exchangeOmnibus, 1, { from: foreignInvestorS })
+        
+        // Reg S cannot transfer to another Reg S
+        await token.setAccountPermissions(foreignInvestorS2, groupForeignS, 1, 10, false, {
+            from: transferAdmin
+        })
+        await truffleAssert.reverts(token.transfer(foreignInvestorS2, 1, {
+            from: foreignInvestorS
+        }), "TRANSFER GROUP NOT APPROVED")
+    })
 })
+
