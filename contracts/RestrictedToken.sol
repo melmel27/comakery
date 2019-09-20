@@ -83,7 +83,7 @@ contract RestrictedToken {
   }
 
   modifier onlyTransferAdminOrContractAdmin() {
-    require((contractAdmins.has(msg.sender) || transferAdmins.has(msg.sender)), 
+    require((contractAdmins.has(msg.sender) || transferAdmins.has(msg.sender)),
     "DOES NOT HAVE TRANSFER ADMIN OR CONTRACT ADMIN ROLE");
     _;
   }
@@ -247,7 +247,9 @@ contract RestrictedToken {
   // Use safeApprove() instead of approve() to avoid the race condition exploit which is a known security hole in the ERC20 standard
   function safeApprove(address spender, uint256 newApprovalValue, uint256 expectedApprovedValue, uint8 nonce) public
   returns(bool success) {
-    require(expectedApprovedValue == allowed[msg.sender][spender], "The expected approved amount does not match the actual approved amount");
+    require(expectedApprovedValue == allowed[msg.sender][spender],
+      "The expected approved amount does not match the actual approved amount");
+      
     require(nonce == approvalNonces[msg.sender][spender], "The nonce does not match the current transfer approval nonce");
     return _approve(spender, newApprovalValue);
   }
