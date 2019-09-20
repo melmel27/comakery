@@ -33,12 +33,14 @@ contract RestrictedToken {
 
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
+  
   event RoleChange(address indexed grantor, address indexed grantee, string role, bool indexed status);
-  event MaxBalanceSet(address indexed admin, address indexed account, uint256 indexed value);
-  event TimeLockSet(address indexed admin, address indexed account, uint256 indexed value);
-  event TransferGroupSet(address indexed admin, address indexed account, uint256 indexed value);
-  event AllowGroupTransfer(address indexed admin, uint256 indexed fromGroup, uint256 indexed toGroup, uint256 transferAfter);
+  event AddressMaxBalance(address indexed admin, address indexed account, uint256 indexed value);
+  event AddressTimeLock(address indexed admin, address indexed account, uint256 indexed value);
+  event AddressTransferGroup(address indexed admin, address indexed account, uint256 indexed value);
   event AddressFrozen(address indexed admin, address indexed account, bool indexed status);
+  
+  event AllowGroupTransfer(address indexed admin, uint256 indexed fromGroup, uint256 indexed toGroup, uint256 transferAfter);
 
   constructor(
     address _transferRules,
@@ -116,7 +118,7 @@ contract RestrictedToken {
 
   function setMaxBalance(address _account, uint256 _updatedValue) public onlyTransferAdmin {
     maxBalances[_account] = _updatedValue;
-    emit MaxBalanceSet(msg.sender, _account, _updatedValue);
+    emit AddressMaxBalance(msg.sender, _account, _updatedValue);
   }
 
   function getMaxBalance(address _account) public view returns(uint256) {
@@ -125,12 +127,12 @@ contract RestrictedToken {
 
   function setTimeLock(address _account, uint256 _timestamp) public onlyTransferAdmin {
     timeLock[_account] = _timestamp;
-    emit TimeLockSet(msg.sender, _account, _timestamp);
+    emit AddressTimeLock(msg.sender, _account, _timestamp);
   }
 
   function removeTimeLock(address _account) public onlyTransferAdmin {
     timeLock[_account] = 0;
-    emit TimeLockSet(msg.sender, _account, 0);
+    emit AddressTimeLock(msg.sender, _account, 0);
   }
 
   function getTimeLock(address _account) public view returns(uint256) {
@@ -139,7 +141,7 @@ contract RestrictedToken {
 
   function setGroup(address addr, uint256 groupID) public onlyTransferAdmin {
     transferGroups[addr] = groupID;
-    emit TransferGroupSet(msg.sender, addr, groupID);
+    emit AddressTransferGroup(msg.sender, addr, groupID);
   }
 
   function getTransferGroup(address addr) public view returns(uint256 groupID) {

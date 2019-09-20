@@ -144,7 +144,7 @@ contract("Access control tests", function (accounts) {
       from: transferAdmin
     })
 
-    truffleAssert.eventEmitted(tx, 'MaxBalanceSet', (ev) => {
+    truffleAssert.eventEmitted(tx, 'AddressMaxBalance', (ev) => {
       assert.equal(ev.admin, transferAdmin)
       assert.equal(ev.account, recipient)
       assert.equal(ev.value, 100)
@@ -159,7 +159,7 @@ contract("Access control tests", function (accounts) {
       from: transferAdmin
     })
 
-    truffleAssert.eventEmitted(tx, 'TimeLockSet', (ev) => {
+    truffleAssert.eventEmitted(tx, 'AddressTimeLock', (ev) => {
       assert.equal(ev.admin, transferAdmin)
       assert.equal(ev.account, recipient)
       assert.equal(ev.value, 97)
@@ -172,7 +172,7 @@ contract("Access control tests", function (accounts) {
       from: transferAdmin
     })
 
-    truffleAssert.eventEmitted(tx2, 'TimeLockSet', (ev) => {
+    truffleAssert.eventEmitted(tx2, 'AddressTimeLock', (ev) => {
       assert.equal(ev.admin, transferAdmin)
       assert.equal(ev.account, recipient)
       assert.equal(ev.value, 0)
@@ -187,7 +187,7 @@ contract("Access control tests", function (accounts) {
       from: transferAdmin
     })
 
-    truffleAssert.eventEmitted(tx, 'TransferGroupSet', (ev) => {
+    truffleAssert.eventEmitted(tx, 'AddressTransferGroup', (ev) => {
       assert.equal(ev.admin, transferAdmin)
       assert.equal(ev.account, recipient)
       assert.equal(ev.value, 9)
