@@ -33,6 +33,7 @@ contract RestrictedToken {
 
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
+  event RoleChange(address indexed grantor, address indexed grantee, string role, bool indexed status);
 
   constructor(
     address _transferRules,
@@ -77,18 +78,22 @@ contract RestrictedToken {
 
   function grantTransferAdmin(address _account) onlyContractAdmin public {
     _transferAdmins.add(_account);
+    emit RoleChange(msg.sender, _account, "TransferAdmin", true);
   }
 
   function revokeTransferAdmin(address _account) onlyContractAdmin public {
     _transferAdmins.remove(_account);
+    emit RoleChange(msg.sender, _account, "TransferAdmin", false);
   }
 
     function grantContractAdmin(address _account) onlyContractAdmin public {
     _contractAdmins.add(_account);
+    emit RoleChange(msg.sender, _account, "ContractAdmin", true);
   }
 
   function revokeContractAdmin(address _account) onlyContractAdmin public {
     _contractAdmins.remove(_account);
+    emit RoleChange(msg.sender, _account, "ContractAdmin", false);
   }
 
   function enforceTransferRestrictions(address from, address to, uint256 value) public view {
