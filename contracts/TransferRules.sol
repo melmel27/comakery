@@ -3,6 +3,8 @@ import './RestrictedToken.sol';
 import './ITransferRules.sol';
 
 contract TransferRules is ITransferRules {
+    mapping(uint8 => string) internal errorMessage;
+    
     uint8 public constant SUCCESS = 0;
     uint8 public constant GREATER_THAN_RECIPIENT_MAX_BALANCE = 1;
     uint8 public constant SENDER_TOKENS_TIME_LOCKED = 2;
@@ -13,7 +15,17 @@ contract TransferRules is ITransferRules {
     uint8 public constant TRANSFER_GROUP_NOT_APPROVED = 7;
     uint8 public constant TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER = 8;
 
-    /******* RestrictedToken FUNCTIONS ***********/
+  constructor() public {
+    errorMessage[SUCCESS] = "SUCCESS";
+    errorMessage[GREATER_THAN_RECIPIENT_MAX_BALANCE] = "GREATER THAN RECIPIENT MAX BALANCE";
+    errorMessage[SENDER_TOKENS_TIME_LOCKED] = "SENDER TOKENS LOCKED";
+    errorMessage[DO_NOT_SEND_TO_TOKEN_CONTRACT] = "DO NOT SEND TO TOKEN CONTRACT";
+    errorMessage[DO_NOT_SEND_TO_EMPTY_ADDRESS] = "DO NOT SEND TO EMPTY ADDRESS";
+    errorMessage[SENDER_ADDRESS_FROZEN] = "SENDER ADDRESS IS FROZEN";
+    errorMessage[ALL_TRANSFERS_PAUSED] = "ALL TRANSFERS PAUSED";
+    errorMessage[TRANSFER_GROUP_NOT_APPROVED] = "TRANSFER GROUP NOT APPROVED";
+    errorMessage[TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER] = "TRANSFER GROUP NOT ALLOWED UNTIL LATER";
+  }
 
   /// @notice Detects if a transfer will be reverted and if so returns an appropriate reference code
   /// @param from Sending address
@@ -40,16 +52,7 @@ contract TransferRules is ITransferRules {
   /// @notice Returns a human-readable message for a given restriction code
   /// @param restrictionCode Identifier for looking up a message
   /// @return Text showing the restriction's reasoning
-  function messageForTransferRestriction(uint8 restrictionCode) public pure returns(string memory) {
-    return ["SUCCESS",
-      "GREATER THAN RECIPIENT MAX BALANCE",
-      "SENDER TOKENS LOCKED",
-      "DO NOT SEND TO TOKEN CONTRACT",
-      "DO NOT SEND TO EMPTY ADDRESS",
-      "SENDER ADDRESS IS FROZEN",
-      "ALL TRANSFERS PAUSED",
-      "TRANSFER GROUP NOT APPROVED",
-      "TRANSFER GROUP NOT ALLOWED UNTIL LATER"
-    ][restrictionCode];
+  function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory) {
+    return errorMessage[restrictionCode];
   }
 }

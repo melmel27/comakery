@@ -1,5 +1,4 @@
 pragma solidity ^0.5.8;
-// import "../contracts/RestrictedToken.sol";
 
 contract ITransferRules {
 
@@ -15,5 +14,5 @@ contract ITransferRules {
   /// @notice Returns a human-readable message for a given restriction code
   /// @param restrictionCode Identifier for looking up a message
   /// @return Text showing the restriction's reasoning
-  function messageForTransferRestriction(uint8 restrictionCode) public pure returns(string memory);
+  function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory);
 }

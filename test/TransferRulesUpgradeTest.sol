@@ -15,7 +15,7 @@ contract TransferRulesUpgrade is ITransferRules {
     return 17; // grab an arbitrary value from the injected token contract
   }
 
-  function messageForTransferRestriction(uint8 restrictionCode) public pure returns(string memory) {
+  function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory) {
     return "HELLO UPGRADE";
   }
 }
