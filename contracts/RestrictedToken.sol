@@ -45,6 +45,7 @@ contract RestrictedToken {
   event Mint(address indexed admin, address indexed account, uint256 indexed value);
   event Burn(address indexed admin, address indexed account, uint256 indexed value);
   event Pause(address admin, bool status);
+  event Upgrade(address admin, address oldRules, address newRules);
 
   constructor(
     address _transferRules,
@@ -213,9 +214,10 @@ contract RestrictedToken {
     emit Pause(msg.sender, false);
   }
 
-
   function upgradeTransferRules(ITransferRules newTransferRules) public onlyContractAdmin {
+    address oldRules = address(transferRules);
     transferRules = newTransferRules;
+    emit Upgrade(msg.sender, oldRules, address(newTransferRules));
   }
 
   /******* ERC20 FUNCTIONS ***********/

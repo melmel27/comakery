@@ -10,6 +10,7 @@ contract("Mutator calls and events", function (accounts) {
   var unprivileged
   var defaultGroup
   var token
+  var startingRules
 
   beforeEach(async function () {
     contractAdmin = accounts[0]
@@ -19,8 +20,8 @@ contract("Mutator calls and events", function (accounts) {
     unprivileged = accounts[5]
     defaultGroup = 0
 
-    let rules = await TransferRules.new()
-    token = await RestrictedToken.new(rules.address, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100)
+    startingRules = await TransferRules.new()
+    token = await RestrictedToken.new(startingRules.address, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100)
 
     await token.grantTransferAdmin(transferAdmin, {
       from: contractAdmin
@@ -298,5 +299,21 @@ contract("Mutator calls and events", function (accounts) {
     })
 
     assert.equal(await token.isPaused(), false)
+  })
+
+  it("upgrade transfer rules with events", async () => {
+    let newRules = await TransferRules.new()
+    let tx = await token.upgradeTransferRules(newRules.address, {
+      from: contractAdmin
+    })
+
+    truffleAssert.eventEmitted(tx, 'Upgrade', (ev) => {
+      assert.equal(ev.admin, contractAdmin)
+      assert.equal(ev.oldRules, startingRules.address)
+      assert.equal(ev.newRules, newRules.address)
+      return true
+    })
+
+    assert.equal(await token.transferRules.call(), newRules.address)
   })
 })
