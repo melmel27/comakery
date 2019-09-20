@@ -55,4 +55,8 @@ contract TransferRules is ITransferRules {
   function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory) {
     return errorMessage[restrictionCode];
   }
+
+  function checkSuccess(uint8 restrictionCode) public view returns(bool) {
+    return restrictionCode == SUCCESS;
+  }
 }

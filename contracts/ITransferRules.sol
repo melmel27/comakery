@@ -15,4 +15,6 @@ contract ITransferRules {
   /// @param restrictionCode Identifier for looking up a message
   /// @return Text showing the restriction's reasoning
   function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory);
+
+  function checkSuccess(uint8 restrictionCode) public view returns(bool);
 }

@@ -18,6 +18,10 @@ contract TransferRulesUpgrade is ITransferRules {
   function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory) {
     return "HELLO UPGRADE";
   }
+
+  function checkSuccess(uint8 restrictionCode) public view returns(bool) {
+    return restrictionCode == 0;
+  }
 }
 
 contract TransferRulesUpgradeTest {

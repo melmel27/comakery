@@ -92,7 +92,7 @@ contract RestrictedToken {
 
   function enforceTransferRestrictions(address from, address to, uint256 value) public view {
     uint8 restrictionCode = detectTransferRestriction(from, to, value);
-    require(restrictionCode == 0, transferRules.messageForTransferRestriction(restrictionCode));
+    require(transferRules.checkSuccess(restrictionCode), transferRules.messageForTransferRestriction(restrictionCode));
   }
 
   function detectTransferRestriction(address from, address to, uint256 value) public view returns(uint8) {
