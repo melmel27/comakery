@@ -36,6 +36,7 @@ contract RestrictedToken {
   event RoleChange(address indexed grantor, address indexed grantee, string role, bool indexed status);
   event MaxBalanceSet(address indexed admin, address indexed account, uint256 indexed value);
   event TimeLockSet(address indexed admin, address indexed account, uint256 indexed value);
+  event TransferGroupSet(address indexed admin, address indexed account, uint256 indexed value);
 
   constructor(
     address _transferRules,
@@ -127,6 +128,7 @@ contract RestrictedToken {
 
   function removeTimeLock(address _account) public onlyTransferAdmin {
     timeLock[_account] = 0;
+    emit TimeLockSet(msg.sender, _account, 0);
   }
 
   function getTimeLock(address _account) public view returns(uint256) {
@@ -135,6 +137,7 @@ contract RestrictedToken {
 
   function setGroup(address addr, uint256 groupID) public onlyTransferAdmin {
     transferGroups[addr] = groupID;
+    emit TransferGroupSet(msg.sender, addr, groupID);
   }
 
   function getTransferGroup(address addr) public view returns(uint256 groupID) {

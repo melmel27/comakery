@@ -167,5 +167,33 @@ contract("Access control tests", function (accounts) {
     })
 
     assert.equal(await token.getTimeLock(recipient), 97)
+
+    let tx2 = await token.removeTimeLock(recipient, {
+      from: transferAdmin
+    })
+
+    truffleAssert.eventEmitted(tx2, 'TimeLockSet', (ev) => {
+      assert.equal(ev.admin, transferAdmin)
+      assert.equal(ev.account, recipient)
+      assert.equal(ev.value, 0)
+      return true
+    })
+
+    assert.equal(await token.getTimeLock(recipient), 0)
+  })
+
+  it("setGroup with events", async () => {
+    let tx = await token.setGroup(recipient, 9, {
+      from: transferAdmin
+    })
+
+    truffleAssert.eventEmitted(tx, 'TransferGroupSet', (ev) => {
+      assert.equal(ev.admin, transferAdmin)
+      assert.equal(ev.account, recipient)
+      assert.equal(ev.value, 9)
+      return true
+    })
+
+    assert.equal(await token.getTransferGroup(recipient), 9)
   })
 })
