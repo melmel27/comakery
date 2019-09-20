@@ -41,4 +41,13 @@ contract RestrictedTokenBasicsTest {
         uint8 restrictionCode = token.detectTransferRestriction(tokenContractOwner, tokenContractOwner, 17);
         Assert.equal(uint(restrictionCode), 0, "not the transfer SUCCESS code");
     }
+
+    function testTotalSupply() public {
+        Assert.equal(token.totalSupply(), uint(1234567), "billion tokens to start");
+    }
+
+    function testBalanceOf() public {
+        uint balance = token.balanceOf(address(reserveAdmin));
+        Assert.equal(balance, token.totalSupply(), "correct initial balance");
+    }
 }
