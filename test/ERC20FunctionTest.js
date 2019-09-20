@@ -64,5 +64,12 @@ contract("ERC20 functionality", function (accounts) {
         })
 
         assert.equal(await token.allowance.call(alice, bob), 20)
+        assert.equal(await token.balanceOf.call(bob), 0)
+        assert.equal(await token.balanceOf.call(alice), 100)
+
+        await token.transferFrom(alice, bob, 20, {from: bob})
+
+        assert.equal(await token.balanceOf.call(bob), 20)
+        assert.equal(await token.balanceOf.call(alice), 80)
     })
 })
