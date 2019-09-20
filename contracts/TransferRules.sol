@@ -42,9 +42,9 @@ contract TransferRules is ITransferRules {
     if (now < token.getTimeLock(from)) return SENDER_TOKENS_TIME_LOCKED;
     if (token.frozen(from)) return SENDER_ADDRESS_FROZEN;
 
-    uint256 _allowedTransferTime = token.getAllowTransferTime(from, to);
-    if (0 == _allowedTransferTime) return TRANSFER_GROUP_NOT_APPROVED;
-    if (now < _allowedTransferTime) return TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER;
+    uint256 allowedTransferTime = token.getAllowTransferTime(from, to);
+    if (0 == allowedTransferTime) return TRANSFER_GROUP_NOT_APPROVED;
+    if (now < allowedTransferTime) return TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER;
 
     return SUCCESS;
   }
