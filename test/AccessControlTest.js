@@ -210,16 +210,16 @@ contract("Access control tests", function (accounts) {
     }))
   })
 
-  it("only contractAdmin can change and upgrade the transfer rules with setTransferRules", async () => {
+  it("only contractAdmin can change and upgrade the transfer rules with upgradeTransferRules", async () => {
     let nextTransferRules = await TransferRules.new()
     let transferRulesAddress = nextTransferRules.address
-    await truffleAssert.passes(token.setTransferRules(transferRulesAddress, {
+    await truffleAssert.passes(token.upgradeTransferRules(transferRulesAddress, {
       from: contractAdmin
     }))
 
     let checkRevertsFor = async (from) => {
       
-      await truffleAssert.reverts(token.setTransferRules(transferRulesAddress, {
+      await truffleAssert.reverts(token.upgradeTransferRules(transferRulesAddress, {
         from: from
       }), "DOES NOT HAVE CONTRACT OWNER ROLE")
     }

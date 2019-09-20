@@ -46,7 +46,7 @@ contract TransferRulesUpgradeTest {
         
         // upgrade the TransferRules
         TransferRulesUpgrade nextRules = new TransferRulesUpgrade();
-        token.setTransferRules(nextRules);
+        token.upgradeTransferRules(nextRules);
         
         code = token.detectTransferRestriction(owner,owner,1);
         Assert.equal(uint256(code), 6, "custom code should be returned after setting new TransferRules");

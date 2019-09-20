@@ -180,10 +180,6 @@ contract RestrictedToken {
     getAllowGroupTransfer(getTransferGroup(from), getTransferGroup(to), atTimestamp);
   }
 
-  function setTransferRules(ITransferRules newTransferRules) public onlyContractAdmin {
-    transferRules = newTransferRules;
-  }
-
   // note the transfer time default is 0 for transfers between all addresses
   // a transfer time of 0 is treated as not allowed
   function getAllowTransferTime(address from, address to) public view returns(uint timestamp) {
@@ -207,6 +203,11 @@ contract RestrictedToken {
 
   function unpause() public onlyContractAdmin() {
     isPaused = false;
+  }
+
+
+  function upgradeTransferRules(ITransferRules newTransferRules) public onlyContractAdmin {
+    transferRules = newTransferRules;
   }
 
   /******* ERC20 FUNCTIONS ***********/
