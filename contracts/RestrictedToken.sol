@@ -33,18 +33,18 @@ contract RestrictedToken {
 
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
-
-  event Burn(address indexed admin, address indexed account, uint256 indexed value);
-  event Mint(address indexed admin, address indexed account, uint256 indexed value);
   
   event RoleChange(address indexed grantor, address indexed grantee, string role, bool indexed status);
   event AddressMaxBalance(address indexed admin, address indexed account, uint256 indexed value);
   event AddressTimeLock(address indexed admin, address indexed account, uint256 indexed value);
   event AddressTransferGroup(address indexed admin, address indexed account, uint256 indexed value);
   event AddressFrozen(address indexed admin, address indexed account, bool indexed status);
-  event Paused(address admin, bool status);
   
   event AllowGroupTransfer(address indexed admin, uint256 indexed fromGroup, uint256 indexed toGroup, uint256 transferAfter);
+
+  event Mint(address indexed admin, address indexed account, uint256 indexed value);
+  event Burn(address indexed admin, address indexed account, uint256 indexed value);
+  event Pause(address admin, bool status);
 
   constructor(
     address _transferRules,
@@ -205,12 +205,12 @@ contract RestrictedToken {
 
   function pause() public onlyContractAdmin() {
     isPaused = true;
-    emit Paused(msg.sender, true);
+    emit Pause(msg.sender, true);
   }
 
   function unpause() public onlyContractAdmin() {
     isPaused = false;
-    emit Paused(msg.sender, false);
+    emit Pause(msg.sender, false);
   }
 
 

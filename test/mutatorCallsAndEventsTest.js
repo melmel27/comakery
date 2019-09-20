@@ -279,7 +279,7 @@ contract("Mutator calls and events", function (accounts) {
       from: contractAdmin
     })
 
-    truffleAssert.eventEmitted(tx, 'Paused', (ev) => {
+    truffleAssert.eventEmitted(tx, 'Pause', (ev) => {
       assert.equal(ev.admin, contractAdmin)
       assert.equal(ev.status, true)
       return true
@@ -291,7 +291,7 @@ contract("Mutator calls and events", function (accounts) {
       from: contractAdmin
     })
 
-    truffleAssert.eventEmitted(tx2, 'Paused', (ev) => {
+    truffleAssert.eventEmitted(tx2, 'Pause', (ev) => {
       assert.equal(ev.admin, contractAdmin)
       assert.equal(ev.status, false)
       return true
