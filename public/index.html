@@ -2,9 +2,9 @@
 <html lang='en'>
 
 <head>
-    <title>Send Security Tokens With MetaMask</title>
+  <title>Send Security Tokens With MetaMask</title>
 
-        <!-- Basic Page Needs
+  <!-- Basic Page Needs
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
   <meta charset="utf-8">
   <title>CoMakery Security Token Demo</title>
@@ -20,67 +20,127 @@
   <link rel="stylesheet" href="css/normalize.css">
   <link rel="stylesheet" href="css/skeleton.css">
 
-    <script src='bundle.js' type='text/javascript'></script>
-    <script>
-        // async function run() {
-        //     window.web3 = new Web3(ethereum)
-        //     let addr = await web3.eth.getCoinbase()
+  <script src='bundle.js' type='text/javascript'></script>
+  <script>
+    async function run() {
 
-        //     let claimsBuildJson = await util.getABI('/build/FixedSupplyToken.json')
-        //     let abi = claimsBuildJson["abi"] 
-        //     let contractAddress = claimsBuildJson['networks'][5777]["address"]
+      let ethereum = window.ethereum;
+      let web3 = window.web3;
+      if (typeof ethereum !== 'undefined') {
+        await ethereum.enable();
+        web3 = new Web3(ethereum);
+      } else if (typeof web3 !== 'undefined') {
+        web3 = new Web3(web3.currentProvider);
+      } else {
+        web3 = new Web3(new Web3.providers.HttpProvider(process.env.WEB3_PROVIDER));
+      }
 
-        //     let token = new web3.eth.Contract(abi, contractAddress)
-        //     window.token = token
+      let addr = await web3.eth.getCoinbase()
 
-        //     token.methods.name().call((err, name) => {
-        //         util.message(`<strong>Token Name:</strong> ${name}`)
-        //     })
+      let claimsBuildJson = await util.getABI('/contracts/RestrictedToken.json')
+      let abi = claimsBuildJson["abi"]
+      let contractAddress = claimsBuildJson['networks'][5777]["address"]
+      let token = new web3.eth.Contract(abi, contractAddress)
 
-        //     token.methods.totalSupply().call((err, amount) => {
-        //         util.message(`<strong>Total Supply</strong> ${amount}`)
-        //     })
+      window.token = token
 
-        //     var value = '100'
-        //     var toAddress = addr // send tokens to self
-        //     await token.methods.transfer(toAddress, value)
-        //         .send({
-        //             from: addr
-        //         }, (err, txHash) => {
-        //             if (err) console.error(err)
-        //             if (txHash) {
-        //                 util.message(`<strong>Transaction Hash</strong> ${txHash}`)
-        //             }
-        //         })
-        // }
-        // run()
-    </script>
+      document.querySelector('#wallet-address').innerHTML = addr
+      document.querySelector('#token-address').innerHTML = contractAddress
+      token.methods.balanceOf(addr).call((err, amount) => {
+        document.querySelector('#wallet-balance').innerHTML = amount
+      })
+
+      token.methods.name().call((err, name) => {
+        document.querySelector('#token-name').innerHTML = name
+      })
+
+      token.methods.symbol().call((err, symbol) => {
+        document.querySelector('#token-symbol').innerHTML = symbol
+      })
+
+      token.methods.totalSupply().call((err, amount) => {
+        document.querySelector('#token-total-supply').innerHTML = amount
+      })
+
+      // var value = '100'
+      // var toAddress = addr // send tokens to self
+      // await token.methods.transfer(toAddress, value)
+      //     .send({
+      //         from: addr
+      //     }, (err, txHash) => {
+      //         if (err) console.error(err)
+      //         if (txHash) {
+      //             util.message(`<strong>Transaction Hash</strong> ${txHash}`)
+      //         }
+      //     })
+    }
+    document.addEventListener('DOMContentLoaded', run)
+  </script>
 </head>
 
-<!-- <body id='messages'>
-    Hello world
-</body> -->
-
-  <!-- Primary Page Layout
+<!-- Primary Page Layout
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <div class="container" style=" margin-top: 3%">
-    <div class="row">
-        <div class="column">
-            <h1><strong>CoMakery Security Token Demo</strong></h1>
-        </div>
+<div class="container" style=" margin-top: 3%">
+  <div class="row">
+    <div class="column">
+      <h1><strong>CoMakery Security Token Demo</strong></h1>
     </div>
-    <div class="row">
-        <div class="eight columns u-max-full-width">
-            <h3>Transfer</h3>
-            <form id="transfer" action="#">
-                <label for="to-address">To Ethereum Address</label>
-                <input type="text" name="to-address" id="to-address" value="">
-                <br />
-                <input class="button-primary" type="submit" value="Send">
-            </form>
-        </div>
-        </div>
+  </div>
+  <div class="row">
+    <div class="one-half column">
+      <h3>Wallet</h3>
+      <table>
+        <tr>
+          <td><strong>Address</strong></td>
+          <td id="wallet-address"></td>
+        </tr>
+        <tr>
+          <td><strong>Balance</strong></td>
+          <td id="wallet-balance"></td>
+        </tr>
+      </table>
     </div>
+    <div class="one-half column">
+      <h3>Token</h3>
+      <table>
+        <tr>
+          <td><strong>Address</strong></td>
+          <td id="token-address"></td>
+        </tr>
+        <tr>
+          <td><strong>Name</strong></td>
+          <td id="token-name"></td>
+        </tr>
+        <tr>
+          <td><strong>Symbol</strong></td>
+          <td id="token-symbol"></td>
+        </tr>
+        <tr>
+          <td><strong>Total Supply</strong></td>
+          <td id="token-total-supply"></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <div class="row">
+    <div class="eight columns u-max-full-width">
+      <h3>Transfer</h3>
+      <form id="transfer" action="#">
+        <label>Amount</label>
+        <input type="text" name="amount" id="amount" size="18" value="">
+        <label>To Address</label>
+        <input type="text" name="to-address" id="to-address" size="42" value="">
+        <br />
+        <input class="button-primary" type="submit" value="Transfer To">
+      </form>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="column">
+    <div id="messages"></div>
+  </div>
+</div>
 </div>
 </div>
 <!-- End Document

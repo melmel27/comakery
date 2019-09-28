@@ -55270,7 +55270,6 @@ window.util.sendEtherFrom = async function sendEtherFrom(account, callback) {
         value: weiValueInHex,
         //data: '0x0000000000000001' // message / function call to a smart contract
     }]
-
     const from = account
     const payload = {
         method: method,
