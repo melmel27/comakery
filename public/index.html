@@ -35,32 +35,7 @@
         web3 = new Web3(new Web3.providers.HttpProvider(process.env.WEB3_PROVIDER));
       }
 
-      let addr = await web3.eth.getCoinbase()
-
-      let claimsBuildJson = await _.getABI('/contracts/RestrictedToken.json')
-      let abi = claimsBuildJson["abi"]
-      let contractAddress = claimsBuildJson['networks'][5777]["address"]
-      let token = new web3.eth.Contract(abi, contractAddress)
-
-      window.token = token
-
-      document.querySelector('#wallet-address').textContent = addr
-      document.querySelector('#token-address').textContent = contractAddress
-      token.methods.balanceOf(addr).call((err, amount) => {
-        document.querySelector('#wallet-balance').textContent = amount
-      })
-
-      token.methods.name().call((err, name) => {
-        document.querySelector('#token-name').textContent = name
-      })
-
-      token.methods.symbol().call((err, symbol) => {
-        document.querySelector('#token-symbol').textContent = symbol
-      })
-
-      token.methods.totalSupply().call((err, amount) => {
-        document.querySelector('#token-total-supply').textContent = amount
-      })
+      _.render(web3)
 
       // var value = '100'
       // var toAddress = addr // send tokens to self

@@ -55315,4 +55315,21 @@ _.pollForCompletion = function pollForCompletion(txHash, callback) {
         })
     }, 2000)
 }
+
+_.render = async function render(web3) {
+    let addr = await web3.eth.getCoinbase()
+    let claimsBuildJson = await _.getABI('/contracts/RestrictedToken.json')
+    let abi = claimsBuildJson["abi"]
+    let contractAddress = claimsBuildJson['networks'][5777]["address"]
+    
+    let token = new web3.eth.Contract(abi, contractAddress)
+    window.token = token
+
+    document.querySelector('#wallet-address').textContent = addr
+    document.querySelector('#token-address').textContent = contractAddress
+    document.querySelector('#wallet-balance').textContent = await token.methods.balanceOf(addr).call()
+    document.querySelector('#token-name').textContent = await token.methods.name().call()
+    document.querySelector('#token-symbol').textContent = await token.methods.symbol().call()
+    document.querySelector('#token-total-supply').textContent = await token.methods.totalSupply().call()
+}
 },{"web3":307}]},{},[324]);
