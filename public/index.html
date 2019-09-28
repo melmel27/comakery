@@ -44,22 +44,22 @@
 
       window.token = token
 
-      document.querySelector('#wallet-address').innerHTML = addr
-      document.querySelector('#token-address').innerHTML = contractAddress
+      document.querySelector('#wallet-address').textContent = addr
+      document.querySelector('#token-address').textContent = contractAddress
       token.methods.balanceOf(addr).call((err, amount) => {
-        document.querySelector('#wallet-balance').innerHTML = amount
+        document.querySelector('#wallet-balance').textContent = amount
       })
 
       token.methods.name().call((err, name) => {
-        document.querySelector('#token-name').innerHTML = name
+        document.querySelector('#token-name').textContent = name
       })
 
       token.methods.symbol().call((err, symbol) => {
-        document.querySelector('#token-symbol').innerHTML = symbol
+        document.querySelector('#token-symbol').textContent = symbol
       })
 
       token.methods.totalSupply().call((err, amount) => {
-        document.querySelector('#token-total-supply').innerHTML = amount
+        document.querySelector('#token-total-supply').textContent = amount
       })
 
       // var value = '100'
