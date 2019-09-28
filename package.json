@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "browserify src/*.js -o public/bundle.js",
-    "dev": "nodemon --watch src public build --exec \"yarn run build && yarn run start\"",
+    "dev": "yarn build && nodemon --watch src public build --exec \"yarn run build && yarn run start\"",
     "start": "node app.js",
     "setup": "cd contracts && truffle compile && truffle deploy && cd - && yarn build"
   },

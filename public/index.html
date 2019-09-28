@@ -37,7 +37,7 @@
 
       let addr = await web3.eth.getCoinbase()
 
-      let claimsBuildJson = await util.getABI('/contracts/RestrictedToken.json')
+      let claimsBuildJson = await _.getABI('/contracts/RestrictedToken.json')
       let abi = claimsBuildJson["abi"]
       let contractAddress = claimsBuildJson['networks'][5777]["address"]
       let token = new web3.eth.Contract(abi, contractAddress)
@@ -70,7 +70,7 @@
       //     }, (err, txHash) => {
       //         if (err) console.error(err)
       //         if (txHash) {
-      //             util.message(`<strong>Transaction Hash</strong> ${txHash}`)
+      //             _.message(`<strong>Transaction Hash</strong> ${txHash}`)
       //         }
       //     })
     }

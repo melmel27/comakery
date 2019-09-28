@@ -1,21 +1,24 @@
-window.util = {}
-window.util.message = (message) => {
+window.Web3 = require('web3')
+window._ = {}
+var _ = window._
+
+_.message = (message) => {
     var elem = document.querySelector("#messages")
     elem.innerHTML += message
     elem.innerHTML += '<br /><br />'
 }
 
-window.util.pretty = (payload) => {
+_.pretty = (payload) => {
     return JSON.stringify(payload, null, 2).replace(/,/g, ",<br />")
 }
 
-window.util.getABI = async function getABI(path) {
+_.getABI = async function getABI(path) {
     return await fetch(path).then(async (response) => {
         return await response.json()
     })
 }
 
-window.util.sendEtherFrom = async function sendEtherFrom(account, callback) {
+_.sendEtherFrom = async function sendEtherFrom(account, callback) {
     const method = 'eth_sendTransaction'
     const parameters = [{
         from: yourAccount,
@@ -33,18 +36,18 @@ window.util.sendEtherFrom = async function sendEtherFrom(account, callback) {
 
     ethereum.sendAsync(payload, function (err, response) {
         if (response.error) {
-            util.message(`Rejected: ${response.error.message}`)
+            _.message(`Rejected: ${response.error.message}`)
         }
         if (response.result) {
             const txHash = response.result
-            util.message(`Paid transaction: ${txHash}`)
-            util.message(`Payment details:<br />${util.pretty(payload)}`)
-            window.util.pollForCompletion(txHash, callback)
+            _.message(`Paid transaction: ${txHash}`)
+            _.message(`Payment details:<br />${_.pretty(payload)}`)
+            _.pollForCompletion(txHash, callback)
         }
     })
 }
 
-window.util.pollForCompletion = function pollForCompletion(txHash, callback) {
+_.pollForCompletion = function pollForCompletion(txHash, callback) {
     let calledBack = false
     const checkInterval = setInterval(function () {
         const notYet = 'response has no error or result'
