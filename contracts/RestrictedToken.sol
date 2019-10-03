@@ -182,7 +182,7 @@ contract RestrictedToken {
   }
 
   function getAllowTransfer(address from, address to, uint256 atTimestamp) public view returns(bool) {
-    getAllowGroupTransfer(getTransferGroup(from), getTransferGroup(to), atTimestamp);
+    return getAllowGroupTransfer(getTransferGroup(from), getTransferGroup(to), atTimestamp);
   }
 
   // note the transfer time default is 0 for transfers between all addresses
