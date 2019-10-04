@@ -167,7 +167,7 @@ contract("Mutator calls and events", function (accounts) {
       return true
     })
 
-    assert.equal(await token.getTimeLock(recipient), 97)
+    assert.equal(await token.getLockUntil(recipient), 97)
 
     let tx2 = await token.removeTimeLock(recipient, {
       from: transferAdmin
@@ -180,7 +180,7 @@ contract("Mutator calls and events", function (accounts) {
       return true
     })
 
-    assert.equal(await token.getTimeLock(recipient), 0)
+    assert.equal(await token.getLockUntil(recipient), 0)
   })
 
   it("setTransferGroup with events", async () => {

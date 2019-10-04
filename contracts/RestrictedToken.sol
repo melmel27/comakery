@@ -145,7 +145,7 @@ contract RestrictedToken {
     emit AddressTimeLock(msg.sender, addr, 0);
   }
 
-  function getTimeLock(address addr) public view returns(uint256) {
+  function getLockUntil(address addr) public view returns(uint256) {
     return lockUntil[addr];
   }
 

@@ -31,7 +31,7 @@ contract TimeLockTest {
     function testAdminCanLockupTokensForASpecificTime() public {
         uint lockupTill = now + 10000;
         token.setTimeLock(address(alice), lockupTill);
-        Assert.equal(token.getTimeLock(address(alice)), lockupTill, "not locked up as expected");
+        Assert.equal(token.getLockUntil(address(alice)), lockupTill, "not locked up as expected");
 
         token.setMaxBalance(address(bob), 17);
         uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);
