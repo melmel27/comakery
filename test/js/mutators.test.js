@@ -147,7 +147,7 @@ contract("Mutator calls and events", function (accounts) {
 
     truffleAssert.eventEmitted(tx, 'AddressMaxBalance', (ev) => {
       assert.equal(ev.admin, transferAdmin)
-      assert.equal(ev.account, recipient)
+      assert.equal(ev.addr, recipient)
       assert.equal(ev.value, 100)
       return true
     })
@@ -162,7 +162,7 @@ contract("Mutator calls and events", function (accounts) {
 
     truffleAssert.eventEmitted(tx, 'AddressTimeLock', (ev) => {
       assert.equal(ev.admin, transferAdmin)
-      assert.equal(ev.account, recipient)
+      assert.equal(ev.addr, recipient)
       assert.equal(ev.value, 97)
       return true
     })
@@ -175,7 +175,7 @@ contract("Mutator calls and events", function (accounts) {
 
     truffleAssert.eventEmitted(tx2, 'AddressTimeLock', (ev) => {
       assert.equal(ev.admin, transferAdmin)
-      assert.equal(ev.account, recipient)
+      assert.equal(ev.addr, recipient)
       assert.equal(ev.value, 0)
       return true
     })
@@ -190,7 +190,7 @@ contract("Mutator calls and events", function (accounts) {
 
     truffleAssert.eventEmitted(tx, 'AddressTransferGroup', (ev) => {
       assert.equal(ev.admin, transferAdmin)
-      assert.equal(ev.account, recipient)
+      assert.equal(ev.addr, recipient)
       assert.equal(ev.value, 9)
       return true
     })
@@ -205,7 +205,7 @@ contract("Mutator calls and events", function (accounts) {
 
     truffleAssert.eventEmitted(tx, 'AddressFrozen', (ev) => {
       assert.equal(ev.admin, transferAdmin)
-      assert.equal(ev.account, recipient)
+      assert.equal(ev.addr, recipient)
       assert.equal(ev.status, true)
       return true
     })
@@ -218,7 +218,7 @@ contract("Mutator calls and events", function (accounts) {
 
     truffleAssert.eventEmitted(tx2, 'AddressFrozen', (ev) => {
       assert.equal(ev.admin, transferAdmin)
-      assert.equal(ev.account, recipient)
+      assert.equal(ev.addr, recipient)
       assert.equal(ev.status, false)
       return true
     })
@@ -249,7 +249,7 @@ contract("Mutator calls and events", function (accounts) {
 
     truffleAssert.eventEmitted(tx, 'Burn', (ev) => {
       assert.equal(ev.admin, contractAdmin)
-      assert.equal(ev.account, reserveAdmin)
+      assert.equal(ev.addr, reserveAdmin)
       assert.equal(ev.value, 17)
       return true
     })
@@ -265,7 +265,7 @@ contract("Mutator calls and events", function (accounts) {
 
     truffleAssert.eventEmitted(tx, 'Mint', (ev) => {
       assert.equal(ev.admin, contractAdmin)
-      assert.equal(ev.account, recipient)
+      assert.equal(ev.addr, recipient)
       assert.equal(ev.value, 17)
       return true
     })

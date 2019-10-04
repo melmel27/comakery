@@ -20,7 +20,7 @@ contract RestrictedToken {
 
   mapping(address => uint256) private balances;
   mapping(address => mapping(address => uint256)) private allowed;
-  mapping(address => mapping(address => uint8)) private approvalNonces;  
+  mapping(address => mapping(address => uint8)) private approvalNonces;
 
   // transfer restriction storage
   uint256 public constant MAX_UINT = ((2 ** 255 - 1) * 2) + 1; // get max uint256 without overflow
@@ -33,17 +33,16 @@ contract RestrictedToken {
 
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
-  
+
   event RoleChange(address indexed grantor, address indexed grantee, string role, bool indexed status);
-  event AddressMaxBalance(address indexed admin, address indexed account, uint256 indexed value);
-  event AddressTimeLock(address indexed admin, address indexed account, uint256 indexed value);
-  event AddressTransferGroup(address indexed admin, address indexed account, uint256 indexed value);
-  event AddressFrozen(address indexed admin, address indexed account, bool indexed status);
-  
+  event AddressMaxBalance(address indexed admin, address indexed addr, uint256 indexed value);
+  event AddressTimeLock(address indexed admin, address indexed addr, uint256 indexed value);
+  event AddressTransferGroup(address indexed admin, address indexed addr, uint256 indexed value);
+  event AddressFrozen(address indexed admin, address indexed addr, bool indexed status);
   event AllowGroupTransfer(address indexed admin, uint256 indexed fromGroup, uint256 indexed toGroup, uint256 lockedUntil);
 
-  event Mint(address indexed admin, address indexed account, uint256 indexed value);
-  event Burn(address indexed admin, address indexed account, uint256 indexed value);
+  event Mint(address indexed admin, address indexed addr, uint256 indexed value);
+  event Burn(address indexed admin, address indexed addr, uint256 indexed value);
   event Pause(address admin, bool status);
   event Upgrade(address admin, address oldRules, address newRules);
 
@@ -56,7 +55,6 @@ contract RestrictedToken {
     uint8 _decimals,
     uint256 _totalSupply
   ) public {
-    
     require(_transferRules != address(0), "Transfer rules address cannot be 0x0");
     require(_contractAdmin != address(0), "Token owner address cannot be 0x0");
     require(_tokenReserveAdmin != address(0), "Token reserve admin address cannot be 0x0");
@@ -95,24 +93,24 @@ contract RestrictedToken {
     _;
   }
 
-  function grantTransferAdmin(address account) validAddress(account) onlyContractAdmin public {
-    transferAdmins.add(account);
-    emit RoleChange(msg.sender, account, "TransferAdmin", true);
+  function grantTransferAdmin(address addr) validAddress(addr) onlyContractAdmin public {
+    transferAdmins.add(addr);
+    emit RoleChange(msg.sender, addr, "TransferAdmin", true);
   }
 
-  function revokeTransferAdmin(address account) validAddress(account) onlyContractAdmin public {
-    transferAdmins.remove(account);
-    emit RoleChange(msg.sender, account, "TransferAdmin", false);
+  function revokeTransferAdmin(address addr) validAddress(addr) onlyContractAdmin public {
+    transferAdmins.remove(addr);
+    emit RoleChange(msg.sender, addr, "TransferAdmin", false);
   }
 
-    function grantContractAdmin(address account) validAddress(account) onlyContractAdmin public {
-    contractAdmins.add(account);
-    emit RoleChange(msg.sender, account, "ContractAdmin", true);
+    function grantContractAdmin(address addr) validAddress(addr) onlyContractAdmin public {
+    contractAdmins.add(addr);
+    emit RoleChange(msg.sender, addr, "ContractAdmin", true);
   }
 
-  function revokeContractAdmin(address account) validAddress(account) onlyContractAdmin public {
-    contractAdmins.remove(account);
-    emit RoleChange(msg.sender, account, "ContractAdmin", false);
+  function revokeContractAdmin(address addr) validAddress(addr) onlyContractAdmin public {
+    contractAdmins.remove(addr);
+    emit RoleChange(msg.sender, addr, "ContractAdmin", false);
   }
 
   function enforceTransferRestrictions(address from, address to, uint256 value) public view {
@@ -128,27 +126,27 @@ contract RestrictedToken {
     return transferRules.messageForTransferRestriction(restrictionCode);
   }
 
-  function setMaxBalance(address account, uint256 updatedValue) public validAddress(account) onlyTransferAdmin {
-    maxBalances[account] = updatedValue;
-    emit AddressMaxBalance(msg.sender, account, updatedValue);
+  function setMaxBalance(address addr, uint256 updatedValue) public validAddress(addr) onlyTransferAdmin {
+    maxBalances[addr] = updatedValue;
+    emit AddressMaxBalance(msg.sender, addr, updatedValue);
   }
 
-  function getMaxBalance(address account) public view returns(uint256) {
-    return maxBalances[account];
+  function getMaxBalance(address addr) public view returns(uint256) {
+    return maxBalances[addr];
   }
 
-  function setTimeLock(address account, uint256 timestamp) public validAddress(account)  onlyTransferAdmin {
-    lockUntil[account] = timestamp;
-    emit AddressTimeLock(msg.sender, account, timestamp);
+  function setTimeLock(address addr, uint256 timestamp) public validAddress(addr)  onlyTransferAdmin {
+    lockUntil[addr] = timestamp;
+    emit AddressTimeLock(msg.sender, addr, timestamp);
   }
 
-  function removeTimeLock(address account) public validAddress(account) onlyTransferAdmin {
-    lockUntil[account] = 0;
-    emit AddressTimeLock(msg.sender, account, 0);
+  function removeTimeLock(address addr) public validAddress(addr) onlyTransferAdmin {
+    lockUntil[addr] = 0;
+    emit AddressTimeLock(msg.sender, addr, 0);
   }
 
-  function getTimeLock(address account) public view returns(uint256) {
-    return lockUntil[account];
+  function getTimeLock(address addr) public view returns(uint256) {
+    return lockUntil[addr];
   }
 
   function setTransferGroup(address addr, uint256 groupID) public validAddress(addr) onlyTransferAdmin {
@@ -169,7 +167,8 @@ contract RestrictedToken {
     return frozenAddresses[addr];
   }
 
-  function setAddressPermissions(address addr, uint256 groupID, uint256 timeLockUntil, uint256 maxTokens, bool status) public validAddress(addr) onlyTransferAdmin {
+  function setAddressPermissions(address addr, uint256 groupID, uint256 timeLockUntil,
+    uint256 maxTokens, bool status) public validAddress(addr) onlyTransferAdmin {
     setTransferGroup(addr, groupID);
     setTimeLock(addr, timeLockUntil);
     setMaxBalance(addr, maxTokens);
@@ -252,11 +251,11 @@ contract RestrictedToken {
   }
 
   // Use safeApprove() instead of approve() to avoid the race condition exploit which is a known security hole in the ERC20 standard
-  function safeApprove(address spender, uint256 newApprovalValue, uint256 expectedApprovedValue, uint8 nonce) public validAddress(spender) 
+  function safeApprove(address spender, uint256 newApprovalValue,
+    uint256 expectedApprovedValue, uint8 nonce) public validAddress(spender)
   returns(bool success) {
     require(expectedApprovedValue == allowed[msg.sender][spender],
       "The expected approved amount does not match the actual approved amount");
-      
     require(nonce == approvalNonces[msg.sender][spender], "The nonce does not match the current transfer approval nonce");
     return _approve(spender, newApprovalValue);
   }

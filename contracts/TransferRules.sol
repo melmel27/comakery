@@ -4,7 +4,7 @@ import './ITransferRules.sol';
 
 contract TransferRules is ITransferRules {
     mapping(uint8 => string) internal errorMessage;
-    
+
     uint8 public constant SUCCESS = 0;
     uint8 public constant GREATER_THAN_RECIPIENT_MAX_BALANCE = 1;
     uint8 public constant SENDER_TOKENS_TIME_LOCKED = 2;
