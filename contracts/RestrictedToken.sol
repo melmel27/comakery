@@ -40,7 +40,7 @@ contract RestrictedToken {
   event AddressTransferGroup(address indexed admin, address indexed account, uint256 indexed value);
   event AddressFrozen(address indexed admin, address indexed account, bool indexed status);
   
-  event AllowGroupTransfer(address indexed admin, uint256 indexed fromGroup, uint256 indexed toGroup, uint256 transferAfter);
+  event AllowGroupTransfer(address indexed admin, uint256 indexed fromGroup, uint256 indexed toGroup, uint256 lockedUntil);
 
   event Mint(address indexed admin, address indexed account, uint256 indexed value);
   event Burn(address indexed admin, address indexed account, uint256 indexed value);
@@ -169,26 +169,21 @@ contract RestrictedToken {
     freeze(addr, status);
   }
 
-  // TODO: if transferAfter = 0 no transfer; update README
-  // TODO: if transferAfter = 1 any transfer works; update README
-  function setAllowGroupTransfer(uint256 groupA, uint256 groupB, uint256 transferAfter) public onlyTransferAdmin {
-    allowGroupTransfers[groupA][groupB] = transferAfter;
-    emit AllowGroupTransfer(msg.sender, groupA, groupB, transferAfter);
-  }
-
-  function getAllowGroupTransfer(uint256 from, uint256 to, uint256 timestamp) public view returns(bool) {
-    if (allowGroupTransfers[from][to] == 0) return false;
-    return allowGroupTransfers[from][to] < timestamp;
-  }
-
-  function getAllowTransfer(address from, address to, uint256 atTimestamp) public view returns(bool) {
-    return getAllowGroupTransfer(getTransferGroup(from), getTransferGroup(to), atTimestamp);
+  // TODO: if lockedUntil = 0 no transfer; update README
+  // TODO: if lockedUntil = 1 any transfer works; update README
+  function setAllowGroupTransfer(uint256 groupA, uint256 groupB, uint256 lockedUntil) public onlyTransferAdmin {
+    allowGroupTransfers[groupA][groupB] = lockedUntil;
+    emit AllowGroupTransfer(msg.sender, groupA, groupB, lockedUntil);
   }
 
   // note the transfer time default is 0 for transfers between all addresses
   // a transfer time of 0 is treated as not allowed
   function getAllowTransferTime(address from, address to) public view returns(uint timestamp) {
     return allowGroupTransfers[transferGroups[from]][transferGroups[to]];
+  }
+
+  function getAllowGroupTransferTime(uint from, uint to) public view returns(uint timestamp) {
+    return allowGroupTransfers[from][to];
   }
 
   function burnFrom(address from, uint256 value) public onlyContractAdmin {

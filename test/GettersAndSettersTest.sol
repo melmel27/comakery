@@ -43,30 +43,6 @@ contract GettersAndSettersTest {
         Assert.equal(token.frozen(owner), false, "default is not frozen");
     }
 
-    function testCheckingAllowGroupTransfers() public {
-        uint256 defaultGroup = 0;
-        bool allowed = token.getAllowGroupTransfer(
-            defaultGroup,
-            defaultGroup,
-            now
-        );
-        allowed.isFalse("should not allow transfers between groups by default");
-
-        // allow transfers in default group 1 second after the start of time
-        token.setAllowGroupTransfer(defaultGroup, defaultGroup, 1);
-        token.getAllowGroupTransfer(defaultGroup, defaultGroup, now).isTrue(
-            "should allow transfer after first second of all time"
-        );
-    }
-
-    function testCheckingAllowGroupTransfersWithAddresses() public {
-        address alice = address(0x1);
-        address bob = address(0x2);
-
-        bool allowed = token.getAllowTransfer(alice, bob, now);
-        allowed.isFalse("should not allow transfers between groups by default");
-    }
-
     function testGetAllowTransferTime() public {
         address alice = address(0x1);
         address bob = address(0x2);

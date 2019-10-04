@@ -226,7 +226,7 @@ contract("Mutator calls and events", function (accounts) {
     assert.equal(await token.frozen(recipient), false)
   })
 
-  it("setAllowGroupTransfer with events", async () => {
+  it("setAllowGroupTransfer with event and retreive wiith getAllowGroupTransferTime", async () => {
     let tx = await token.setAllowGroupTransfer(0, 1, 203, {
       from: transferAdmin
     })
@@ -235,11 +235,11 @@ contract("Mutator calls and events", function (accounts) {
       assert.equal(ev.admin, transferAdmin)
       assert.equal(ev.fromGroup, 0)
       assert.equal(ev.toGroup, 1)
-      assert.equal(ev.transferAfter, 203)
+      assert.equal(ev.lockedUntil, 203)
       return true
     })
 
-    assert.equal(await token.getAllowGroupTransfer(0, 1, 204), true)
+    assert.equal(await token.getAllowGroupTransferTime(0, 1), 203)
   })
 
   it("burnFrom with events", async () => {

@@ -29,21 +29,4 @@ contract("Access control tests", function (accounts) {
     assert.equal(await token.balanceOf.call(contractAdmin), 0, 'allocates no balance to the contractAdmin')
     assert.equal(await token.balanceOf.call(reserveAdmin), 100, 'allocates all tokens to the token reserve admin')
   })
-
-  it('returns true and false values for getAllowTransfer', async () => {
-    let defaultGroup = 0
-    await token.setAllowGroupTransfer(defaultGroup, defaultGroup, 1, {
-      from: transferAdmin
-    })
-    
-    assert.equal(await token.getAllowTransfer
-      .call(reserveAdmin, unprivileged, 0, {
-        from: unprivileged
-      }), false, "should not allow transfer at time 0")
-
-    assert.equal(await token.getAllowTransfer
-      .call(reserveAdmin, unprivileged, 2, {
-        from: unprivileged
-      }), true, "should allow transfer at time 1")
-  })
 })
