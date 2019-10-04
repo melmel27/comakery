@@ -27,7 +27,7 @@ contract("ERC20 functionality", function (accounts) {
             from: contractAdmin
         })
 
-        await token.setAccountPermissions(bob, defaultGroup, 1, 200, false, {
+        await token.setAddressPermissions(bob, defaultGroup, 1, 200, false, {
             from: contractAdmin
         })
     })

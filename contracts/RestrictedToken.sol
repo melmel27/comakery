@@ -162,7 +162,7 @@ contract RestrictedToken {
     return frozenAddresses[addr];
   }
 
-  function setAccountPermissions(address addr, uint256 groupID, uint256 timeLockUntil, uint256 maxTokens, bool status) public onlyTransferAdmin {
+  function setAddressPermissions(address addr, uint256 groupID, uint256 timeLockUntil, uint256 maxTokens, bool status) public onlyTransferAdmin {
     setTransferGroup(addr, groupID);
     setTimeLock(addr, timeLockUntil);
     setMaxBalance(addr, maxTokens);

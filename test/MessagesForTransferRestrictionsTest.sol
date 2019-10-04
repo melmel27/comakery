@@ -27,8 +27,8 @@ contract MessagesForTransferRestrictionsTest {
         alice = address(0x1);
         bob = address(0x2);
 
-        token.setAccountPermissions(alice, groupA, transferTimeIsNow, maxTokens, false);
-        token.setAccountPermissions(bob, groupB, transferTimeIsNow, maxTokens, false);
+        token.setAddressPermissions(alice, groupA, transferTimeIsNow, maxTokens, false);
+        token.setAddressPermissions(bob, groupB, transferTimeIsNow, maxTokens, false);
     }
 
     function testMessageForTransferRestrictionSuccess() public {

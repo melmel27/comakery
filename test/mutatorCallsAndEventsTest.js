@@ -31,11 +31,11 @@ contract("Mutator calls and events", function (accounts) {
       from: transferAdmin
     })
 
-    await token.setAccountPermissions(reserveAdmin, defaultGroup, 1, 1000, false, {
+    await token.setAddressPermissions(reserveAdmin, defaultGroup, 1, 1000, false, {
       from: transferAdmin
     })
 
-    await token.setAccountPermissions(recipient, defaultGroup, 1, 1000, false, {
+    await token.setAddressPermissions(recipient, defaultGroup, 1, 1000, false, {
       from: transferAdmin
     })
 
