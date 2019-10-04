@@ -90,22 +90,27 @@ contract RestrictedToken {
     _;
   }
 
-  function grantTransferAdmin(address account) onlyContractAdmin public {
+  modifier validAddress(address addr) {
+    require(addr != address(0), "Address cannot be 0x0");
+    _;
+  }
+
+  function grantTransferAdmin(address account) validAddress(account) onlyContractAdmin public {
     transferAdmins.add(account);
     emit RoleChange(msg.sender, account, "TransferAdmin", true);
   }
 
-  function revokeTransferAdmin(address account) onlyContractAdmin public {
+  function revokeTransferAdmin(address account) validAddress(account) onlyContractAdmin public {
     transferAdmins.remove(account);
     emit RoleChange(msg.sender, account, "TransferAdmin", false);
   }
 
-    function grantContractAdmin(address account) onlyContractAdmin public {
+    function grantContractAdmin(address account) validAddress(account) onlyContractAdmin public {
     contractAdmins.add(account);
     emit RoleChange(msg.sender, account, "ContractAdmin", true);
   }
 
-  function revokeContractAdmin(address account) onlyContractAdmin public {
+  function revokeContractAdmin(address account) validAddress(account) onlyContractAdmin public {
     contractAdmins.remove(account);
     emit RoleChange(msg.sender, account, "ContractAdmin", false);
   }
@@ -123,7 +128,7 @@ contract RestrictedToken {
     return transferRules.messageForTransferRestriction(restrictionCode);
   }
 
-  function setMaxBalance(address account, uint256 updatedValue) public onlyTransferAdmin {
+  function setMaxBalance(address account, uint256 updatedValue) public validAddress(account) onlyTransferAdmin {
     maxBalances[account] = updatedValue;
     emit AddressMaxBalance(msg.sender, account, updatedValue);
   }
@@ -132,12 +137,12 @@ contract RestrictedToken {
     return maxBalances[account];
   }
 
-  function setTimeLock(address account, uint256 timestamp) public onlyTransferAdmin {
+  function setTimeLock(address account, uint256 timestamp) public validAddress(account)  onlyTransferAdmin {
     timeLocks[account] = timestamp;
     emit AddressTimeLock(msg.sender, account, timestamp);
   }
 
-  function removeTimeLock(address account) public onlyTransferAdmin {
+  function removeTimeLock(address account) public validAddress(account) onlyTransferAdmin {
     timeLocks[account] = 0;
     emit AddressTimeLock(msg.sender, account, 0);
   }
@@ -146,7 +151,7 @@ contract RestrictedToken {
     return timeLocks[account];
   }
 
-  function setTransferGroup(address addr, uint256 groupID) public onlyTransferAdmin {
+  function setTransferGroup(address addr, uint256 groupID) public validAddress(addr) onlyTransferAdmin {
     transferGroups[addr] = groupID;
     emit AddressTransferGroup(msg.sender, addr, groupID);
   }
@@ -155,7 +160,7 @@ contract RestrictedToken {
     return transferGroups[addr];
   }
 
-  function freeze(address addr, bool status) public onlyTransferAdminOrContractAdmin {
+  function freeze(address addr, bool status) public validAddress(addr)  onlyTransferAdminOrContractAdmin {
     frozenAddresses[addr] = status;
     emit AddressFrozen(msg.sender, addr, status);
   }
@@ -164,7 +169,7 @@ contract RestrictedToken {
     return frozenAddresses[addr];
   }
 
-  function setAddressPermissions(address addr, uint256 groupID, uint256 timeLockUntil, uint256 maxTokens, bool status) public onlyTransferAdmin {
+  function setAddressPermissions(address addr, uint256 groupID, uint256 timeLockUntil, uint256 maxTokens, bool status) public validAddress(addr) onlyTransferAdmin {
     setTransferGroup(addr, groupID);
     setTimeLock(addr, timeLockUntil);
     setMaxBalance(addr, maxTokens);
@@ -188,14 +193,14 @@ contract RestrictedToken {
     return allowGroupTransfers[from][to];
   }
 
-  function burnFrom(address from, uint256 value) public onlyContractAdmin {
+  function burnFrom(address from, uint256 value) public validAddress(from) onlyContractAdmin {
     require(value <= balances[from], "Insufficent tokens to burn");
     balances[from] = balances[from].sub(value);
     internalTotalSupply = internalTotalSupply.sub(value);
     emit Burn(msg.sender, from, value);
   }
 
-  function mint(address to, uint256 value) public onlyContractAdmin  {
+  function mint(address to, uint256 value) public validAddress(to) onlyContractAdmin  {
     balances[to] = balances[to].add(value);
     internalTotalSupply = internalTotalSupply.add(value);
     emit Mint(msg.sender, to, value);
@@ -212,6 +217,7 @@ contract RestrictedToken {
   }
 
   function upgradeTransferRules(ITransferRules newTransferRules) public onlyContractAdmin {
+    require(address(newTransferRules) != address(0x0), "Address cannot be 0x0");
     address oldRules = address(transferRules);
     transferRules = newTransferRules;
     emit Upgrade(msg.sender, oldRules, address(newTransferRules));
@@ -231,7 +237,7 @@ contract RestrictedToken {
     return allowed[owner][spender];
   }
 
-  function transfer(address to, uint256 value) public returns(bool success) {
+  function transfer(address to, uint256 value) public validAddress(to) returns(bool success) {
     enforceTransferRestrictions(msg.sender, to, value);
     _transfer(msg.sender, to, value);
     return true;
@@ -241,12 +247,12 @@ contract RestrictedToken {
       The approve function implements the standard to maintain backwards compatibility with ERC20.
       Read more about the race condition exploit of approve here https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
    */
-  function approve(address spender, uint256 value) public returns(bool success) {
+  function approve(address spender, uint256 value) public validAddress(spender) returns(bool success) {
     return _approve(spender, value);
   }
 
   // Use safeApprove() instead of approve() to avoid the race condition exploit which is a known security hole in the ERC20 standard
-  function safeApprove(address spender, uint256 newApprovalValue, uint256 expectedApprovedValue, uint8 nonce) public
+  function safeApprove(address spender, uint256 newApprovalValue, uint256 expectedApprovedValue, uint8 nonce) public validAddress(spender) 
   returns(bool success) {
     require(expectedApprovedValue == allowed[msg.sender][spender],
       "The expected approved amount does not match the actual approved amount");
@@ -262,7 +268,7 @@ contract RestrictedToken {
     return (_allowance, _nonce);
   }
 
-  function transferFrom(address from, address to, uint256 value) public returns(bool success) {
+  function transferFrom(address from, address to, uint256 value) public validAddress(from) validAddress(to) returns(bool success) {
     enforceTransferRestrictions(from, to, value);
     require(value <= allowed[from][to], "The approved allowance is lower than the transfer amount");
     allowed[from][msg.sender] = allowed[from][msg.sender].sub(value);
