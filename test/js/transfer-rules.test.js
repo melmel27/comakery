@@ -22,11 +22,35 @@ contract("Transfer rules", function (accounts) {
     await token.grantTransferAdmin(transferAdmin, {
       from: contractAdmin
     })
-
   })
 
   it('contract contractAdmin is not the same address as treasury admin', async () => {
-    assert.equal(await token.balanceOf.call(contractAdmin), 0, 'allocates no balance to the contractAdmin')
-    assert.equal(await token.balanceOf.call(reserveAdmin), 100, 'allocates all tokens to the token reserve admin')
+    assert.equal(await token.balanceOf(contractAdmin), 0, 'allocates no balance to the contractAdmin')
+    assert.equal(await token.balanceOf(reserveAdmin), 100, 'allocates all tokens to the token reserve admin')
+  })
+
+  it('cannot exceed the max balance of an address', async () => {
+    await token.setMaxBalance(unprivileged, 2, {
+      from: transferAdmin
+    })
+    await token.setAllowGroupTransfer(0, 0, 1, {
+      from: transferAdmin
+    })
+
+    await truffleAssert.passes(token.transfer(unprivileged, 1, {
+      from: reserveAdmin
+    }))
+
+    await truffleAssert.reverts(token.transfer(unprivileged, 2, {
+      from: reserveAdmin
+    }), "GREATER THAN RECIPIENT MAX BALANCE")
+
+    assert.equal(await token.balanceOf(unprivileged), 1)
+
+    await truffleAssert.passes(token.transfer(unprivileged, 1, {
+      from: reserveAdmin
+    }))
+
+    assert.equal(await token.balanceOf(unprivileged), 2)
   })
 })

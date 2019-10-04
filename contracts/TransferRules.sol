@@ -38,7 +38,7 @@ contract TransferRules is ITransferRules {
     if (to == address(0)) return DO_NOT_SEND_TO_EMPTY_ADDRESS;
     if (to == address(token)) return DO_NOT_SEND_TO_TOKEN_CONTRACT;
 
-    if (value > token.getMaxBalance(to)) return GREATER_THAN_RECIPIENT_MAX_BALANCE;
+    if (value + token.balanceOf(to) > token.getMaxBalance(to)) return GREATER_THAN_RECIPIENT_MAX_BALANCE;
     if (now < token.getLockUntil(from)) return SENDER_TOKENS_TIME_LOCKED;
     if (token.frozen(from)) return SENDER_ADDRESS_FROZEN;
 

@@ -36,9 +36,11 @@ contract TransferRulesUpgrade is ITransferRules {
 contract TransferRulesUpgradeTest {
     RestrictedToken token;
     address owner;
+    address receiver;
 
     function beforeEach() public {
         owner = address(this);
+        receiver = address(0x1);
         uint8 decimalsWeWillPassToTransferRules = 6;
         TransferRules rules = new TransferRules();
         token = new RestrictedToken(
@@ -52,16 +54,16 @@ contract TransferRulesUpgradeTest {
         );
 
         token.grantTransferAdmin(owner);
-        token.setMaxBalance(owner, 100);
+        token.setMaxBalance(receiver, 100);
         token.setAllowGroupTransfer(0, 0, 1); // don't restrict default group transfers
     }
 
     function testReplaceTransferRules() public {
-        uint8 code = token.detectTransferRestriction(owner, owner, 1);
+        uint8 code = token.detectTransferRestriction(owner, receiver, 1);
         Assert.equal(
             uint256(code),
             0,
-            "initial TransferRules shoudl return code 0"
+            "initial TransferRules should return code 0"
         );
 
         // upgrade the TransferRules
