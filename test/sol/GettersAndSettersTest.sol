@@ -34,7 +34,7 @@ contract GettersAndSettersTest {
         number = token.maxBalances(owner);
         number.equal(0, "bad getter value");
 
-        number = token.timeLocks(owner);
+        number = token.lockUntil(owner);
         number.equal(0, "bad getter value");
 
         number = token.transferGroups(owner);
