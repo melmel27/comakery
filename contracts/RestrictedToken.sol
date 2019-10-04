@@ -11,7 +11,7 @@ contract RestrictedToken {
   string public symbol;
   string public name;
   uint8 public decimals;
-  uint256 public totalSupply;
+  uint256 private internalTotalSupply;
   ITransferRules public transferRules;
 
   using Roles for Roles.Role;
@@ -69,7 +69,7 @@ contract RestrictedToken {
     contractAdmins.add(_contractAdmin);
 
     balances[_tokenReserveAdmin] = _totalSupply;
-    totalSupply = balances[_tokenReserveAdmin];
+    internalTotalSupply = balances[_tokenReserveAdmin];
   }
 
   modifier onlyContractAdmin() {
@@ -189,13 +189,13 @@ contract RestrictedToken {
   function burnFrom(address from, uint256 value) public onlyContractAdmin {
     require(value <= balances[from], "Insufficent tokens to burn");
     balances[from] = balances[from].sub(value);
-    totalSupply = totalSupply.sub(value);
+    internalTotalSupply = internalTotalSupply.sub(value);
     emit Burn(msg.sender, from, value);
   }
 
   function mint(address to, uint256 value) public onlyContractAdmin  {
     balances[to] = balances[to].add(value);
-    totalSupply = totalSupply.add(value);
+    internalTotalSupply = internalTotalSupply.add(value);
     emit Mint(msg.sender, to, value);
   }
 
@@ -216,6 +216,10 @@ contract RestrictedToken {
   }
 
   /******* ERC20 FUNCTIONS ***********/
+
+  function totalSupply() public view returns (uint256) {
+    return internalTotalSupply;
+  }
 
   function balanceOf(address owner) public view returns(uint256 balance) {
     return balances[owner];
