@@ -1,4 +1,4 @@
-pragma solidity ^0.5.8;
+pragma solidity 0.5.12;
 
 contract ITransferRules {
     /// @notice Detects if a transfer will be reverted and if so returns an appropriate reference code
