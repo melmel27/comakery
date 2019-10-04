@@ -2,9 +2,9 @@ pragma solidity ^0.5.8;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
-import "../contracts/RestrictedToken.sol";
-import "../contracts/TransferRules.sol";
-import "../contracts/ITransferRules.sol";
+import "../../contracts/RestrictedToken.sol";
+import "../../contracts/TransferRules.sol";
+import "../../contracts/ITransferRules.sol";
 
 import "./support/UserProxy.sol";
 

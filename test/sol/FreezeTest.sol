@@ -1,8 +1,8 @@
 pragma solidity ^ 0.5 .8;
 
 import "truffle/Assert.sol";
-import "../contracts/RestrictedToken.sol";
-import "../contracts/TransferRules.sol";
+import "../../contracts/RestrictedToken.sol";
+import "../../contracts/TransferRules.sol";
 
 contract FreezeTest {
     RestrictedToken public token;

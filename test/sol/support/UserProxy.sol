@@ -1,6 +1,6 @@
 pragma solidity ^0.5.8;
 
-import "../../contracts/RestrictedToken.sol";
+import "../../../contracts/RestrictedToken.sol";
 contract UserProxy {
     RestrictedToken public token;
     
