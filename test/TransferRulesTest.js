@@ -2,7 +2,7 @@ const truffleAssert = require('truffle-assertions');
 var RestrictedToken = artifacts.require("RestrictedToken");
 var TransferRules = artifacts.require("TransferRules");
 
-contract("Access control tests", function (accounts) {
+contract("Transfer rules", function (accounts) {
   var contractAdmin
   var reserveAdmin
   var unprivileged

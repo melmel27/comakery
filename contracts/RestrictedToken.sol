@@ -56,8 +56,10 @@ contract RestrictedToken {
     uint8 _decimals,
     uint256 _totalSupply
   ) public {
-
+    
+    require(_transferRules != address(0), "Transfer rules address cannot be 0x0");
     require(_contractAdmin != address(0), "Token owner address cannot be 0x0");
+    require(_tokenReserveAdmin != address(0), "Token reserve admin address cannot be 0x0");
 
     // transfer rules can be swapped out
     // the storage stays in the ERC20
