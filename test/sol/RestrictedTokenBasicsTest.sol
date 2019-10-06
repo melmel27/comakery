@@ -23,7 +23,8 @@ contract RestrictedTokenBasicsTest {
             "xyz",
             "Ex Why Zee",
             6,
-            1234567
+            1234567, 
+            1e6
         );
         token.grantTransferAdmin(tokenContractOwner);
 

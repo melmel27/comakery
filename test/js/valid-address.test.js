@@ -16,14 +16,14 @@ contract("Validate", function (accounts) {
 
   it("cannot setup the contract with valid addresses", async () => {
     let rules = await TransferRules.new()
-    token = await RestrictedToken.new(rules.address, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100)
+    token = await RestrictedToken.new(rules.address, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100, 1e6)
   })
 
   it("cannot set token owner address to 0x0", async () => {
     let rules = await TransferRules.new()
 
     await truffleAssert.reverts(
-      RestrictedToken.new(rules.address, emptyAddress, reserveAdmin, "xyz", "Ex Why Zee", 6, 100, {
+      RestrictedToken.new(rules.address, emptyAddress, reserveAdmin, "xyz", "Ex Why Zee", 6, 100, 1e6, {
         from: unpermissioned
       }),
       "Token owner address cannot be 0x0")
@@ -33,7 +33,7 @@ contract("Validate", function (accounts) {
     let rules = await TransferRules.new()
 
     await truffleAssert.reverts(
-      RestrictedToken.new(rules.address, contractAdmin, emptyAddress, "xyz", "Ex Why Zee", 6, 100, {
+      RestrictedToken.new(rules.address, contractAdmin, emptyAddress, "xyz", "Ex Why Zee", 6, 100, 1e6, {
         from: unpermissioned
       }),
       "Token reserve admin address cannot be 0x0")
@@ -41,7 +41,7 @@ contract("Validate", function (accounts) {
 
   it("cannot set transfer rules address to 0x0", async () => {
     await truffleAssert.reverts(
-      RestrictedToken.new(emptyAddress, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100, {
+      RestrictedToken.new(emptyAddress, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100, 1e6, {
         from: unpermissioned
       }),
       "Transfer rules address cannot be 0x0")
@@ -52,7 +52,7 @@ contract("Validate", function (accounts) {
     var expectedError = "Address cannot be 0x0"
     beforeEach(async () => {
       let rules = await TransferRules.new()
-      token = await RestrictedToken.new(rules.address, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100)
+      token = await RestrictedToken.new(rules.address, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 1e6, 100)
     })
 
     it("grantTransferAdmin", async () => {

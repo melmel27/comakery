@@ -17,7 +17,7 @@ contract("ERC20 functionality", function (accounts) {
         defaultGroup = 0
 
         let rules = await TransferRules.new()
-        token = await RestrictedToken.new(rules.address, contractAdmin, alice, "xyz", "Ex Why Zee", 6, 100)
+        token = await RestrictedToken.new(rules.address, contractAdmin, alice, "xyz", "Ex Why Zee", 6, 100, 1e6)
 
         await token.grantTransferAdmin(contractAdmin, {
             from: contractAdmin

@@ -50,7 +50,8 @@ contract TransferRulesUpgradeTest {
             "xyz",
             "Ex Why Zee",
             decimalsWeWillPassToTransferRules,
-            100
+            100,
+            1e6
         );
 
         token.grantTransferAdmin(owner);

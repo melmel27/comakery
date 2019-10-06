@@ -24,7 +24,8 @@ contract MaxReceiverBalanceTest {
             "xyz",
             "Ex Why Zee",
             0,
-            100
+            100,
+            1e6
         );
         token.grantTransferAdmin(tokenContractOwner);
 

@@ -21,7 +21,7 @@ contract("Mutator calls and events", function (accounts) {
     defaultGroup = 0
 
     startingRules = await TransferRules.new()
-    token = await RestrictedToken.new(startingRules.address, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100)
+    token = await RestrictedToken.new(startingRules.address, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100, 1e6)
 
     await token.grantTransferAdmin(transferAdmin, {
       from: contractAdmin

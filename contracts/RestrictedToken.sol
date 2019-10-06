@@ -18,6 +18,7 @@ contract RestrictedToken {
   Roles.Role private transferAdmins;
 
   mapping(address => uint256) private balances;
+  uint256 public maxTotalSupply;
   uint256 public contractAdminCount;
 
   // transfer restriction storage
@@ -52,7 +53,8 @@ contract RestrictedToken {
     string memory _symbol,
     string memory _name,
     uint8 _decimals,
-    uint256 _totalSupply
+    uint256 _totalSupply,
+    uint256 _maxTotalSupply
   ) public {
     require(_transferRules != address(0), "Transfer rules address cannot be 0x0");
     require(_contractAdmin != address(0), "Token owner address cannot be 0x0");
@@ -64,6 +66,7 @@ contract RestrictedToken {
     symbol = _symbol;
     name = _name;
     decimals = _decimals;
+    maxTotalSupply = _maxTotalSupply;
 
     contractAdmins.add(_contractAdmin);
     contractAdminCount = 1;
@@ -203,6 +206,7 @@ contract RestrictedToken {
   }
 
   function mint(address to, uint256 value) public validAddress(to) onlyContractAdmin  {
+    require(internalTotalSupply.add(value) <= maxTotalSupply, "Cannot mint more than the max total supply");
     balances[to] = balances[to].add(value);
     internalTotalSupply = internalTotalSupply.add(value);
     emit Mint(msg.sender, to, value);

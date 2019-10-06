@@ -11,7 +11,7 @@ contract FreezeTest {
 
     function beforeEach() public {
         TransferRules rules = new TransferRules();
-        token = new RestrictedToken(address(rules), tokenContractOwner, tokenContractOwner, "xyz", "Ex Why Zee", 6, 100);
+        token = new RestrictedToken(address(rules), tokenContractOwner, tokenContractOwner, "xyz", "Ex Why Zee", 6, 100, 1e6);
 
         token.grantTransferAdmin(tokenContractOwner);
         token.setMaxBalance(alice, 1000);
