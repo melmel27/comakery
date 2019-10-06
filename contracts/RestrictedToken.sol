@@ -19,10 +19,11 @@ contract RestrictedToken {
   Roles.Role private transferAdmins;
 
   mapping(address => uint256) private balances;
-  mapping(address => mapping(address => uint256)) private allowed;
-  mapping(address => mapping(address => uint8)) private approvalNonces;
+  uint256 public contractAdminCount;
 
   // transfer restriction storage
+  mapping(address => mapping(address => uint256)) private allowed;
+  mapping(address => mapping(address => uint8)) private approvalNonces;
   uint256 public constant MAX_UINT = ((2 ** 255 - 1) * 2) + 1; // get max uint256 without overflow
   mapping(address => uint256) public maxBalances;
   mapping(address => uint256) public lockUntil; // unix timestamp to lock funds until
@@ -30,7 +31,6 @@ contract RestrictedToken {
   mapping(uint256 => mapping(uint256 => uint256)) private allowGroupTransfers; // approve transfers between groups: from => to => TimeLockUntil
   mapping(address => bool) public frozenAddresses;
   bool public isPaused = false;
-
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
 
@@ -67,6 +67,7 @@ contract RestrictedToken {
     decimals = _decimals;
 
     contractAdmins.add(_contractAdmin);
+    contractAdminCount = 1;
 
     balances[_tokenReserveAdmin] = _totalSupply;
     internalTotalSupply = balances[_tokenReserveAdmin];
@@ -103,13 +104,16 @@ contract RestrictedToken {
     emit RoleChange(msg.sender, addr, "TransferAdmin", false);
   }
 
-    function grantContractAdmin(address addr) validAddress(addr) onlyContractAdmin public {
+  function grantContractAdmin(address addr) validAddress(addr) onlyContractAdmin public {
     contractAdmins.add(addr);
+    contractAdminCount = contractAdminCount.add(1);
     emit RoleChange(msg.sender, addr, "ContractAdmin", true);
   }
 
   function revokeContractAdmin(address addr) validAddress(addr) onlyContractAdmin public {
+    require(contractAdminCount > 1, "Must have at least one contract admin");
     contractAdmins.remove(addr);
+    contractAdminCount = contractAdminCount.sub(1);
     emit RoleChange(msg.sender, addr, "ContractAdmin", false);
   }
 

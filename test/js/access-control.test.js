@@ -95,7 +95,7 @@ contract("Access control tests", function (accounts) {
     }))
 
     let checkRevertsFor = async (from) => {
-        await truffleAssert.reverts(token.mint(unprivileged, 123, {
+      await truffleAssert.reverts(token.mint(unprivileged, 123, {
         from: from
       }), "DOES NOT HAVE CONTRACT OWNER ROLE")
     }
@@ -190,8 +190,9 @@ contract("Access control tests", function (accounts) {
   })
 
   it("only contractAdmin can revoke contractAdmin privileges", async () => {
+
     let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.revokeContractAdmin(contractAdmin, {
+      await truffleAssert.reverts(token.revokeContractAdmin(unprivileged, {
         from: from
       }), "DOES NOT HAVE CONTRACT OWNER ROLE")
     }
@@ -200,7 +201,14 @@ contract("Access control tests", function (accounts) {
     await checkRevertsFor(reserveAdmin)
     await checkRevertsFor(unprivileged)
 
-    await truffleAssert.passes(token.revokeContractAdmin(contractAdmin, {
+    await token.grantContractAdmin(unprivileged, {
+      from: contractAdmin
+    })
+    assert.equal(await token.contractAdminCount(), 2,
+      "will need two contract admins so that there is the one required remaining after revokeContractAdmin contractAdmin")
+
+
+    await truffleAssert.passes(token.revokeContractAdmin(unprivileged, {
       from: contractAdmin
     }))
   })
@@ -213,7 +221,7 @@ contract("Access control tests", function (accounts) {
     }))
 
     let checkRevertsFor = async (from) => {
-      
+
       await truffleAssert.reverts(token.upgradeTransferRules(transferRulesAddress, {
         from: from
       }), "DOES NOT HAVE CONTRACT OWNER ROLE")
@@ -306,7 +314,7 @@ contract("Access control tests", function (accounts) {
 
   it("only transferAdmin can setAllowGroupTransfer", async () => {
     let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.setAllowGroupTransfer(0,1,17, {
+      await truffleAssert.reverts(token.setAllowGroupTransfer(0, 1, 17, {
         from: from
       }), "DOES NOT HAVE TRANSFER ADMIN ROLE")
     }
@@ -315,8 +323,33 @@ contract("Access control tests", function (accounts) {
     await checkRevertsFor(reserveAdmin)
     await checkRevertsFor(unprivileged)
 
-    await truffleAssert.passes(token.setAllowGroupTransfer(0,1,17, {
+    await truffleAssert.passes(token.setAllowGroupTransfer(0, 1, 17, {
       from: transferAdmin
     }))
+  })
+
+  it("must have at least one contractAdmin", async () => {
+    // await token.grantContractAdmin(unprivileged, {from: contractAdmin})
+    assert.equal(await token.contractAdminCount(), 1)
+
+    await truffleAssert.reverts(token.revokeContractAdmin(contractAdmin, {
+      from: contractAdmin
+    }), "Must have at least one contract admin")
+
+    assert.equal(await token.contractAdminCount(), 1)
+  })
+
+  it("keeps a count of the number of contract admins", async () => {
+    assert.equal(await token.contractAdminCount(), 1)
+
+    await token.grantContractAdmin(unprivileged, {
+      from: contractAdmin
+    })
+    assert.equal(await token.contractAdminCount(), 2)
+
+    await token.revokeContractAdmin(unprivileged, {
+      from: contractAdmin
+    })
+    assert.equal(await token.contractAdminCount(), 1)
   })
 })
