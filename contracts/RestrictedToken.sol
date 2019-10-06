@@ -1,7 +1,6 @@
 pragma solidity 0.5.12;
 
 import "./ITransferRules.sol";
-import "./TransferRules.sol";
 import "@openzeppelin/contracts/access/Roles.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
