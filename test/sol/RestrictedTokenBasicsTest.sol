@@ -94,4 +94,15 @@ contract RestrictedTokenBasicsTest {
         uint256 balance = token.balanceOf(address(reserveAdmin));
         Assert.equal(balance, token.totalSupply(), "correct initial balance");
     }
+
+    function testApproveReturnValue() public {
+        address someone = address(0x7);
+        bool result = token.approve(someone, 10);
+        Assert.equal(result, false, "response should always be false to encourage use of safeApprove");
+        Assert.equal(
+            token.allowance(tokenContractOwner, someone),
+            10,
+            "should have correct allowance"
+        );
+    }
 }

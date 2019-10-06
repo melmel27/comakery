@@ -249,9 +249,12 @@ contract RestrictedToken {
   /*  IT IS RECOMMENDED THAT YOU USE THE safeApprove() FUNCTION INSTEAD OF approve() TO AVOID A TIMING ISSUES WITH THE ERC20 STANDARD.
       The approve function implements the standard to maintain backwards compatibility with ERC20.
       Read more about the race condition exploit of approve here https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+      approve() always returns false so that users are always informed that they should employ safeApprove while not breaking ERC20 usage.
    */
+
   function approve(address spender, uint256 value) public validAddress(spender) returns(bool success) {
-    return _approve(spender, value);
+    _approve(spender, value);
+    return false;
   }
 
   // Use safeApprove() instead of approve() to avoid the race condition exploit which is a known security hole in the ERC20 standard
