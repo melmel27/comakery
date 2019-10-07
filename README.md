@@ -31,6 +31,12 @@ The Transfer Admin for the Token Contract can provision account addresses to tra
 4. The Transfer Admin calls `setAddressPermissions(buyerAddress, transferGroup, addressTimeLock, maxTokens)` to provision the Buyer account.
 5. At this time or before, the Transfer Admin authorizes the transfer of tokens between account groups with `setAllowGroupTransfer(fromGroup, toGroup, afterTimestamp)` . Note that allowing a transfer from group A to group B by default does not allow the reverse transfer from group B to group A. This would have to be done separately. An example is that Reg CF unaccredited investors may be allowed to sell to Accredited US investors but not vice versa.
 
+# WARNING: Maximum Total Supply, Minting and Burning of Tokens
+
+The variable `maxTotalSupply` is set when the contract is created and limits the total number of tokens that can be minted.
+
+**Contract admins can mint tokens to and burn tokens from any address. This is primarily to comply with law enforcement, regulations and stock issuance scenarios - but this centralized power could be abused. Transfer admins, authorized by contract admins, can also update the transfer rules at any moment in time as many times as they want.**
+
 ## Overview of Transfer Restriction Enforcement Functions
 
 | From | To | Restrict | Enforced By | Admin Role |
