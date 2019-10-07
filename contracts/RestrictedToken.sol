@@ -5,6 +5,9 @@ import "@openzeppelin/contracts/access/Roles.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+/// @title Restricted Token
+/// @author CoMakery, Inc.
+/// @notice An ERC-20 token with ERC-1404 transfer restrictions for managing security tokens, etc.
 contract RestrictedToken is IERC20 {
   using SafeMath for uint256;
 
@@ -95,56 +98,89 @@ contract RestrictedToken is IERC20 {
     _;
   }
 
-  function grantTransferAdmin(address addr) validAddress(addr) external onlyContractAdmin {
+  /// @notice Authorizes an address holder to write transfer restriction rules
+  /// @param addr The address to grant transfer admin rights to
+  function grantTransferAdmin(address addr) external validAddress(addr) onlyContractAdmin {
     transferAdmins.add(addr);
     emit RoleChange(msg.sender, addr, "TransferAdmin", true);
   }
 
-  function revokeTransferAdmin(address addr) validAddress(addr) external onlyContractAdmin  {
+  /// @notice Revokes authorization to write transfer restriction rules
+  /// @param addr The address to grant transfer admin rights to
+  function revokeTransferAdmin(address addr) external validAddress(addr) onlyContractAdmin  {
     transferAdmins.remove(addr);
     emit RoleChange(msg.sender, addr, "TransferAdmin", false);
   }
-
-  function grantContractAdmin(address addr) validAddress(addr) external onlyContractAdmin {
+  
+  /// @notice Authorizes an address holder to be a contract admin. Contract admins grant privalages to accounts.
+  /// Contract admins can mint/burn tokens and freeze accounts.
+  /// @param addr The address to grant transfer admin rights to
+  function grantContractAdmin(address addr) external validAddress(addr) onlyContractAdmin {
     contractAdmins.add(addr);
     contractAdminCount = contractAdminCount.add(1);
     emit RoleChange(msg.sender, addr, "ContractAdmin", true);
   }
 
-  function revokeContractAdmin(address addr) validAddress(addr) external onlyContractAdmin {
+  /// @notice Revokes authorization as a contract admin
+  /// @param addr The address to remove contract admin rights from
+  function revokeContractAdmin(address addr) external validAddress(addr) onlyContractAdmin {
     require(contractAdminCount > 1, "Must have at least one contract admin");
     contractAdmins.remove(addr);
     contractAdminCount = contractAdminCount.sub(1);
     emit RoleChange(msg.sender, addr, "ContractAdmin", false);
   }
 
+  /// @notice Enforces transfer restrictions managed using the ERC-1404 standard functions.
+  /// The rules to enforce are coded in the TransferRules contract - which is upgradable.
+  /// @param from The address the tokens are transferred from
+  /// @param to The address the tokens would be transferred to
+  /// @value the quantity of tokens to be transferred
   function enforceTransferRestrictions(address from, address to, uint256 value) public view {
     uint8 restrictionCode = detectTransferRestriction(from, to, value);
     require(transferRules.checkSuccess(restrictionCode), messageForTransferRestriction(restrictionCode));
   }
 
+  /// @notice Calls TransferRules the function detectTransferRetriction to determine if tokens can be transferred.
+  /// detectTransferRestriction returns a status code.
+  /// @param from The address the tokens are transferred from
+  /// @param to The address the tokens would be transferred to
+  /// @value the quantity of tokens to be transferred
   function detectTransferRestriction(address from, address to, uint256 value) public view returns(uint8) {
     return transferRules.detectTransferRestriction(address(this), from, to, value);
   }
 
+  /// @notice Calls TransferRules to lookup a human readable error message that goes with an error code.
+  /// @param restrictionCode is an error code to lookup an error code for
   function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory) {
     return transferRules.messageForTransferRestriction(restrictionCode);
   }
 
+  /// @notice Sets the maximum number of tokens an address will be allowed to hold.
+  /// Addresses can hold 0 tokens by default.
+  /// @param addr The address to restrict
+  /// @param updatedValue the maximum number of tokens the address can hold
   function setMaxBalance(address addr, uint256 updatedValue) public validAddress(addr) onlyTransferAdmin {
     maxBalances[addr] = updatedValue;
     emit AddressMaxBalance(msg.sender, addr, updatedValue);
   }
 
+  /// @notice Gets the maximum number of tokens an address is allowed to hold
+  /// @param addr The address to check restrictions for
   function getMaxBalance(address addr) external view returns(uint256) {
     return maxBalances[addr];
   }
 
+  /// @notice Lock tokens in the address from being transfered until the specified time
+  /// @param addr The address to restrict
+  /// @param timestamp The time the tokens will be locked until as a Unix timetsamp.
+  /// Unix timestamp is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
   function setTimeLock(address addr, uint256 timestamp) public validAddress(addr)  onlyTransferAdmin {
     lockUntil[addr] = timestamp;
     emit AddressTimeLock(msg.sender, addr, timestamp);
   }
-
+  /// @notice a convenience method to remove an addresses timelock. It sets the lock date to 0 which corresponds to the
+  /// earliest possible timestaamp in the past 00:00:00 UTC on 1 January 1970.
+  /// @param address The address to remove the timelock for.
   function removeTimeLock(address addr) external validAddress(addr) onlyTransferAdmin {
     lockUntil[addr] = 0;
     emit AddressTimeLock(msg.sender, addr, 0);
