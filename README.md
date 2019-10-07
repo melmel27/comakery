@@ -45,23 +45,23 @@ The variable `maxTotalSupply` is set when the contract is created and limits the
 | Reg S Group | US Accredited | Forbidden During Flowback Restriction Period | `setAllowGroupTransfer(fromGroupS, toGroupD, afterTime)` | Transfer Admin |
 | Reg S Group | Reg S Group | Forbidden Until Shorter Reg S TimeLock Ended | `setAllowGroupTransfer(fromGroupS, toGroupS, afterTime)` | Transfer Admin |
 | Issuer | Reg CF with > maximum value of tokens allowed | Forbid transfers increasing token balances above max balance | `setMaxBalance(amount)` | Transfer Admin |
-| Stolen Tokens | Anyone | Fix With Freeze, Burn, Reissue| `freeze(stolenTokenAddress);`<br /> `burnFrom(address, amount);`<br />`mint(newOwnerAddress);` | Transfer Admin can `freeze()` and Super Admin can do `mint()` `burnFrom()` and `freeze()` |
-| Any Address During Regulatory Freeze| Anyone | Forbid all transfers while paused | `pause()` | Super Admin |
+| Stolen Tokens | Anyone | Fix With Freeze, Burn, Reissue| `freeze(stolenTokenAddress);`<br /> `burnFrom(address, amount);`<br />`mint(newOwnerAddress);` | Transfer Admin can `freeze()` and Contract Admin can do `mint()` `burnFrom()` and `freeze()` |
+| Any Address During Regulatory Freeze| Anyone | Forbid all transfers while paused | `pause()` | Contract Admin |
 
 # Roles
 
-The smart contract enforces specific admin roles. The roles divide responsibilities to reduce abuse scenarios. Ideally each role should be managed by a separate admin with separate key control. In some cases, such as the Super Admin and Token Treasury Wallet Manager, it is recommended that the role's private key is managed through multi signature (e.g. requiring 2 of 3 or 4 of 6 approvers).
+The smart contract enforces specific admin roles. The roles divide responsibilities to reduce abuse scenarios. Ideally each role should be managed by a separate admin with separate key control. In some cases, such as the Contract Admin and Token Treasury Wallet Manager, it is recommended that the role's private key is managed through multi signature (e.g. requiring 2 of 3 or 4 of 6 approvers).
 
 The roles fall into two categories Admin Roles and Wallet Account Address Managers. Wallet account addresses are configured using the same transfer restriction rules as individual account address restrictions.
 
 ## Admin Roles
 
-| Function | Super Admin | Transfer Admin |
+| Function | Contract Admin | Transfer Admin |
 |-|-|-|
 | pause() | **yes** | no |
 | unpause() | **yes** | no |
-| grantSuperAdmin() | **yes** | no |
-| removeSuperAdmin() | **yes** | no |
+| grantContractAdmin() | **yes** | no |
+| removeContractAdmin() | **yes** | no |
 | grantTransferAdmin() | **yes** | no |
 | removeTransferAdmin() | **yes** | no |
 | upgradeTransferRules() | **yes** | no |
@@ -77,6 +77,10 @@ The roles fall into two categories Admin Roles and Wallet Account Address Manage
 
 
 ## Wallet Account Address Managers
+
+The contract is configured to expect these wallets:
+* Token Reserve Admin Wallet - Passed as a parameter to the contract when it is initially created
+* Hot Wallet - Any address used by an administrator to initially distribute tokens. These might have other contract administrator privileges but probably should not. There can also be multiple hot wallets.
 
 When the token smart contract is deployed the contract is configured with a treasury reserve admin that receives all of the initial tokens for the smart contract. The wallet account address holding all of the initially issued tokens should not have any admin roles associated with them.
 
