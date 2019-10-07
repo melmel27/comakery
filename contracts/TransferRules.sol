@@ -40,7 +40,7 @@ contract TransferRules is ITransferRules {
 
     if (value + token.balanceOf(to) > token.getMaxBalance(to)) return GREATER_THAN_RECIPIENT_MAX_BALANCE;
     if (now < token.getLockUntil(from)) return SENDER_TOKENS_TIME_LOCKED;
-    if (token.frozen(from)) return SENDER_ADDRESS_FROZEN;
+    if (token.getFrozenStatus(from)) return SENDER_ADDRESS_FROZEN;
 
     uint256 lockedUntil = token.getAllowTransferTime(from, to);
     if (0 == lockedUntil) return TRANSFER_GROUP_NOT_APPROVED;

@@ -41,7 +41,7 @@ contract GettersAndSettersTest {
         number = token.transferGroups(owner);
         number.equal(0, "bad getter value");
 
-        Assert.equal(token.frozen(owner), false, "default is not frozen");
+        Assert.equal(token.getFrozenStatus(owner), false, "default is not frozen");
     }
 
     function testGetAllowTransferTime() public {

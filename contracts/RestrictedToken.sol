@@ -168,7 +168,7 @@ contract RestrictedToken is IERC20 {
     emit AddressFrozen(msg.sender, addr, status);
   }
 
-  function frozen(address addr) public view returns(bool) {
+  function getFrozenStatus(address addr) public view returns(bool) {
     return frozenAddresses[addr];
   }
 

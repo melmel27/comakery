@@ -210,7 +210,7 @@ contract("Mutator calls and events", function (accounts) {
       return true
     })
 
-    assert.equal(await token.frozen(recipient), true)
+    assert.equal(await token.getFrozenStatus(recipient), true)
 
     let tx2 = await token.freeze(recipient, false, {
       from: transferAdmin
@@ -223,7 +223,7 @@ contract("Mutator calls and events", function (accounts) {
       return true
     })
 
-    assert.equal(await token.frozen(recipient), false)
+    assert.equal(await token.getFrozenStatus(recipient), false)
   })
 
   it("setAllowGroupTransfer with event and retreive wiith getAllowGroupTransferTime", async () => {
