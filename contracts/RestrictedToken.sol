@@ -178,7 +178,7 @@ contract RestrictedToken is IERC20 {
     lockUntil[addr] = timestamp;
     emit AddressTimeLock(msg.sender, addr, timestamp);
   }
-  /// @notice a convenience method to remove an addresses timelock. It sets the lock date to 0 which corresponds to the
+  /// @notice A convenience method to remove an addresses timelock. It sets the lock date to 0 which corresponds to the
   /// earliest possible timestaamp in the past 00:00:00 UTC on 1 January 1970.
   /// @param addr The address to remove the timelock for.
   function removeLockUntil(address addr) external validAddress(addr) onlyTransferAdmin {
@@ -186,28 +186,53 @@ contract RestrictedToken is IERC20 {
     emit AddressTimeLock(msg.sender, addr, 0);
   }
 
-  function getLockUntil(address addr) external view returns(uint256) {
+  /// @notice Check when the address will be locked for transfers until
+  /// @param addr The address to check
+  /// @return timestamp The time the address will be locked until.
+  /// The format is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
+  function getLockUntil(address addr) external view returns(uint256 timestamp) {
     return lockUntil[addr];
   }
 
+  /// @notice Set the one group that the address belongs to, such as a US Reg CF investor group.
+  /// @param addr The address to set the group for.
+  /// @param groupID The uint256 numeric ID of the group.
   function setTransferGroup(address addr, uint256 groupID) public validAddress(addr) onlyTransferAdmin {
     transferGroups[addr] = groupID;
     emit AddressTransferGroup(msg.sender, addr, groupID);
   }
 
+  /// @notice Gets the transfer group the address belongs to. The default group is 0.
+  /// @param addr The address to check.
+  /// @return groupID The group id of the address.
   function getTransferGroup(address addr) external view returns(uint256 groupID) {
     return transferGroups[addr];
   }
 
+  /// @notice Freezes or unfreezes an address.
+  /// Tokens in a frozen address cannot be transferred from until the address is unfrozen.
+  /// @param addr The address to be frozen.
+  /// @param status The frozenAddress status of the address. True means frozen false means not frozen.
   function freeze(address addr, bool status) public validAddress(addr)  onlyTransferAdminOrContractAdmin {
     frozenAddresses[addr] = status;
     emit AddressFrozen(msg.sender, addr, status);
   }
 
-  function getFrozenStatus(address addr) external view returns(bool) {
+  /// @notice Checks the status of an address to see if its frozen
+  /// @param addr The address to check
+  /// @return status Returns true if the address is frozen and false if its not frozen.
+  function getFrozenStatus(address addr) external view returns(bool status) {
     return frozenAddresses[addr];
   }
 
+  /// @notice A convenience method for updating the transfer group, lock until, max balance, and freeze status.
+  /// The convenience method also helps to reduce gas costs.
+  /// @param addr The address to set permissions for.
+  /// @param groupID The ID of the address
+  /// @param timeLockUntil The unix timestamp that the address should be locked until. Use 0 if it's not locked.
+  /// The format is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
+  /// @param maxTokens Is the maximum number of tokens the account can hold.
+  /// @param status The frozenAddress status of the address. True means frozen false means not frozen.
   function setAddressPermissions(address addr, uint256 groupID, uint256 timeLockUntil,
     uint256 maxTokens, bool status) public validAddress(addr) onlyTransferAdmin {
     setTransferGroup(addr, groupID);
@@ -218,6 +243,7 @@ contract RestrictedToken is IERC20 {
 
   // if lockedUntil = 0 no transfer
   // if lockedUntil = 1 any transfer works; update README
+  /// @notice Sets which group a group can transfer to and a time that the transfer is allowed.
   function setAllowGroupTransfer(uint256 groupA, uint256 groupB, uint256 lockedUntil) external onlyTransferAdmin {
     allowGroupTransfers[groupA][groupB] = lockedUntil;
     emit AllowGroupTransfer(msg.sender, groupA, groupB, lockedUntil);
