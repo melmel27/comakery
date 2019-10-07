@@ -6,8 +6,6 @@ contract ITransferRules {
     /// @param to Receiving address
     /// @param value Amount of tokens being transferred
     /// @return Code by which to reference message for rejection reasoning
-
-    // TODO: require that address token is of tyle RestrictedToken instead?
     function detectTransferRestriction(
         address token,
         address from,
