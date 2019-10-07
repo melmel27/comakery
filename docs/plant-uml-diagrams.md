@@ -30,7 +30,7 @@ actor "Hot Wallet\nAdmin" as HAdmin
 
 Investor -> TAdmin: send AML/KYC and accreditation info
 TAdmin -> Token: setMaxBalance(investorAddress, maxTokens)
-TAdmin -> Token: setTimeLock(investorAddress, timeToUnlock)
+TAdmin -> Token: setLockUntil(investorAddress, timeToUnlock)
 TAdmin -> Token: setAddressPermissions(investorAddress, transferGroup,\naddressTimeLock, maxTokens)\n// Reg D, S or CF
 HAdmin -> Token: transfer(investorAddress, amount)
 activate Token

@@ -90,16 +90,16 @@ contract("Validate", function (accounts) {
         }), expectedError)
     })
 
-    it("setTimeLock", async () => {
+    it("setLockUntil", async () => {
       await truffleAssert.reverts(
-        token.setTimeLock(emptyAddress, 100, {
+        token.setLockUntil(emptyAddress, 100, {
           from: unpermissioned
         }), expectedError)
     })
 
-    it("removeTimeLock", async () => {
+    it("removeLockUntil", async () => {
       await truffleAssert.reverts(
-        token.removeTimeLock(emptyAddress, {
+        token.removeLockUntil(emptyAddress, {
           from: unpermissioned
         }), expectedError)
     })

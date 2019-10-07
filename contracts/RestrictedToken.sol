@@ -134,7 +134,7 @@ contract RestrictedToken is IERC20 {
   /// The rules to enforce are coded in the TransferRules contract - which is upgradable.
   /// @param from The address the tokens are transferred from
   /// @param to The address the tokens would be transferred to
-  /// @value the quantity of tokens to be transferred
+  /// @param value the quantity of tokens to be transferred
   function enforceTransferRestrictions(address from, address to, uint256 value) public view {
     uint8 restrictionCode = detectTransferRestriction(from, to, value);
     require(transferRules.checkSuccess(restrictionCode), messageForTransferRestriction(restrictionCode));
@@ -144,7 +144,7 @@ contract RestrictedToken is IERC20 {
   /// detectTransferRestriction returns a status code.
   /// @param from The address the tokens are transferred from
   /// @param to The address the tokens would be transferred to
-  /// @value the quantity of tokens to be transferred
+  /// @param value the quantity of tokens to be transferred
   function detectTransferRestriction(address from, address to, uint256 value) public view returns(uint8) {
     return transferRules.detectTransferRestriction(address(this), from, to, value);
   }
@@ -174,14 +174,14 @@ contract RestrictedToken is IERC20 {
   /// @param addr The address to restrict
   /// @param timestamp The time the tokens will be locked until as a Unix timetsamp.
   /// Unix timestamp is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
-  function setTimeLock(address addr, uint256 timestamp) public validAddress(addr)  onlyTransferAdmin {
+  function setLockUntil(address addr, uint256 timestamp) public validAddress(addr)  onlyTransferAdmin {
     lockUntil[addr] = timestamp;
     emit AddressTimeLock(msg.sender, addr, timestamp);
   }
   /// @notice a convenience method to remove an addresses timelock. It sets the lock date to 0 which corresponds to the
   /// earliest possible timestaamp in the past 00:00:00 UTC on 1 January 1970.
-  /// @param address The address to remove the timelock for.
-  function removeTimeLock(address addr) external validAddress(addr) onlyTransferAdmin {
+  /// @param addr The address to remove the timelock for.
+  function removeLockUntil(address addr) external validAddress(addr) onlyTransferAdmin {
     lockUntil[addr] = 0;
     emit AddressTimeLock(msg.sender, addr, 0);
   }
@@ -211,7 +211,7 @@ contract RestrictedToken is IERC20 {
   function setAddressPermissions(address addr, uint256 groupID, uint256 timeLockUntil,
     uint256 maxTokens, bool status) public validAddress(addr) onlyTransferAdmin {
     setTransferGroup(addr, groupID);
-    setTimeLock(addr, timeLockUntil);
+    setLockUntil(addr, timeLockUntil);
     setMaxBalance(addr, maxTokens);
     freeze(addr, status);
   }

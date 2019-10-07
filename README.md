@@ -41,7 +41,7 @@ The variable `maxTotalSupply` is set when the contract is created and limits the
 
 | From | To | Restrict | Enforced By | Admin Role |
 |:-|:-|:-|:-|:-|
-| Reg D/S/CF | Anyone | Until TimeLock ends | `setTimeLock(investorAddress)` | Transfer Admin |
+| Reg D/S/CF | Anyone | Until TimeLock ends | `setLockUntil(investorAddress)` | Transfer Admin |
 | Reg S Group | US Accredited | Forbidden During Flowback Restriction Period | `setAllowGroupTransfer(fromGroupS, toGroupD, afterTime)` | Transfer Admin |
 | Reg S Group | Reg S Group | Forbidden Until Shorter Reg S TimeLock Ended | `setAllowGroupTransfer(fromGroupS, toGroupS, afterTime)` | Transfer Admin |
 | Issuer | Reg CF with > maximum value of tokens allowed | Forbid transfers increasing token balances above max balance | `setMaxBalance(amount)` | Transfer Admin |
@@ -69,8 +69,8 @@ The roles fall into two categories Admin Roles and Wallet Account Address Manage
 | burnFrom() | **yes** | no |
 | freeze() | **yes** | **yes** |
 | setMaxBalance() | no | **yes** |
-| setTimeLock() | no | **yes** |
-| removeTimeLock() | no | **yes** |
+| setLockUntil() | no | **yes** |
+| removeLockUntil() | no | **yes** |
 | setTransferGroup() | no | **yes** |
 | setAddressPermissions() | no | **yes** |
 | setAllowGroupTransfer() | no | **yes** |
@@ -138,7 +138,7 @@ Note that there are no transfers yet authorized between accounts. By default no 
 
 There are a few ways that lockup periods are enforced:
 * By default all account addresses are locked. They require permissions to be transferred. Permissions can be granted on the account level or per address groups.
-* `setTimeLock(account, unixTimestamp)` locks all tokens in an account until the unix timestamp. Unix timestamps are indicated as the number of seconds since midnight UTC on January 1, 1970.
+* `setLockUntil(account, unixTimestamp)` locks all tokens in an account until the unix timestamp. Unix timestamps are indicated as the number of seconds since midnight UTC on January 1, 1970.
 * `setAllowGroupTransfer(fromGroup, toGroup, unixTimestamp)` allows transfers from a group of addresses to another group of addresses after the unixTimestamp. If the unixTimestamp is 0, then no transfer is allowed. This is because any uninitialized combination of addresses and timestamp will have a default value of 0.
 * There is a convenience method for setting group, timelock and the maximum number of tokens for an account.
 

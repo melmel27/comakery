@@ -155,8 +155,8 @@ contract("Mutator calls and events", function (accounts) {
     assert.equal(await token.getMaxBalance(recipient), 100)
   })
 
-  it("setTimeLock with events", async () => {
-    let tx = await token.setTimeLock(recipient, 97, {
+  it("setLockUntil with events", async () => {
+    let tx = await token.setLockUntil(recipient, 97, {
       from: transferAdmin
     })
 
@@ -169,7 +169,7 @@ contract("Mutator calls and events", function (accounts) {
 
     assert.equal(await token.getLockUntil(recipient), 97)
 
-    let tx2 = await token.removeTimeLock(recipient, {
+    let tx2 = await token.removeLockUntil(recipient, {
       from: transferAdmin
     })
 

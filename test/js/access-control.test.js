@@ -248,9 +248,9 @@ contract("Access control tests", function (accounts) {
     }))
   })
 
-  it("only transferAdmin can setTimeLock", async () => {
+  it("only transferAdmin can setLockUntil", async () => {
     let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.setTimeLock(unprivileged, 17, {
+      await truffleAssert.reverts(token.setLockUntil(unprivileged, 17, {
         from: from
       }), "DOES NOT HAVE TRANSFER ADMIN ROLE")
     }
@@ -259,14 +259,14 @@ contract("Access control tests", function (accounts) {
     await checkRevertsFor(reserveAdmin)
     await checkRevertsFor(unprivileged)
 
-    await truffleAssert.passes(token.setTimeLock(unprivileged, 17, {
+    await truffleAssert.passes(token.setLockUntil(unprivileged, 17, {
       from: transferAdmin
     }))
   })
 
-  it("only transferAdmin can removeTimeLock", async () => {
+  it("only transferAdmin can removeLockUntil", async () => {
     let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.removeTimeLock(unprivileged, {
+      await truffleAssert.reverts(token.removeLockUntil(unprivileged, {
         from: from
       }), "DOES NOT HAVE TRANSFER ADMIN ROLE")
     }
@@ -275,7 +275,7 @@ contract("Access control tests", function (accounts) {
     await checkRevertsFor(reserveAdmin)
     await checkRevertsFor(unprivileged)
 
-    await truffleAssert.passes(token.removeTimeLock(unprivileged, {
+    await truffleAssert.passes(token.removeLockUntil(unprivileged, {
       from: transferAdmin
     }))
   })
