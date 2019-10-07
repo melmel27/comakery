@@ -33,7 +33,7 @@ contract TransferRules is ITransferRules {
   /// @param from Sending address
   /// @param to Receiving address
   /// @param value Amount of tokens being transferred
-  /// @return Code by which to reference message for rejection reasoning
+  /// @return Code by which to reference message for rejection reason
   function detectTransferRestriction(address _token, address from, address to, uint256 value) external view returns(uint8) {
     RestrictedToken token = RestrictedToken(_token);
     if (token.isPaused()) return ALL_TRANSFERS_PAUSED;
@@ -58,7 +58,12 @@ contract TransferRules is ITransferRules {
     return errorMessage[restrictionCode];
   }
 
-  function checkSuccess(uint8 restrictionCode) external view returns(bool) {
+  /// @notice a method for checking a response code to determine if a transfer was succesful.
+  /// Defining this separately from the token contract allows it to be upgraded.
+  /// For instance this method would be necessary if the SUCCESS code was changed to 1 as specified in ERC-1066 instead of 0 as specified in ERC-1404.
+  /// @param restrictionCode The code to check.
+  /// @return isSuccess A boolean indicating if the code is the SUCCESS code.
+  function checkSuccess(uint8 restrictionCode) external view returns(bool isSuccess) {
     return restrictionCode == SUCCESS;
   }
 }

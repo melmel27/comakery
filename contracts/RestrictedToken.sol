@@ -121,7 +121,8 @@ contract RestrictedToken is IERC20 {
     emit RoleChange(msg.sender, addr, "ContractAdmin", true);
   }
 
-  /// @notice Revokes authorization as a contract admin
+  /// @notice Revokes authorization as a contract admin.
+  /// The contract requires there is at least 1 Contract Admin to avoid locking the Contract Admin functionality.
   /// @param addr The address to remove contract admin rights from
   function revokeContractAdmin(address addr) external validAddress(addr) onlyContractAdmin {
     require(contractAdminCount > 1, "Must have at least one contract admin");
@@ -241,24 +242,39 @@ contract RestrictedToken is IERC20 {
     freeze(addr, status);
   }
 
-  // if lockedUntil = 0 no transfer
-  // if lockedUntil = 1 any transfer works; update README
-  /// @notice Sets which group a group can transfer to and a time that the transfer is allowed.
-  function setAllowGroupTransfer(uint256 groupA, uint256 groupB, uint256 lockedUntil) external onlyTransferAdmin {
-    allowGroupTransfers[groupA][groupB] = lockedUntil;
-    emit AllowGroupTransfer(msg.sender, groupA, groupB, lockedUntil);
+  /// @notice Sets an allowed transfer from a group to another group beginning at a specific time.
+  /// There is only one definitive rule per from and to group.
+  /// @param from The group the transfer is coming from.
+  /// @param to The group the transfer is going to.
+  /// @param lockedUntil The unix timestamp that the transfer is locked until. 0 is a special number. 0 means the transfer is not allowed.
+  /// This is because in the smart contract mapping all pairs are implicitly defined with a default lockedUntil value of 0.
+  /// But no transfers should be authorized until explicitly allowed. Thus 0 must mean no transfer is allwed.
+  function setAllowGroupTransfer(uint256 from, uint256 to, uint256 lockedUntil) external onlyTransferAdmin {
+    allowGroupTransfers[from][to] = lockedUntil;
+    emit AllowGroupTransfer(msg.sender, from, to, lockedUntil);
   }
 
-  // note the transfer time default is 0 for transfers between all addresses
-  // a transfer time of 0 is treated as not allowed
+  /// @notice Checks to see when a transfer between two addresses would be allowed.
+  /// @param from The address the transfer is coming from
+  /// @param to The address the transfer is going to
+  /// @return timestamp The Unix timestamp of the time the transfer would be allowed. A 0 means never.
+  /// The format is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
   function getAllowTransferTime(address from, address to) external view returns(uint timestamp) {
     return allowGroupTransfers[transferGroups[from]][transferGroups[to]];
   }
 
+  /// @notice Checks to see when a transfer between two groups would be allowed.
+  /// @param from The group id the transfer is coming from
+  /// @param to The group id the transfer is going to
+  /// @return timestamp The Unix timestamp of the time the transfer would be allowed. A 0 means never.
+  /// The format is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
   function getAllowGroupTransferTime(uint from, uint to) external view returns(uint timestamp) {
     return allowGroupTransfers[from][to];
   }
 
+  /// @notice Destroys tokens and removes them from the total supply. Can only be called by an address with a Contract Admin role.
+  /// @param from The address to destroy the tokens from.
+  /// @param value The number of tokens to destroy from the address.
   function burnFrom(address from, uint256 value) external validAddress(from) onlyContractAdmin {
     require(value <= balances[from], "Insufficent tokens to burn");
     balances[from] = balances[from].sub(value);
@@ -266,6 +282,10 @@ contract RestrictedToken is IERC20 {
     emit Burn(msg.sender, from, value);
   }
 
+  /// @notice Allows the contract admin to create new tokens in a specified address.
+  /// The total number of tokens cannot exceed the maxTotalSupply (the "Hard Cap").
+  /// @param to The addres to mint tokens into.
+  /// @param value The number of tokens to mint.
   function mint(address to, uint256 value) external validAddress(to) onlyContractAdmin  {
     require(internalTotalSupply.add(value) <= maxTotalSupply, "Cannot mint more than the max total supply");
     balances[to] = balances[to].add(value);
@@ -273,16 +293,21 @@ contract RestrictedToken is IERC20 {
     emit Mint(msg.sender, to, value);
   }
 
+  /// @notice Allows the contract admin to pause transfers.
   function pause() external onlyContractAdmin() {
     isPaused = true;
     emit Pause(msg.sender, true);
   }
 
+  /// @notice Allows the contract admin to unpause transfers.
   function unpause() external onlyContractAdmin() {
     isPaused = false;
     emit Pause(msg.sender, false);
   }
 
+  /// @notice Allows the contrac admin to upgrade the transfer rules.
+  /// The upgraded transfer rules must implement the ITransferRules interface which conforms to the ERC-1404 token standard.
+  /// @param newTransferRules The address of the deployed TransferRules contract.
   function upgradeTransferRules(ITransferRules newTransferRules) external onlyContractAdmin {
     require(address(newTransferRules) != address(0x0), "Address cannot be 0x0");
     address oldRules = address(transferRules);
@@ -310,18 +335,24 @@ contract RestrictedToken is IERC20 {
     return true;
   }
 
-  /*  IT IS RECOMMENDED THAT YOU USE THE safeApprove() FUNCTION INSTEAD OF approve() TO AVOID A TIMING ISSUES WITH THE ERC20 STANDARD.
-      The approve function implements the standard to maintain backwards compatibility with ERC20.
-      Read more about the race condition exploit of approve here https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
-      approve() always returns false so that users are always informed that they should employ safeApprove while not breaking ERC20 usage.
-   */
-
+  /// @notice IT IS RECOMMENDED THAT YOU USE THE safeApprove() FUNCTION INSTEAD OF approve() TO AVOID A TIMING ISSUES WITH THE ERC20 STANDARD.
+  /// The approve function implements the standard to maintain backwards compatibility with ERC20.
+  /// Read more about the race condition exploit of approve here https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+  /// approve() always returns false so that users are always informed that they should employ safeApprove while not breaking ERC20 usage.
+  /// @param spender The person to authorize to spend tokens on the approvers behalf.
+  /// @param value The amount to authorize for the spender to spend.
+  /// @return success Always returns false so as to indicate that safeApprove should be used instead.
   function approve(address spender, uint256 value) external validAddress(spender) returns(bool success) {
     _approve(spender, value);
     return false;
   }
 
-  // Use safeApprove() instead of approve() to avoid the race condition exploit which is a known security hole in the ERC20 standard
+  /// @notice Use safeApprove() instead of approve() to avoid the race condition exploit which is a known security hole in the ERC20 standard
+  /// @param spender The person to authorize to spend.
+  /// @param newApprovalValue The amount to approve.
+  /// @param expectedApprovedValue The amount that the caller expects is currently approved.
+  /// @param nonce The expected nonce value of the last approval.
+  /// @return success Always returns true.
   function safeApprove(address spender, uint256 newApprovalValue,
     uint256 expectedApprovedValue, uint8 nonce) external validAddress(spender)
   returns(bool success) {
@@ -331,7 +362,10 @@ contract RestrictedToken is IERC20 {
     return _approve(spender, newApprovalValue);
   }
 
-  // gets the current allowed transfers for a sender and receiver along with the spender's nonce
+  /// @notice gets the current allowed transfers for a sender and receiver along with the spender's nonce
+  /// @param spender The address of the spender.
+  /// @return spenderAllowance The amount the spender is allowed to spend.
+  /// @return nonce The nonce id to be passed into safeApprove for verifying that the current account approval is valid for the spender.
   function allowanceAndNonce(address spender) external view returns(uint256 spenderAllowance, uint8 nonce) {
     uint256 _allowance = allowed[msg.sender][spender];
     uint8 _nonce = approvalNonces[msg.sender][spender];
