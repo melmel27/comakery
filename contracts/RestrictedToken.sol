@@ -3,8 +3,9 @@ pragma solidity 0.5.12;
 import "./ITransferRules.sol";
 import "@openzeppelin/contracts/access/Roles.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract RestrictedToken {
+contract RestrictedToken is IERC20 {
   using SafeMath for uint256;
 
   string public symbol;
@@ -31,8 +32,6 @@ contract RestrictedToken {
   mapping(uint256 => mapping(uint256 => uint256)) private allowGroupTransfers; // approve transfers between groups: from => to => TimeLockUntil
   mapping(address => bool) public frozenAddresses;
   bool public isPaused = false;
-  event Transfer(address indexed from, address indexed to, uint256 value);
-  event Approval(address indexed owner, address indexed spender, uint256 value);
 
   event RoleChange(address indexed grantor, address indexed grantee, string role, bool indexed status);
   event AddressMaxBalance(address indexed admin, address indexed addr, uint256 indexed value);
