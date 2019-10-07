@@ -1,8 +1,10 @@
 pragma solidity 0.5.12;
 import './RestrictedToken.sol';
 import './ITransferRules.sol';
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
 contract TransferRules is ITransferRules {
+    using SafeMath for uint256;
     mapping(uint8 => string) internal errorMessage;
 
     uint8 public constant SUCCESS = 0;
@@ -38,7 +40,7 @@ contract TransferRules is ITransferRules {
     if (to == address(0)) return DO_NOT_SEND_TO_EMPTY_ADDRESS;
     if (to == address(token)) return DO_NOT_SEND_TO_TOKEN_CONTRACT;
 
-    if (value + token.balanceOf(to) > token.getMaxBalance(to)) return GREATER_THAN_RECIPIENT_MAX_BALANCE;
+    if (token.balanceOf(to).add(value) > token.getMaxBalance(to)) return GREATER_THAN_RECIPIENT_MAX_BALANCE;
     if (now < token.getLockUntil(from)) return SENDER_TOKENS_TIME_LOCKED;
     if (token.getFrozenStatus(from)) return SENDER_ADDRESS_FROZEN;
 
