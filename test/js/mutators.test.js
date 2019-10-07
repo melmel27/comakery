@@ -197,7 +197,45 @@ contract("Mutator calls and events", function (accounts) {
 
     assert.equal(await token.getTransferGroup(recipient), 9)
   })
+  
+  it("setAddressPermissions with events from all inner function calls", async () => {
+    let tx = await token.setAddressPermissions(unprivileged, 9, 1, 1000, true, {
+      from: transferAdmin
+    })
+    truffleAssert.eventEmitted(tx, 'AddressTransferGroup', (ev) => {
+      assert.equal(ev.admin, transferAdmin)
+      assert.equal(ev.addr, unprivileged)
+      assert.equal(ev.value, 9)
+      return true
+    })
 
+    truffleAssert.eventEmitted(tx, 'AddressTimeLock', (ev) => {
+      assert.equal(ev.admin, transferAdmin)
+      assert.equal(ev.addr, unprivileged)
+      assert.equal(ev.value, 1)
+      return true
+    })
+
+    truffleAssert.eventEmitted(tx, 'AddressMaxBalance', (ev) => {
+      assert.equal(ev.admin, transferAdmin)
+      assert.equal(ev.addr, unprivileged)
+      assert.equal(ev.value, 1000)
+      return true
+    })
+
+    truffleAssert.eventEmitted(tx, 'AddressFrozen', (ev) => {
+      assert.equal(ev.admin, transferAdmin)
+      assert.equal(ev.addr, unprivileged)
+      assert.equal(ev.status, true)
+      return true
+    })
+    
+    assert.equal(await token.getTransferGroup(unprivileged), 9)
+    assert.equal(await token.getLockUntil(unprivileged), 1)
+    assert.equal(await token.getMaxBalance(unprivileged), 1000)
+    assert.equal(await token.getFrozenStatus(unprivileged), true)  
+  })
+  
   it("freeze with events", async () => {
     let tx = await token.freeze(recipient, true, {
       from: transferAdmin

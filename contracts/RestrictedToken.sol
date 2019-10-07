@@ -232,13 +232,13 @@ contract RestrictedToken is IERC20 {
   /// @param groupID The ID of the address
   /// @param timeLockUntil The unix timestamp that the address should be locked until. Use 0 if it's not locked.
   /// The format is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
-  /// @param maxTokens Is the maximum number of tokens the account can hold.
+  /// @param maxBalance Is the maximum number of tokens the account can hold.
   /// @param status The frozenAddress status of the address. True means frozen false means not frozen.
   function setAddressPermissions(address addr, uint256 groupID, uint256 timeLockUntil,
-    uint256 maxTokens, bool status) public validAddress(addr) onlyTransferAdmin {
+    uint256 maxBalance, bool status) public validAddress(addr) onlyTransferAdmin {
     setTransferGroup(addr, groupID);
     setLockUntil(addr, timeLockUntil);
-    setMaxBalance(addr, maxTokens);
+    setMaxBalance(addr, maxBalance);
     freeze(addr, status);
   }
 
