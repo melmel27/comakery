@@ -62,8 +62,8 @@ contract RestrictedToken is IERC20 {
     require(_contractAdmin != address(0), "Token owner address cannot be 0x0");
     require(_tokenReserveAdmin != address(0), "Token reserve admin address cannot be 0x0");
 
-    // transfer rules can be swapped out
-    // the storage stays in the ERC20
+    // Transfer rules can be swapped out for a new contract inheriting from the ITransferRules interface
+    // The storage stays in this contract and functions as an eternal storage.
     transferRules = ITransferRules(_transferRules);
     symbol = _symbol;
     name = _name;
@@ -132,7 +132,7 @@ contract RestrictedToken is IERC20 {
   }
 
   /// @notice Enforces transfer restrictions managed using the ERC-1404 standard functions.
-  /// The rules to enforce are coded in the TransferRules contract - which is upgradable.
+  /// The rules to enforce are managed by the TransferRules contract - which is upgradable.
   /// @param from The address the tokens are transferred from
   /// @param to The address the tokens would be transferred to
   /// @param value the quantity of tokens to be transferred
@@ -141,11 +141,11 @@ contract RestrictedToken is IERC20 {
     require(transferRules.checkSuccess(restrictionCode), messageForTransferRestriction(restrictionCode));
   }
 
-  /// @notice Calls TransferRules the function detectTransferRetriction to determine if tokens can be transferred.
+  /// @notice Calls the TransferRules detectTransferRetriction function to determine if tokens can be transferred.
   /// detectTransferRestriction returns a status code.
   /// @param from The address the tokens are transferred from
   /// @param to The address the tokens would be transferred to
-  /// @param value the quantity of tokens to be transferred
+  /// @param value The quantity of tokens to be transferred
   function detectTransferRestriction(address from, address to, uint256 value) public view returns(uint8) {
     return transferRules.detectTransferRestriction(address(this), from, to, value);
   }

@@ -60,7 +60,8 @@ contract TransferRules is ITransferRules {
 
   /// @notice a method for checking a response code to determine if a transfer was succesful.
   /// Defining this separately from the token contract allows it to be upgraded.
-  /// For instance this method would be necessary if the SUCCESS code was changed to 1 as specified in ERC-1066 instead of 0 as specified in ERC-1404.
+  /// For instance this method would need to be upgraded if the SUCCESS code was changed to 1
+  /// as specified in ERC-1066 instead of 0 as specified in ERC-1404.
   /// @param restrictionCode The code to check.
   /// @return isSuccess A boolean indicating if the code is the SUCCESS code.
   function checkSuccess(uint8 restrictionCode) external view returns(bool isSuccess) {
