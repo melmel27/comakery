@@ -95,23 +95,23 @@ contract RestrictedToken is IERC20 {
     _;
   }
 
-  function grantTransferAdmin(address addr) validAddress(addr) onlyContractAdmin public {
+  function grantTransferAdmin(address addr) validAddress(addr) external onlyContractAdmin {
     transferAdmins.add(addr);
     emit RoleChange(msg.sender, addr, "TransferAdmin", true);
   }
 
-  function revokeTransferAdmin(address addr) validAddress(addr) onlyContractAdmin public {
+  function revokeTransferAdmin(address addr) validAddress(addr) external onlyContractAdmin  {
     transferAdmins.remove(addr);
     emit RoleChange(msg.sender, addr, "TransferAdmin", false);
   }
 
-  function grantContractAdmin(address addr) validAddress(addr) onlyContractAdmin public {
+  function grantContractAdmin(address addr) validAddress(addr) external onlyContractAdmin {
     contractAdmins.add(addr);
     contractAdminCount = contractAdminCount.add(1);
     emit RoleChange(msg.sender, addr, "ContractAdmin", true);
   }
 
-  function revokeContractAdmin(address addr) validAddress(addr) onlyContractAdmin public {
+  function revokeContractAdmin(address addr) validAddress(addr) external onlyContractAdmin {
     require(contractAdminCount > 1, "Must have at least one contract admin");
     contractAdmins.remove(addr);
     contractAdminCount = contractAdminCount.sub(1);
@@ -136,7 +136,7 @@ contract RestrictedToken is IERC20 {
     emit AddressMaxBalance(msg.sender, addr, updatedValue);
   }
 
-  function getMaxBalance(address addr) public view returns(uint256) {
+  function getMaxBalance(address addr) external view returns(uint256) {
     return maxBalances[addr];
   }
 
@@ -145,12 +145,12 @@ contract RestrictedToken is IERC20 {
     emit AddressTimeLock(msg.sender, addr, timestamp);
   }
 
-  function removeTimeLock(address addr) public validAddress(addr) onlyTransferAdmin {
+  function removeTimeLock(address addr) external validAddress(addr) onlyTransferAdmin {
     lockUntil[addr] = 0;
     emit AddressTimeLock(msg.sender, addr, 0);
   }
 
-  function getLockUntil(address addr) public view returns(uint256) {
+  function getLockUntil(address addr) external view returns(uint256) {
     return lockUntil[addr];
   }
 
@@ -159,7 +159,7 @@ contract RestrictedToken is IERC20 {
     emit AddressTransferGroup(msg.sender, addr, groupID);
   }
 
-  function getTransferGroup(address addr) public view returns(uint256 groupID) {
+  function getTransferGroup(address addr) external view returns(uint256 groupID) {
     return transferGroups[addr];
   }
 
@@ -168,7 +168,7 @@ contract RestrictedToken is IERC20 {
     emit AddressFrozen(msg.sender, addr, status);
   }
 
-  function getFrozenStatus(address addr) public view returns(bool) {
+  function getFrozenStatus(address addr) external view returns(bool) {
     return frozenAddresses[addr];
   }
 
@@ -180,48 +180,48 @@ contract RestrictedToken is IERC20 {
     freeze(addr, status);
   }
 
-  // TODO: if lockedUntil = 0 no transfer; update README
-  // TODO: if lockedUntil = 1 any transfer works; update README
-  function setAllowGroupTransfer(uint256 groupA, uint256 groupB, uint256 lockedUntil) public onlyTransferAdmin {
+  // if lockedUntil = 0 no transfer
+  // if lockedUntil = 1 any transfer works; update README
+  function setAllowGroupTransfer(uint256 groupA, uint256 groupB, uint256 lockedUntil) external onlyTransferAdmin {
     allowGroupTransfers[groupA][groupB] = lockedUntil;
     emit AllowGroupTransfer(msg.sender, groupA, groupB, lockedUntil);
   }
 
   // note the transfer time default is 0 for transfers between all addresses
   // a transfer time of 0 is treated as not allowed
-  function getAllowTransferTime(address from, address to) public view returns(uint timestamp) {
+  function getAllowTransferTime(address from, address to) external view returns(uint timestamp) {
     return allowGroupTransfers[transferGroups[from]][transferGroups[to]];
   }
 
-  function getAllowGroupTransferTime(uint from, uint to) public view returns(uint timestamp) {
+  function getAllowGroupTransferTime(uint from, uint to) external view returns(uint timestamp) {
     return allowGroupTransfers[from][to];
   }
 
-  function burnFrom(address from, uint256 value) public validAddress(from) onlyContractAdmin {
+  function burnFrom(address from, uint256 value) external validAddress(from) onlyContractAdmin {
     require(value <= balances[from], "Insufficent tokens to burn");
     balances[from] = balances[from].sub(value);
     internalTotalSupply = internalTotalSupply.sub(value);
     emit Burn(msg.sender, from, value);
   }
 
-  function mint(address to, uint256 value) public validAddress(to) onlyContractAdmin  {
+  function mint(address to, uint256 value) external validAddress(to) onlyContractAdmin  {
     require(internalTotalSupply.add(value) <= maxTotalSupply, "Cannot mint more than the max total supply");
     balances[to] = balances[to].add(value);
     internalTotalSupply = internalTotalSupply.add(value);
     emit Mint(msg.sender, to, value);
   }
 
-  function pause() public onlyContractAdmin() {
+  function pause() external onlyContractAdmin() {
     isPaused = true;
     emit Pause(msg.sender, true);
   }
 
-  function unpause() public onlyContractAdmin() {
+  function unpause() external onlyContractAdmin() {
     isPaused = false;
     emit Pause(msg.sender, false);
   }
 
-  function upgradeTransferRules(ITransferRules newTransferRules) public onlyContractAdmin {
+  function upgradeTransferRules(ITransferRules newTransferRules) external onlyContractAdmin {
     require(address(newTransferRules) != address(0x0), "Address cannot be 0x0");
     address oldRules = address(transferRules);
     transferRules = newTransferRules;
@@ -230,19 +230,19 @@ contract RestrictedToken is IERC20 {
 
   /******* ERC20 FUNCTIONS ***********/
 
-  function totalSupply() public view returns (uint256) {
+  function totalSupply() external view returns (uint256) {
     return internalTotalSupply;
   }
 
-  function balanceOf(address owner) public view returns(uint256 balance) {
+  function balanceOf(address owner) external view returns(uint256 balance) {
     return balances[owner];
   }
 
-  function allowance(address owner, address spender) public view returns(uint256 remaining) {
+  function allowance(address owner, address spender) external view returns(uint256 remaining) {
     return allowed[owner][spender];
   }
 
-  function transfer(address to, uint256 value) public validAddress(to) returns(bool success) {
+  function transfer(address to, uint256 value) external validAddress(to) returns(bool success) {
     enforceTransferRestrictions(msg.sender, to, value);
     _transfer(msg.sender, to, value);
     return true;
@@ -254,14 +254,14 @@ contract RestrictedToken is IERC20 {
       approve() always returns false so that users are always informed that they should employ safeApprove while not breaking ERC20 usage.
    */
 
-  function approve(address spender, uint256 value) public validAddress(spender) returns(bool success) {
+  function approve(address spender, uint256 value) external validAddress(spender) returns(bool success) {
     _approve(spender, value);
     return false;
   }
 
   // Use safeApprove() instead of approve() to avoid the race condition exploit which is a known security hole in the ERC20 standard
   function safeApprove(address spender, uint256 newApprovalValue,
-    uint256 expectedApprovedValue, uint8 nonce) public validAddress(spender)
+    uint256 expectedApprovedValue, uint8 nonce) external validAddress(spender)
   returns(bool success) {
     require(expectedApprovedValue == allowed[msg.sender][spender],
       "The expected approved amount does not match the actual approved amount");
@@ -276,7 +276,7 @@ contract RestrictedToken is IERC20 {
     return (_allowance, _nonce);
   }
 
-  function transferFrom(address from, address to, uint256 value) public validAddress(from) validAddress(to) returns(bool success) {
+  function transferFrom(address from, address to, uint256 value) external validAddress(from) validAddress(to) returns(bool success) {
     enforceTransferRestrictions(from, to, value);
     require(value <= allowed[from][to], "The approved allowance is lower than the transfer amount");
     allowed[from][msg.sender] = allowed[from][msg.sender].sub(value);

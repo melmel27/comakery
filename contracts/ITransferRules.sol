@@ -11,15 +11,15 @@ contract ITransferRules {
         address from,
         address to,
         uint256 value
-    ) public view returns (uint8);
+    ) external view returns (uint8);
 
     /// @notice Returns a human-readable message for a given restriction code
     /// @param restrictionCode Identifier for looking up a message
     /// @return Text showing the restriction's reasoning
     function messageForTransferRestriction(uint8 restrictionCode)
-        public
+        external
         view
         returns (string memory);
 
-    function checkSuccess(uint8 restrictionCode) public view returns (bool);
+    function checkSuccess(uint8 restrictionCode) external view returns (bool);
 }

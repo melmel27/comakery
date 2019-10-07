@@ -32,7 +32,7 @@ contract TransferRules is ITransferRules {
   /// @param to Receiving address
   /// @param value Amount of tokens being transferred
   /// @return Code by which to reference message for rejection reasoning
-  function detectTransferRestriction(address _token, address from, address to, uint256 value) public view returns(uint8) {
+  function detectTransferRestriction(address _token, address from, address to, uint256 value) external view returns(uint8) {
     RestrictedToken token = RestrictedToken(_token);
     if (token.isPaused()) return ALL_TRANSFERS_PAUSED;
     if (to == address(0)) return DO_NOT_SEND_TO_EMPTY_ADDRESS;
@@ -52,11 +52,11 @@ contract TransferRules is ITransferRules {
   /// @notice Returns a human-readable message for a given restriction code
   /// @param restrictionCode Identifier for looking up a message
   /// @return Text showing the restriction's reasoning
-  function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory) {
+  function messageForTransferRestriction(uint8 restrictionCode) external view returns(string memory) {
     return errorMessage[restrictionCode];
   }
 
-  function checkSuccess(uint8 restrictionCode) public view returns(bool) {
+  function checkSuccess(uint8 restrictionCode) external view returns(bool) {
     return restrictionCode == SUCCESS;
   }
 }
