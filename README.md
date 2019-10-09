@@ -97,7 +97,7 @@ truffle console --network ropsten-infura
 
 And then from the console:
 ```
-var token; RestrictedToken.at("0x1d1592c28fff3d3e71b1d29e31147846026a0a37").then((x) => { token = x })
+var token = await RestrictedToken.at("0x1d1592c28fff3d3e71b1d29e31147846026a0a37")
 await token.symbol()
 // This returns the symbol of the testnet token "XYZ".
 ```
