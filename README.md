@@ -105,7 +105,7 @@ await token.symbol()
 There is an [automatically generated dApp interface for the contract on Etherscan](https://ropsten.etherscan.io/dapp/0x1d1592c28fff3d3e71b1d29e31147846026a0a37) that you can interact with using MetaMask:
 
 
-[CoMakery](www.comakery.com) is building a more sophisticated interface for this contract as well - get in touch with noah@comakery.com to learn more.
+[CoMakery](https://www.comakery.com) is building a more sophisticated interface for this contract as well - get in touch with noah@comakery.com to learn more.
 
 ## Overview of Transfer Restriction Enforcement Functions
 
