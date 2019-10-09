@@ -32,13 +32,13 @@ contract GettersAndSettersTest {
         uint256 number = token.balanceOf(owner);
         number.equal(100, "bad getter value");
 
-        number = token.maxBalances(owner);
+        number = token.getMaxBalance(owner);
         number.equal(0, "bad getter value");
 
-        number = token.lockUntil(owner);
+        number = token.getLockUntil(owner);
         number.equal(0, "bad getter value");
 
-        number = token.transferGroups(owner);
+        number = token.getTransferGroup(owner);
         number.equal(0, "bad getter value");
 
         Assert.equal(token.getFrozenStatus(owner), false, "default is not frozen");

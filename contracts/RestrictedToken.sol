@@ -22,15 +22,18 @@ contract RestrictedToken is ERC20 {
   uint256 public maxTotalSupply;
   uint256 public contractAdminCount;
 
-  // transfer restriction "eternal storage" that can be used by future TransferRules contract upgrades
-  uint256 public constant MAX_UINT256 = ((2 ** 255 - 1) * 2) + 1; // get max uint256 without overflow
-  mapping(address => uint256) public maxBalances;
-  mapping(address => uint256) public lockUntil; // unix timestamp to lock funds until
-  mapping(address => uint256) public transferGroups; // restricted groups like Reg D Accredited US, Reg CF Unaccredited US and Reg S Foreign
+  // Transfer restriction "eternal storage" mappings that can be used by future TransferRules contract upgrades
+  // They are accessed through getter and setter methods
+  mapping(address => uint256) private _maxBalances;
+  mapping(address => uint256) private _lockUntil; // unix timestamp to lock funds until
+  mapping(address => uint256) private _transferGroups; // restricted groups like Reg D Accredited US, Reg CF Unaccredited US and Reg S Foreign
   mapping(uint256 => mapping(uint256 => uint256)) private _allowGroupTransfers; // approve transfers between groups: from => to => TimeLockUntil
-  mapping(address => bool) public frozenAddresses;
+  mapping(address => bool) private _frozenAddresses;
+  
   bool public isPaused = false;
-
+  
+  uint256 public constant MAX_UINT256 = ((2 ** 255 - 1) * 2) + 1; // get max uint256 without overflow
+  
   event RoleChange(address indexed grantor, address indexed grantee, string role, bool indexed status);
   event AddressMaxBalance(address indexed admin, address indexed addr, uint256 indexed value);
   event AddressTimeLock(address indexed admin, address indexed addr, uint256 indexed value);
@@ -168,14 +171,14 @@ contract RestrictedToken is ERC20 {
   /// @param addr The address to restrict
   /// @param updatedValue the maximum number of tokens the address can hold
   function setMaxBalance(address addr, uint256 updatedValue) public validAddress(addr) onlyTransferAdmin {
-    maxBalances[addr] = updatedValue;
+    _maxBalances[addr] = updatedValue;
     emit AddressMaxBalance(msg.sender, addr, updatedValue);
   }
 
   /// @dev Gets the maximum number of tokens an address is allowed to hold
   /// @param addr The address to check restrictions for
   function getMaxBalance(address addr) external view returns(uint256) {
-    return maxBalances[addr];
+    return _maxBalances[addr];
   }
 
   /// @dev Lock tokens in the address from being transfered until the specified time
@@ -183,14 +186,14 @@ contract RestrictedToken is ERC20 {
   /// @param timestamp The time the tokens will be locked until as a Unix timetsamp.
   /// Unix timestamp is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
   function setLockUntil(address addr, uint256 timestamp) public validAddress(addr)  onlyTransferAdmin {
-    lockUntil[addr] = timestamp;
+    _lockUntil[addr] = timestamp;
     emit AddressTimeLock(msg.sender, addr, timestamp);
   }
   /// @dev A convenience method to remove an addresses timelock. It sets the lock date to 0 which corresponds to the
   /// earliest possible timestamp in the past 00:00:00 UTC on 1 January 1970.
   /// @param addr The address to remove the timelock for.
   function removeLockUntil(address addr) external validAddress(addr) onlyTransferAdmin {
-    lockUntil[addr] = 0;
+    _lockUntil[addr] = 0;
     emit AddressTimeLock(msg.sender, addr, 0);
   }
 
@@ -199,14 +202,14 @@ contract RestrictedToken is ERC20 {
   /// @return timestamp The time the address will be locked until.
   /// The format is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
   function getLockUntil(address addr) external view returns(uint256 timestamp) {
-    return lockUntil[addr];
+    return _lockUntil[addr];
   }
 
   /// @dev Set the one group that the address belongs to, such as a US Reg CF investor group.
   /// @param addr The address to set the group for.
   /// @param groupID The uint256 numeric ID of the group.
   function setTransferGroup(address addr, uint256 groupID) public validAddress(addr) onlyTransferAdmin {
-    transferGroups[addr] = groupID;
+    _transferGroups[addr] = groupID;
     emit AddressTransferGroup(msg.sender, addr, groupID);
   }
 
@@ -214,7 +217,7 @@ contract RestrictedToken is ERC20 {
   /// @param addr The address to check.
   /// @return groupID The group id of the address.
   function getTransferGroup(address addr) external view returns(uint256 groupID) {
-    return transferGroups[addr];
+    return _transferGroups[addr];
   }
 
   /// @dev Freezes or unfreezes an address.
@@ -222,7 +225,7 @@ contract RestrictedToken is ERC20 {
   /// @param addr The address to be frozen.
   /// @param status The frozenAddress status of the address. True means frozen false means not frozen.
   function freeze(address addr, bool status) public validAddress(addr)  onlyTransferAdminOrContractAdmin {
-    frozenAddresses[addr] = status;
+    _frozenAddresses[addr] = status;
     emit AddressFrozen(msg.sender, addr, status);
   }
 
@@ -230,7 +233,7 @@ contract RestrictedToken is ERC20 {
   /// @param addr The address to check
   /// @return status Returns true if the address is frozen and false if its not frozen.
   function getFrozenStatus(address addr) external view returns(bool status) {
-    return frozenAddresses[addr];
+    return _frozenAddresses[addr];
   }
 
   /// @dev A convenience method for updating the transfer group, lock until, max balance, and freeze status.
@@ -267,7 +270,7 @@ contract RestrictedToken is ERC20 {
   /// @return timestamp The Unix timestamp of the time the transfer would be allowed. A 0 means never.
   /// The format is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
   function getAllowTransferTime(address from, address to) external view returns(uint timestamp) {
-    return _allowGroupTransfers[transferGroups[from]][transferGroups[to]];
+    return _allowGroupTransfers[_transferGroups[from]][_transferGroups[to]];
   }
 
   /// @dev Checks to see when a transfer between two groups would be allowed.
