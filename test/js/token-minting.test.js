@@ -31,12 +31,12 @@ contract("Access control tests", function (accounts) {
   })
 
   it('can burn', async () => {
-    await token.burnFrom(reserveAdmin, 17);
+    await token.burn(reserveAdmin, 17);
     assert.equal(await token.balanceOf(reserveAdmin), 83)
   })
 
   it('cannot burn more than address balance', async () => {
-    await truffleAssert.reverts(token.burnFrom(reserveAdmin, 101, {
+    await truffleAssert.reverts(token.burn(reserveAdmin, 101, {
       from: contractAdmin
     }), "Insufficent tokens to burn")
   })

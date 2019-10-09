@@ -45,7 +45,7 @@ The variable `maxTotalSupply` is set when the contract is created and limits the
 | Reg S Group | US Accredited | Forbidden During Flowback Restriction Period | `setAllowGroupTransfer(fromGroupS, toGroupD, afterTime)` | Transfer Admin |
 | Reg S Group | Reg S Group | Forbidden Until Shorter Reg S TimeLock Ended | `setAllowGroupTransfer(fromGroupS, toGroupS, afterTime)` | Transfer Admin |
 | Issuer | Reg CF with > maximum value of tokens allowed | Forbid transfers increasing token balances above max balance | `setMaxBalance(amount)` | Transfer Admin |
-| Stolen Tokens | Anyone | Fix With Freeze, Burn, Reissue| `freeze(stolenTokenAddress);`<br /> `burnFrom(address, amount);`<br />`mint(newOwnerAddress);` | Transfer Admin can `freeze()` and Contract Admin can do `mint()` `burnFrom()` and `freeze()` |
+| Stolen Tokens | Anyone | Fix With Freeze, Burn, Reissue| `freeze(stolenTokenAddress);`<br /> `burn(address, amount);`<br />`mint(newOwnerAddress);` | Transfer Admin can `freeze()` and Contract Admin can do `mint()` `burn()` and `freeze()` |
 | Any Address During Regulatory Freeze| Anyone | Forbid all transfers while paused | `pause()` | Contract Admin |
 
 # Roles
@@ -66,7 +66,7 @@ The roles fall into two categories Admin Roles and Wallet Account Address Manage
 | removeTransferAdmin() | **yes** | no |
 | upgradeTransferRules() | **yes** | no |
 | mint() | **yes** | no |
-| burnFrom() | **yes** | no |
+| burn() | **yes** | no |
 | freeze() | **yes** | **yes** |
 | setMaxBalance() | no | **yes** |
 | setLockUntil() | no | **yes** |

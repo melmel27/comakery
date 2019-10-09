@@ -105,17 +105,17 @@ contract("Access control tests", function (accounts) {
     await checkRevertsFor(unprivileged)
   })
 
-  it("only contractAdmin can burnFrom", async () => {
+  it("only contractAdmin can burn", async () => {
     assert.equal(await token.balanceOf(reserveAdmin), 100)
 
-    await truffleAssert.passes(token.burnFrom(reserveAdmin, 1, {
+    await truffleAssert.passes(token.burn(reserveAdmin, 1, {
       from: contractAdmin
     }))
 
     assert.equal(await token.balanceOf(reserveAdmin), 99)
 
     let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.burnFrom(reserveAdmin, 1, {
+      await truffleAssert.reverts(token.burn(reserveAdmin, 1, {
         from: from
       }), "DOES NOT HAVE CONTRACT OWNER ROLE")
     }

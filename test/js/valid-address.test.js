@@ -125,9 +125,9 @@ contract("Validate", function (accounts) {
         }), expectedError)
     })
 
-    it("burnFrom", async () => {
+    it("burn", async () => {
       await truffleAssert.reverts(
-        token.burnFrom(emptyAddress, 10, {
+        token.burn(emptyAddress, 10, {
           from: unpermissioned
         }), expectedError)
     })

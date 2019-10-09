@@ -269,7 +269,7 @@ contract RestrictedToken is ERC20 {
   /// @dev Destroys tokens and removes them from the total supply. Can only be called by an address with a Contract Admin role.
   /// @param from The address to destroy the tokens from.
   /// @param value The number of tokens to destroy from the address.
-  function burnFrom(address from, uint256 value) external validAddress(from) onlyContractAdmin {
+  function burn(address from, uint256 value) external validAddress(from) onlyContractAdmin {
     require(value <= balanceOf(from), "Insufficent tokens to burn");
     _burn(from, value);
   }
