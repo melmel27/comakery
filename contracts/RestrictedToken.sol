@@ -104,6 +104,13 @@ contract RestrictedToken is ERC20 {
     emit RoleChange(msg.sender, addr, "TransferAdmin", false);
   }
 
+  /// @dev Checks if an address is an authorized transfer admin.
+  /// @param addr The address to check for transfer admin privileges.
+  /// @return hasPermission returns true if the address has transfer admin permission and false if not.
+  function checkTransferAdmin(address addr) external view returns(bool hasPermission) {
+    return _transferAdmins.has(addr);
+  }
+
   /// @dev Authorizes an address holder to be a contract admin. Contract admins grant privileges to accounts.
   /// Contract admins can mint/burn tokens and freeze accounts.
   /// @param addr The address to grant transfer admin rights to.
@@ -111,13 +118,6 @@ contract RestrictedToken is ERC20 {
     _contractAdmins.add(addr);
     contractAdminCount = contractAdminCount.add(1);
     emit RoleChange(msg.sender, addr, "ContractAdmin", true);
-  }
-
-  /// @dev Checks if an address is an authorized transfer admin.
-  /// @param addr The address to check for transfer admin privileges.
-  /// @return hasPermission returns true if the address has transfer admin permission false if not.
-  function checkTransferAdmin(address addr) external view returns(bool hasPermission) {
-    return _transferAdmins.has(addr);
   }
 
   /// @dev Revokes authorization as a contract admin.
@@ -128,6 +128,13 @@ contract RestrictedToken is ERC20 {
     _contractAdmins.remove(addr);
     contractAdminCount = contractAdminCount.sub(1);
     emit RoleChange(msg.sender, addr, "ContractAdmin", false);
+  }
+
+  /// @dev Checks if an address is an authorized contract admin.
+  /// @param addr The address to check for contract admin privileges.
+  /// @return hasPermission returns true if the address has contract admin permission and false if not.
+  function checkContractAdmin(address addr) external view returns(bool hasPermission) {
+    return _contractAdmins.has(addr);
   }
 
   /// @dev Enforces transfer restrictions managed using the ERC-1404 standard functions.

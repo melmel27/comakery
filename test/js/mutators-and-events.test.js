@@ -360,4 +360,9 @@ contract("Mutator calls and events", function (accounts) {
     assert.equal(await token.checkTransferAdmin.call(transferAdmin), true)
     assert.equal(await token.checkTransferAdmin.call(unprivileged), false)
   })
+
+  it("can check if an address has ContractAdmin permissions", async () => {
+    assert.equal(await token.checkContractAdmin.call(contractAdmin), true)
+    assert.equal(await token.checkContractAdmin.call(unprivileged), false)
+  })
 })
