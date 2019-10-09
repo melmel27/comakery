@@ -1,9 +1,9 @@
-pragma solidity ^ 0.5 .8;
+pragma solidity 0.5.12;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
-import "../contracts/RestrictedToken.sol";
-import "../contracts/TransferRules.sol";
+import "../../contracts/RestrictedToken.sol";
+import "../../contracts/TransferRules.sol";
 import "./support/UserProxy.sol";
 
 contract TransferRestrictionsTest {
@@ -21,14 +21,14 @@ contract TransferRestrictionsTest {
     function beforeEach() public {
         tokenContractOwner = address(this);
         TransferRules rules = new TransferRules();
-        token = new RestrictedToken(address(rules), tokenContractOwner, tokenContractOwner, "xyz", "Ex Why Zee", 0, 100);
+        token = new RestrictedToken(address(rules), tokenContractOwner, tokenContractOwner, "xyz", "Ex Why Zee", 0, 100, 1e6);
         token.grantTransferAdmin(tokenContractOwner);
         
         alice = address(0x1);
         bob = address(0x2);
 
-        token.setAccountPermissions(alice, groupA, transferTimeIsNow, maxTokens, false);
-        token.setAccountPermissions(bob, groupB, transferTimeIsNow, maxTokens, false);
+        token.setAddressPermissions(alice, groupA, transferTimeIsNow, maxTokens, false);
+        token.setAddressPermissions(bob, groupB, transferTimeIsNow, maxTokens, false);
     }
 
     function testTransferRestrictionsBetweenUsersNotOnWhitelist() public {

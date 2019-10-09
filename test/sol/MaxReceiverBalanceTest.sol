@@ -1,8 +1,9 @@
-pragma solidity ^0.5.8;
+pragma solidity 0.5.12;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
-import "../contracts/RestrictedToken.sol";
+import "../../contracts/RestrictedToken.sol";
+import "../../contracts/TransferRules.sol";
 import "./support/UserProxy.sol";
 
 contract MaxReceiverBalanceTest {
@@ -23,7 +24,8 @@ contract MaxReceiverBalanceTest {
             "xyz",
             "Ex Why Zee",
             0,
-            100
+            100,
+            1e6
         );
         token.grantTransferAdmin(tokenContractOwner);
 

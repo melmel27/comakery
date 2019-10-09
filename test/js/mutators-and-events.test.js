@@ -11,6 +11,7 @@ contract("Mutator calls and events", function (accounts) {
   var defaultGroup
   var token
   var startingRules
+  var emptyAddress = web3.utils.padLeft(0x0, 40)
 
   beforeEach(async function () {
     contractAdmin = accounts[0]
@@ -21,7 +22,7 @@ contract("Mutator calls and events", function (accounts) {
     defaultGroup = 0
 
     startingRules = await TransferRules.new()
-    token = await RestrictedToken.new(startingRules.address, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100)
+    token = await RestrictedToken.new(startingRules.address, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100, 1e6)
 
     await token.grantTransferAdmin(transferAdmin, {
       from: contractAdmin
@@ -31,11 +32,11 @@ contract("Mutator calls and events", function (accounts) {
       from: transferAdmin
     })
 
-    await token.setAccountPermissions(reserveAdmin, defaultGroup, 1, 1000, false, {
+    await token.setAddressPermissions(reserveAdmin, defaultGroup, 1, 1000, false, {
       from: transferAdmin
     })
 
-    await token.setAccountPermissions(recipient, defaultGroup, 1, 1000, false, {
+    await token.setAddressPermissions(recipient, defaultGroup, 1, 1000, false, {
       from: transferAdmin
     })
 
@@ -147,7 +148,7 @@ contract("Mutator calls and events", function (accounts) {
 
     truffleAssert.eventEmitted(tx, 'AddressMaxBalance', (ev) => {
       assert.equal(ev.admin, transferAdmin)
-      assert.equal(ev.account, recipient)
+      assert.equal(ev.addr, recipient)
       assert.equal(ev.value, 100)
       return true
     })
@@ -155,32 +156,32 @@ contract("Mutator calls and events", function (accounts) {
     assert.equal(await token.getMaxBalance(recipient), 100)
   })
 
-  it("setTimeLock with events", async () => {
-    let tx = await token.setTimeLock(recipient, 97, {
+  it("setLockUntil with events", async () => {
+    let tx = await token.setLockUntil(recipient, 97, {
       from: transferAdmin
     })
 
     truffleAssert.eventEmitted(tx, 'AddressTimeLock', (ev) => {
       assert.equal(ev.admin, transferAdmin)
-      assert.equal(ev.account, recipient)
+      assert.equal(ev.addr, recipient)
       assert.equal(ev.value, 97)
       return true
     })
 
-    assert.equal(await token.getTimeLock(recipient), 97)
+    assert.equal(await token.getLockUntil(recipient), 97)
 
-    let tx2 = await token.removeTimeLock(recipient, {
+    let tx2 = await token.removeLockUntil(recipient, {
       from: transferAdmin
     })
 
     truffleAssert.eventEmitted(tx2, 'AddressTimeLock', (ev) => {
       assert.equal(ev.admin, transferAdmin)
-      assert.equal(ev.account, recipient)
+      assert.equal(ev.addr, recipient)
       assert.equal(ev.value, 0)
       return true
     })
 
-    assert.equal(await token.getTimeLock(recipient), 0)
+    assert.equal(await token.getLockUntil(recipient), 0)
   })
 
   it("setTransferGroup with events", async () => {
@@ -190,14 +191,52 @@ contract("Mutator calls and events", function (accounts) {
 
     truffleAssert.eventEmitted(tx, 'AddressTransferGroup', (ev) => {
       assert.equal(ev.admin, transferAdmin)
-      assert.equal(ev.account, recipient)
+      assert.equal(ev.addr, recipient)
       assert.equal(ev.value, 9)
       return true
     })
 
     assert.equal(await token.getTransferGroup(recipient), 9)
   })
+  
+  it("setAddressPermissions with events from all inner function calls", async () => {
+    let tx = await token.setAddressPermissions(unprivileged, 9, 1, 1000, true, {
+      from: transferAdmin
+    })
+    truffleAssert.eventEmitted(tx, 'AddressTransferGroup', (ev) => {
+      assert.equal(ev.admin, transferAdmin)
+      assert.equal(ev.addr, unprivileged)
+      assert.equal(ev.value, 9)
+      return true
+    })
 
+    truffleAssert.eventEmitted(tx, 'AddressTimeLock', (ev) => {
+      assert.equal(ev.admin, transferAdmin)
+      assert.equal(ev.addr, unprivileged)
+      assert.equal(ev.value, 1)
+      return true
+    })
+
+    truffleAssert.eventEmitted(tx, 'AddressMaxBalance', (ev) => {
+      assert.equal(ev.admin, transferAdmin)
+      assert.equal(ev.addr, unprivileged)
+      assert.equal(ev.value, 1000)
+      return true
+    })
+
+    truffleAssert.eventEmitted(tx, 'AddressFrozen', (ev) => {
+      assert.equal(ev.admin, transferAdmin)
+      assert.equal(ev.addr, unprivileged)
+      assert.equal(ev.status, true)
+      return true
+    })
+    
+    assert.equal(await token.getTransferGroup(unprivileged), 9)
+    assert.equal(await token.getLockUntil(unprivileged), 1)
+    assert.equal(await token.getMaxBalance(unprivileged), 1000)
+    assert.equal(await token.getFrozenStatus(unprivileged), true)  
+  })
+  
   it("freeze with events", async () => {
     let tx = await token.freeze(recipient, true, {
       from: transferAdmin
@@ -205,12 +244,12 @@ contract("Mutator calls and events", function (accounts) {
 
     truffleAssert.eventEmitted(tx, 'AddressFrozen', (ev) => {
       assert.equal(ev.admin, transferAdmin)
-      assert.equal(ev.account, recipient)
+      assert.equal(ev.addr, recipient)
       assert.equal(ev.status, true)
       return true
     })
 
-    assert.equal(await token.frozen(recipient), true)
+    assert.equal(await token.getFrozenStatus(recipient), true)
 
     let tx2 = await token.freeze(recipient, false, {
       from: transferAdmin
@@ -218,15 +257,15 @@ contract("Mutator calls and events", function (accounts) {
 
     truffleAssert.eventEmitted(tx2, 'AddressFrozen', (ev) => {
       assert.equal(ev.admin, transferAdmin)
-      assert.equal(ev.account, recipient)
+      assert.equal(ev.addr, recipient)
       assert.equal(ev.status, false)
       return true
     })
 
-    assert.equal(await token.frozen(recipient), false)
+    assert.equal(await token.getFrozenStatus(recipient), false)
   })
 
-  it("setAllowGroupTransfer with events", async () => {
+  it("setAllowGroupTransfer with event and retreive wiith getAllowGroupTransferTime", async () => {
     let tx = await token.setAllowGroupTransfer(0, 1, 203, {
       from: transferAdmin
     })
@@ -235,21 +274,21 @@ contract("Mutator calls and events", function (accounts) {
       assert.equal(ev.admin, transferAdmin)
       assert.equal(ev.fromGroup, 0)
       assert.equal(ev.toGroup, 1)
-      assert.equal(ev.transferAfter, 203)
+      assert.equal(ev.lockedUntil, 203)
       return true
     })
 
-    assert.equal(await token.getAllowGroupTransfer(0, 1, 204), true)
+    assert.equal(await token.getAllowGroupTransferTime(0, 1), 203)
   })
 
-  it("burnFrom with events", async () => {
-    let tx = await token.burnFrom(reserveAdmin, 17, {
+  it("burn with events", async () => {
+    let tx = await token.burn(reserveAdmin, 17, {
       from: contractAdmin
     })
 
-    truffleAssert.eventEmitted(tx, 'Burn', (ev) => {
-      assert.equal(ev.admin, contractAdmin)
-      assert.equal(ev.account, reserveAdmin)
+    truffleAssert.eventEmitted(tx, 'Transfer', (ev) => {
+      assert.equal(ev.from, reserveAdmin)
+      assert.equal(ev.to, emptyAddress)
       assert.equal(ev.value, 17)
       return true
     })
@@ -263,9 +302,9 @@ contract("Mutator calls and events", function (accounts) {
       from: contractAdmin
     })
 
-    truffleAssert.eventEmitted(tx, 'Mint', (ev) => {
-      assert.equal(ev.admin, contractAdmin)
-      assert.equal(ev.account, recipient)
+    truffleAssert.eventEmitted(tx, 'Transfer', (ev) => {
+      assert.equal(ev.from, emptyAddress)
+      assert.equal(ev.to, recipient)
       assert.equal(ev.value, 17)
       return true
     })
@@ -315,5 +354,15 @@ contract("Mutator calls and events", function (accounts) {
     })
 
     assert.equal(await token.transferRules.call(), newRules.address)
+  })
+
+  it("can check if an address has TransferAdmin permissions", async () => {
+    assert.equal(await token.checkTransferAdmin.call(transferAdmin), true)
+    assert.equal(await token.checkTransferAdmin.call(unprivileged), false)
+  })
+
+  it("can check if an address has ContractAdmin permissions", async () => {
+    assert.equal(await token.checkContractAdmin.call(contractAdmin), true)
+    assert.equal(await token.checkContractAdmin.call(unprivileged), false)
   })
 })

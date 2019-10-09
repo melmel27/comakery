@@ -1,10 +1,10 @@
-pragma solidity ^0.5.8;
+pragma solidity 0.5.12;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
-import "../contracts/RestrictedToken.sol";
-import "../contracts/TransferRules.sol";
-import "../contracts/ITransferRules.sol";
+import "../../contracts/RestrictedToken.sol";
+import "../../contracts/TransferRules.sol";
+import "../../contracts/ITransferRules.sol";
 
 import "./support/UserProxy.sol";
 
@@ -25,7 +25,8 @@ contract TransferRulesUpgrade is ITransferRules {
         view
         returns (string memory)
     {
-        return "HELLO UPGRADE";
+        if(restrictionCode >= 0) return "HELLO UPGRADE";
+        return "HELLO 0 UPGRADE";
     }
 
     function checkSuccess(uint8 restrictionCode) public view returns (bool) {
@@ -36,9 +37,11 @@ contract TransferRulesUpgrade is ITransferRules {
 contract TransferRulesUpgradeTest {
     RestrictedToken token;
     address owner;
+    address receiver;
 
     function beforeEach() public {
         owner = address(this);
+        receiver = address(0x1);
         uint8 decimalsWeWillPassToTransferRules = 6;
         TransferRules rules = new TransferRules();
         token = new RestrictedToken(
@@ -48,20 +51,21 @@ contract TransferRulesUpgradeTest {
             "xyz",
             "Ex Why Zee",
             decimalsWeWillPassToTransferRules,
-            100
+            100,
+            1e6
         );
 
         token.grantTransferAdmin(owner);
-        token.setMaxBalance(owner, 100);
+        token.setMaxBalance(receiver, 100);
         token.setAllowGroupTransfer(0, 0, 1); // don't restrict default group transfers
     }
 
     function testReplaceTransferRules() public {
-        uint8 code = token.detectTransferRestriction(owner, owner, 1);
+        uint8 code = token.detectTransferRestriction(owner, receiver, 1);
         Assert.equal(
             uint256(code),
             0,
-            "initial TransferRules shoudl return code 0"
+            "initial TransferRules should return code 0"
         );
 
         // upgrade the TransferRules

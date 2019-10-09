@@ -1,10 +1,12 @@
-pragma solidity ^0.5.8;
+pragma solidity 0.5.12;
 import './RestrictedToken.sol';
 import './ITransferRules.sol';
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
 contract TransferRules is ITransferRules {
+    using SafeMath for uint256;
     mapping(uint8 => string) internal errorMessage;
-    
+
     uint8 public constant SUCCESS = 0;
     uint8 public constant GREATER_THAN_RECIPIENT_MAX_BALANCE = 1;
     uint8 public constant SENDER_TOKENS_TIME_LOCKED = 2;
@@ -31,20 +33,20 @@ contract TransferRules is ITransferRules {
   /// @param from Sending address
   /// @param to Receiving address
   /// @param value Amount of tokens being transferred
-  /// @return Code by which to reference message for rejection reasoning
-  function detectTransferRestriction(address _token, address from, address to, uint256 value) public view returns(uint8) {
+  /// @return Code by which to reference message for rejection reason
+  function detectTransferRestriction(address _token, address from, address to, uint256 value) external view returns(uint8) {
     RestrictedToken token = RestrictedToken(_token);
     if (token.isPaused()) return ALL_TRANSFERS_PAUSED;
     if (to == address(0)) return DO_NOT_SEND_TO_EMPTY_ADDRESS;
     if (to == address(token)) return DO_NOT_SEND_TO_TOKEN_CONTRACT;
 
-    if (value > token.getMaxBalance(to)) return GREATER_THAN_RECIPIENT_MAX_BALANCE;
-    if (now < token.getTimeLock(from)) return SENDER_TOKENS_TIME_LOCKED;
-    if (token.frozen(from)) return SENDER_ADDRESS_FROZEN;
+    if (token.balanceOf(to).add(value) > token.getMaxBalance(to)) return GREATER_THAN_RECIPIENT_MAX_BALANCE;
+    if (now < token.getLockUntil(from)) return SENDER_TOKENS_TIME_LOCKED;
+    if (token.getFrozenStatus(from)) return SENDER_ADDRESS_FROZEN;
 
-    uint256 allowedTransferTime = token.getAllowTransferTime(from, to);
-    if (0 == allowedTransferTime) return TRANSFER_GROUP_NOT_APPROVED;
-    if (now < allowedTransferTime) return TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER;
+    uint256 lockedUntil = token.getAllowTransferTime(from, to);
+    if (0 == lockedUntil) return TRANSFER_GROUP_NOT_APPROVED;
+    if (now < lockedUntil) return TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER;
 
     return SUCCESS;
   }
@@ -52,11 +54,17 @@ contract TransferRules is ITransferRules {
   /// @notice Returns a human-readable message for a given restriction code
   /// @param restrictionCode Identifier for looking up a message
   /// @return Text showing the restriction's reasoning
-  function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory) {
+  function messageForTransferRestriction(uint8 restrictionCode) external view returns(string memory) {
     return errorMessage[restrictionCode];
   }
 
-  function checkSuccess(uint8 restrictionCode) public view returns(bool) {
+  /// @notice a method for checking a response code to determine if a transfer was succesful.
+  /// Defining this separately from the token contract allows it to be upgraded.
+  /// For instance this method would need to be upgraded if the SUCCESS code was changed to 1
+  /// as specified in ERC-1066 instead of 0 as specified in ERC-1404.
+  /// @param restrictionCode The code to check.
+  /// @return isSuccess A boolean indicating if the code is the SUCCESS code.
+  function checkSuccess(uint8 restrictionCode) external view returns(bool isSuccess) {
     return restrictionCode == SUCCESS;
   }
 }

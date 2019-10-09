@@ -31,7 +31,7 @@ contract("Integrated Scenarios", function (accounts) {
         groupForeignS = 3
 
         let rules = await TransferRules.new()
-        token = await RestrictedToken.new(rules.address, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100)
+        token = await RestrictedToken.new(rules.address, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100, 1e6)
 
         // configure initial transferAdmin
         await token.grantTransferAdmin(transferAdmin, {
@@ -41,9 +41,10 @@ contract("Integrated Scenarios", function (accounts) {
 
     it('initial setup after migrations', async () => {
         let migratedToken = await RestrictedToken.deployed()
-        assert.equal(await migratedToken.totalSupply.call(), 100)
-        assert.equal(await migratedToken.balanceOf.call(contractAdmin), 0, 'allocates no balance to the contractAdmin')
-        assert.equal(await migratedToken.balanceOf.call(reserveAdmin), 100, 'allocates all tokens to the reserve admin')
+        assert.equal(await migratedToken.totalSupply(), 100e6)
+        assert.equal(await migratedToken.decimals(), 0)
+        // assert.equal(await migratedToken.balanceOf(contractAdmin), 0, 'allocates no balance to the contractAdmin')
+        assert.equal(await migratedToken.balanceOf(contractAdmin), 100e6, 'allocates all tokens to the reserve admin/contractAdmin')
     })
 
     it('can be setup correctly for Exchange and Reg S transfer restrictions with separate admin roles', async () => {
@@ -56,7 +57,7 @@ contract("Integrated Scenarios", function (accounts) {
         await token.setAllowGroupTransfer(groupReserve, groupForeignS, 1, {
             from: transferAdmin
         })
-        await token.setAccountPermissions(reserveAdmin, groupReserve, 1, 100, false, {
+        await token.setAddressPermissions(reserveAdmin, groupReserve, 1, 100, false, {
             from: transferAdmin
         })
 
@@ -64,7 +65,7 @@ contract("Integrated Scenarios", function (accounts) {
         await token.setAllowGroupTransfer(groupExchange, groupForeignS, 1, {
             from: transferAdmin
         })
-        await token.setAccountPermissions(exchangeOmnibus, groupExchange, 1, 100, false, {
+        await token.setAddressPermissions(exchangeOmnibus, groupExchange, 1, 100, false, {
             from: transferAdmin
         })
 
@@ -72,7 +73,7 @@ contract("Integrated Scenarios", function (accounts) {
         await token.setAllowGroupTransfer(groupForeignS, groupExchange, 1, {
             from: transferAdmin
         })
-        await token.setAccountPermissions(foreignInvestorS, groupForeignS, 1, 10, false, {
+        await token.setAddressPermissions(foreignInvestorS, groupForeignS, 1, 10, false, {
             from: transferAdmin
         })
 
@@ -100,7 +101,7 @@ contract("Integrated Scenarios", function (accounts) {
         await token.transfer(exchangeOmnibus, 1, { from: foreignInvestorS })
         
         // Reg S cannot transfer to another Reg S
-        await token.setAccountPermissions(foreignInvestorS2, groupForeignS, 1, 10, false, {
+        await token.setAddressPermissions(foreignInvestorS2, groupForeignS, 1, 10, false, {
             from: transferAdmin
         })
         await truffleAssert.reverts(token.transfer(foreignInvestorS2, 1, {

@@ -1,9 +1,9 @@
-pragma solidity ^0.5.8;
+pragma solidity 0.5.12;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
-import "../contracts/RestrictedToken.sol";
-import "../contracts/TransferRules.sol";
+import "../../contracts/RestrictedToken.sol";
+import "../../contracts/TransferRules.sol";
 import "./support/UserProxy.sol";
 
 contract RestrictedTokenBasicsTest {
@@ -23,7 +23,8 @@ contract RestrictedTokenBasicsTest {
             "xyz",
             "Ex Why Zee",
             6,
-            1234567
+            1234567, 
+            1e6
         );
         token.grantTransferAdmin(tokenContractOwner);
 
@@ -49,9 +50,9 @@ contract RestrictedTokenBasicsTest {
             "should return the totalSupply"
         );
         Assert.equal(
-            token.MAX_UINT(),
+            token.MAX_UINT256(),
             uint256(0) - uint256(1),
-            "MAX_UINT should be largest possible uint256"
+            "MAX_UINT256 should be largest possible uint256"
         );
     }
 
@@ -93,5 +94,16 @@ contract RestrictedTokenBasicsTest {
     function testBalanceOf() public {
         uint256 balance = token.balanceOf(address(reserveAdmin));
         Assert.equal(balance, token.totalSupply(), "correct initial balance");
+    }
+
+    function testApproveReturnValue() public {
+        address someone = address(0x7);
+        bool result = token.approve(someone, 10);
+        Assert.equal(result, true, "response should return true because it conforms to the OpenZeppelin interface expectations");
+        Assert.equal(
+            token.allowance(tokenContractOwner, someone),
+            10,
+            "should have correct allowance"
+        );
     }
 }

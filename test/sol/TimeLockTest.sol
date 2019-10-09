@@ -1,9 +1,9 @@
-pragma solidity ^ 0.5 .8;
+pragma solidity 0.5.12;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
-import "../contracts/RestrictedToken.sol";
-import "../contracts/TransferRules.sol";
+import "../../contracts/RestrictedToken.sol";
+import "../../contracts/TransferRules.sol";
 import "./support/UserProxy.sol";
 
 contract TimeLockTest {
@@ -18,7 +18,7 @@ contract TimeLockTest {
         tokenContractOwner = address(this);
         reserveAdmin = address(0x1);
         TransferRules rules = new TransferRules();
-        token = new RestrictedToken(address(rules), tokenContractOwner, tokenContractOwner, "xyz", "Ex Why Zee", 0, 100);
+        token = new RestrictedToken(address(rules), tokenContractOwner, tokenContractOwner, "xyz", "Ex Why Zee", 0, 100, 1e6);
         token.grantTransferAdmin(tokenContractOwner);
 
         alice = new UserProxy(token);
@@ -30,8 +30,8 @@ contract TimeLockTest {
 
     function testAdminCanLockupTokensForASpecificTime() public {
         uint lockupTill = now + 10000;
-        token.setTimeLock(address(alice), lockupTill);
-        Assert.equal(token.getTimeLock(address(alice)), lockupTill, "not locked up as expected");
+        token.setLockUntil(address(alice), lockupTill);
+        Assert.equal(token.getLockUntil(address(alice)), lockupTill, "not locked up as expected");
 
         token.setMaxBalance(address(bob), 17);
         uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);
@@ -40,9 +40,9 @@ contract TimeLockTest {
     
      function testAdminCanUnlockTokens() public {
         uint lockupTill = now + 10000;
-        token.setTimeLock(address(alice), lockupTill);
+        token.setLockUntil(address(alice), lockupTill);
         token.setMaxBalance(address(bob), 17);
-        token.removeTimeLock(address(alice));
+        token.removeLockUntil(address(alice));
 
         uint8 restrictionCode = token.detectTransferRestriction(address(alice), address(bob), 17);
         Assert.equal(uint(restrictionCode), 0, "should not have tokens locked");

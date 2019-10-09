@@ -1,9 +1,9 @@
-pragma solidity ^0.5.8;
+pragma solidity 0.5.12;
 
 import "truffle/Assert.sol";
 import "./support/UserProxy.sol";
-import "../contracts/RestrictedToken.sol";
-import "../contracts/TransferRules.sol";
+import "../../contracts/RestrictedToken.sol";
+import "../../contracts/TransferRules.sol";
 
 contract GettersAndSettersTest {
     using Assert for uint256;
@@ -22,7 +22,8 @@ contract GettersAndSettersTest {
             "xyz",
             "Ex Why Zee",
             0,
-            100
+            100,
+            1e6
         );
         token.grantTransferAdmin(owner);
     }
@@ -31,40 +32,16 @@ contract GettersAndSettersTest {
         uint256 number = token.balanceOf(owner);
         number.equal(100, "bad getter value");
 
-        number = token.maxBalances(owner);
+        number = token.getMaxBalance(owner);
         number.equal(0, "bad getter value");
 
-        number = token.timeLocks(owner);
+        number = token.getLockUntil(owner);
         number.equal(0, "bad getter value");
 
-        number = token.transferGroups(owner);
+        number = token.getTransferGroup(owner);
         number.equal(0, "bad getter value");
 
-        Assert.equal(token.frozen(owner), false, "default is not frozen");
-    }
-
-    function testCheckingAllowGroupTransfers() public {
-        uint256 defaultGroup = 0;
-        bool allowed = token.getAllowGroupTransfer(
-            defaultGroup,
-            defaultGroup,
-            now
-        );
-        allowed.isFalse("should not allow transfers between groups by default");
-
-        // allow transfers in default group 1 second after the start of time
-        token.setAllowGroupTransfer(defaultGroup, defaultGroup, 1);
-        token.getAllowGroupTransfer(defaultGroup, defaultGroup, now).isTrue(
-            "should allow transfer after first second of all time"
-        );
-    }
-
-    function testCheckingAllowGroupTransfersWithAddresses() public {
-        address alice = address(0x1);
-        address bob = address(0x2);
-
-        bool allowed = token.getAllowTransfer(alice, bob, now);
-        allowed.isFalse("should not allow transfers between groups by default");
+        Assert.equal(token.getFrozenStatus(owner), false, "default is not frozen");
     }
 
     function testGetAllowTransferTime() public {

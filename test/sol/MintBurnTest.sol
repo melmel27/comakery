@@ -1,8 +1,8 @@
-pragma solidity ^ 0.5 .8;
+pragma solidity 0.5.12;
 
 import "truffle/Assert.sol";
-import "../contracts/RestrictedToken.sol";
-import "../contracts/TransferRules.sol";
+import "../../contracts/RestrictedToken.sol";
+import "../../contracts/TransferRules.sol";
 
 contract MintBurnTest {
     RestrictedToken public token;
@@ -10,13 +10,13 @@ contract MintBurnTest {
 
     function beforeEach() public {
         TransferRules rules = new TransferRules();
-        token = new RestrictedToken(address(rules), address(this), address(this), "xyz", "Ex Why Zee", 0, 100);
+        token = new RestrictedToken(address(rules), address(this), address(this), "xyz", "Ex Why Zee", 0, 100, 1e6);
         token.grantTransferAdmin(address(this));
 
     }
 
     function testCannotMintMoreThanMaxUintValue() public {
-        (bool success, ) = address(token).call(abi.encodeWithSignature("mint(address,uint256)", alice, token.MAX_UINT()));
+        (bool success, ) = address(token).call(abi.encodeWithSignature("mint(address,uint256)", alice, token.MAX_UINT256()));
         Assert.isFalse(success, "should fail because it exceeds the max uint256 value");
     }
 }
