@@ -88,20 +88,22 @@ For example `0x2c3D7c64e2ada94D9ecB1EE2Aef992D127cE43De` is the address we are l
    > total cost:          0.0515861 ETH
 ```
 
-It corresponds to this [test token deployment on Ropsten](https://ropsten.etherscan.io/token/0x2c3d7c64e2ada94d9ecb1ee2aef992d127ce43de).
+It corresponds to this [test token deployment on Ropsten](https://ropsten.etherscan.io/token/0x1d1592c28fff3d3e71b1d29e31147846026a0a37).
 
-Knowing this address you can interact with the contract through the truffle console like this:
+Knowing this address you can interact with the contract through the truffle console with:
+```
+truffle console --network ropsten-infura
+```
 
 And then from the console:
 ```
-var token; RestrictedToken.at("0x2c3d7c64e2ada94d9ecb1ee2aef992d127ce43de").then((x) => { token = x })
+var token; RestrictedToken.at("0x1d1592c28fff3d3e71b1d29e31147846026a0a37").then((x) => { token = x })
 await token.symbol()
+// This returns the symbol of the testnet token "XYZ".
 ```
 
-This returns the symbol of the testnet token "XYZ".
+There is an [automatically generated dApp interface for the contract on Etherscan](https://ropsten.etherscan.io/dapp/0x1d1592c28fff3d3e71b1d29e31147846026a0a37) that you can interact with using MetaMask:
 
-This is an automatically generated dApp interface for the contract on Etherscan that you can interact with using MetaMask:
-https://ropsten.etherscan.io/dapp/0x2c3d7c64e2ada94d9ecb1ee2aef992d127ce43de
 
 [CoMakery](www.comakery.com) is building a more sophisticated interface for this contract as well - get in touch with noah@comakery.com to learn more.
 
