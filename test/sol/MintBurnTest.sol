@@ -16,7 +16,7 @@ contract MintBurnTest {
     }
 
     function testCannotMintMoreThanMaxUintValue() public {
-        (bool success, ) = address(token).call(abi.encodeWithSignature("mint(address,uint256)", alice, token.MAX_UINT()));
+        (bool success, ) = address(token).call(abi.encodeWithSignature("mint(address,uint256)", alice, token.MAX_UINT256()));
         Assert.isFalse(success, "should fail because it exceeds the max uint256 value");
     }
 }

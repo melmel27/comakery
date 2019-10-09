@@ -24,7 +24,7 @@ contract RestrictedToken is ERC20 {
 
   // transfer restriction "eternal storage" that can be used by future TransferRules contract upgrades
   mapping(address => mapping(address => uint8)) private approvalNonces;
-  uint256 public constant MAX_UINT = ((2 ** 255 - 1) * 2) + 1; // get max uint256 without overflow
+  uint256 public constant MAX_UINT256 = ((2 ** 255 - 1) * 2) + 1; // get max uint256 without overflow
   mapping(address => uint256) public maxBalances;
   mapping(address => uint256) public lockUntil; // unix timestamp to lock funds until
   mapping(address => uint256) public transferGroups; // restricted groups like Reg D Accredited US, Reg CF Unaccredited US and Reg S Foreign

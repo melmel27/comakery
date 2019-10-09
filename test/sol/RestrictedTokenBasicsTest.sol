@@ -50,9 +50,9 @@ contract RestrictedTokenBasicsTest {
             "should return the totalSupply"
         );
         Assert.equal(
-            token.MAX_UINT(),
+            token.MAX_UINT256(),
             uint256(0) - uint256(1),
-            "MAX_UINT should be largest possible uint256"
+            "MAX_UINT256 should be largest possible uint256"
         );
     }
 
