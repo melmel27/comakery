@@ -103,14 +103,21 @@ contract RestrictedToken is ERC20 {
     _transferAdmins.remove(addr);
     emit RoleChange(msg.sender, addr, "TransferAdmin", false);
   }
- 
-  /// @dev Authorizes an address holder to be a contract admin. Contract admins grant privalages to accounts.
+
+  /// @dev Authorizes an address holder to be a contract admin. Contract admins grant privileges to accounts.
   /// Contract admins can mint/burn tokens and freeze accounts.
-  /// @param addr The address to grant transfer admin rights to
+  /// @param addr The address to grant transfer admin rights to.
   function grantContractAdmin(address addr) external validAddress(addr) onlyContractAdmin {
     _contractAdmins.add(addr);
     contractAdminCount = contractAdminCount.add(1);
     emit RoleChange(msg.sender, addr, "ContractAdmin", true);
+  }
+
+  /// @dev Checks if an address is an authorized transfer admin.
+  /// @param addr The address to check for transfer admin privileges.
+  /// @return hasPermission returns true if the address has transfer admin permission false if not.
+  function checkTransferAdmin(address addr) external view returns(bool hasPermission) {
+    return _transferAdmins.has(addr);
   }
 
   /// @dev Revokes authorization as a contract admin.

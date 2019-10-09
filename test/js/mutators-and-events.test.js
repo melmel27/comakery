@@ -355,4 +355,9 @@ contract("Mutator calls and events", function (accounts) {
 
     assert.equal(await token.transferRules.call(), newRules.address)
   })
+
+  it("can check if an address has TransferAdmin permissions", async () => {
+    assert.equal(await token.checkTransferAdmin.call(transferAdmin), true)
+    assert.equal(await token.checkTransferAdmin.call(unprivileged), false)
+  })
 })
