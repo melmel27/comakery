@@ -29,11 +29,11 @@ contract RestrictedToken is ERC20 {
   mapping(address => uint256) private _transferGroups; // restricted groups like Reg D Accredited US, Reg CF Unaccredited US and Reg S Foreign
   mapping(uint256 => mapping(uint256 => uint256)) private _allowGroupTransfers; // approve transfers between groups: from => to => TimeLockUntil
   mapping(address => bool) private _frozenAddresses;
-  
+
   bool public isPaused = false;
-  
+
   uint256 public constant MAX_UINT256 = ((2 ** 255 - 1) * 2) + 1; // get max uint256 without overflow
-  
+
   event RoleChange(address indexed grantor, address indexed grantee, string role, bool indexed status);
   event AddressMaxBalance(address indexed admin, address indexed addr, uint256 indexed value);
   event AddressTimeLock(address indexed admin, address indexed addr, uint256 indexed value);
