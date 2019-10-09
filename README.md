@@ -100,6 +100,11 @@ await token.symbol()
 
 This returns the symbol of the testnet token "XYZ".
 
+This is an automatically generated dApp interface for the contract on Etherscan that you can interact with using MetaMask:
+https://ropsten.etherscan.io/dapp/0x2c3d7c64e2ada94d9ecb1ee2aef992d127ce43de
+
+[CoMakery](www.comakery.com) is building a more sophisticated interface for this contract as well - get in touch with noah@comakery.com to learn more.
+
 ## Overview of Transfer Restriction Enforcement Functions
 
 | From | To | Restrict | Enforced By | Admin Role |
