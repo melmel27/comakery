@@ -16,19 +16,18 @@ contract RestrictedToken is ERC20 {
   ITransferRules public transferRules;
 
   using Roles for Roles.Role;
-  Roles.Role private contractAdmins;
-  Roles.Role private transferAdmins;
+  Roles.Role private _contractAdmins;
+  Roles.Role private _transferAdmins;
 
   uint256 public maxTotalSupply;
   uint256 public contractAdminCount;
 
   // transfer restriction "eternal storage" that can be used by future TransferRules contract upgrades
-  mapping(address => mapping(address => uint8)) private approvalNonces;
   uint256 public constant MAX_UINT256 = ((2 ** 255 - 1) * 2) + 1; // get max uint256 without overflow
   mapping(address => uint256) public maxBalances;
   mapping(address => uint256) public lockUntil; // unix timestamp to lock funds until
   mapping(address => uint256) public transferGroups; // restricted groups like Reg D Accredited US, Reg CF Unaccredited US and Reg S Foreign
-  mapping(uint256 => mapping(uint256 => uint256)) private allowGroupTransfers; // approve transfers between groups: from => to => TimeLockUntil
+  mapping(uint256 => mapping(uint256 => uint256)) private _allowGroupTransfers; // approve transfers between groups: from => to => TimeLockUntil
   mapping(address => bool) public frozenAddresses;
   bool public isPaused = false;
 
@@ -43,45 +42,45 @@ contract RestrictedToken is ERC20 {
   event Upgrade(address admin, address oldRules, address newRules);
 
   constructor(
-    address _transferRules,
-    address _contractAdmin,
-    address _tokenReserveAdmin,
-    string memory _symbol,
-    string memory _name,
-    uint8 _decimals,
+    address transferRules_,
+    address contractAdmin_,
+    address tokenReserveAdmin_,
+    string memory symbol_,
+    string memory name_,
+    uint8 decimals_,
     uint256 totalSupply_,
-    uint256 _maxTotalSupply
+    uint256 maxTotalSupply_
   ) public {
-    require(_transferRules != address(0), "Transfer rules address cannot be 0x0");
-    require(_contractAdmin != address(0), "Token owner address cannot be 0x0");
-    require(_tokenReserveAdmin != address(0), "Token reserve admin address cannot be 0x0");
+    require(transferRules_ != address(0), "Transfer rules address cannot be 0x0");
+    require(contractAdmin_ != address(0), "Token owner address cannot be 0x0");
+    require(tokenReserveAdmin_ != address(0), "Token reserve admin address cannot be 0x0");
 
     // Transfer rules can be swapped out for a new contract inheriting from the ITransferRules interface
     // The "eternal storage" for rule data stays in this RestrictedToken contract for use by TransferRules contract upgrades
-    transferRules = ITransferRules(_transferRules);
-    symbol = _symbol;
-    name = _name;
-    decimals = _decimals;
-    maxTotalSupply = _maxTotalSupply;
+    transferRules = ITransferRules(transferRules_);
+    symbol = symbol_;
+    name = name_;
+    decimals = decimals_;
+    maxTotalSupply = maxTotalSupply_;
 
-    contractAdmins.add(_contractAdmin);
+    _contractAdmins.add(contractAdmin_);
     contractAdminCount = 1;
 
-    _mint(_tokenReserveAdmin, totalSupply_);
+    _mint(tokenReserveAdmin_, totalSupply_);
   }
 
   modifier onlyContractAdmin() {
-    require(contractAdmins.has(msg.sender), "DOES NOT HAVE CONTRACT OWNER ROLE");
+    require(_contractAdmins.has(msg.sender), "DOES NOT HAVE CONTRACT OWNER ROLE");
     _;
   }
 
    modifier onlyTransferAdmin() {
-    require(transferAdmins.has(msg.sender), "DOES NOT HAVE TRANSFER ADMIN ROLE");
+    require(_transferAdmins.has(msg.sender), "DOES NOT HAVE TRANSFER ADMIN ROLE");
     _;
   }
 
   modifier onlyTransferAdminOrContractAdmin() {
-    require((contractAdmins.has(msg.sender) || transferAdmins.has(msg.sender)),
+    require((_contractAdmins.has(msg.sender) || _transferAdmins.has(msg.sender)),
     "DOES NOT HAVE TRANSFER ADMIN OR CONTRACT ADMIN ROLE");
     _;
   }
@@ -94,14 +93,14 @@ contract RestrictedToken is ERC20 {
   /// @dev Authorizes an address holder to write transfer restriction rules
   /// @param addr The address to grant transfer admin rights to
   function grantTransferAdmin(address addr) external validAddress(addr) onlyContractAdmin {
-    transferAdmins.add(addr);
+    _transferAdmins.add(addr);
     emit RoleChange(msg.sender, addr, "TransferAdmin", true);
   }
 
   /// @dev Revokes authorization to write transfer restriction rules
   /// @param addr The address to grant transfer admin rights to
   function revokeTransferAdmin(address addr) external validAddress(addr) onlyContractAdmin  {
-    transferAdmins.remove(addr);
+    _transferAdmins.remove(addr);
     emit RoleChange(msg.sender, addr, "TransferAdmin", false);
   }
  
@@ -109,7 +108,7 @@ contract RestrictedToken is ERC20 {
   /// Contract admins can mint/burn tokens and freeze accounts.
   /// @param addr The address to grant transfer admin rights to
   function grantContractAdmin(address addr) external validAddress(addr) onlyContractAdmin {
-    contractAdmins.add(addr);
+    _contractAdmins.add(addr);
     contractAdminCount = contractAdminCount.add(1);
     emit RoleChange(msg.sender, addr, "ContractAdmin", true);
   }
@@ -119,7 +118,7 @@ contract RestrictedToken is ERC20 {
   /// @param addr The address to remove contract admin rights from
   function revokeContractAdmin(address addr) external validAddress(addr) onlyContractAdmin {
     require(contractAdminCount > 1, "Must have at least one contract admin");
-    contractAdmins.remove(addr);
+    _contractAdmins.remove(addr);
     contractAdminCount = contractAdminCount.sub(1);
     emit RoleChange(msg.sender, addr, "ContractAdmin", false);
   }
@@ -244,7 +243,7 @@ contract RestrictedToken is ERC20 {
   /// This is because in the smart contract mapping all pairs are implicitly defined with a default lockedUntil value of 0.
   /// But no transfers should be authorized until explicitly allowed. Thus 0 must mean no transfer is allowed.
   function setAllowGroupTransfer(uint256 from, uint256 to, uint256 lockedUntil) external onlyTransferAdmin {
-    allowGroupTransfers[from][to] = lockedUntil;
+    _allowGroupTransfers[from][to] = lockedUntil;
     emit AllowGroupTransfer(msg.sender, from, to, lockedUntil);
   }
 
@@ -254,7 +253,7 @@ contract RestrictedToken is ERC20 {
   /// @return timestamp The Unix timestamp of the time the transfer would be allowed. A 0 means never.
   /// The format is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
   function getAllowTransferTime(address from, address to) external view returns(uint timestamp) {
-    return allowGroupTransfers[transferGroups[from]][transferGroups[to]];
+    return _allowGroupTransfers[transferGroups[from]][transferGroups[to]];
   }
 
   /// @dev Checks to see when a transfer between two groups would be allowed.
@@ -263,7 +262,7 @@ contract RestrictedToken is ERC20 {
   /// @return timestamp The Unix timestamp of the time the transfer would be allowed. A 0 means never.
   /// The format is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
   function getAllowGroupTransferTime(uint from, uint to) external view returns(uint timestamp) {
-    return allowGroupTransfers[from][to];
+    return _allowGroupTransfers[from][to];
   }
 
   /// @dev Destroys tokens and removes them from the total supply. Can only be called by an address with a Contract Admin role.

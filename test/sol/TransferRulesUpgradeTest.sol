@@ -25,7 +25,8 @@ contract TransferRulesUpgrade is ITransferRules {
         view
         returns (string memory)
     {
-        return "HELLO UPGRADE";
+        if(restrictionCode >= 0) return "HELLO UPGRADE";
+        return "HELLO 0 UPGRADE";
     }
 
     function checkSuccess(uint8 restrictionCode) public view returns (bool) {
