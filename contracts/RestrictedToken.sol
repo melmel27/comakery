@@ -91,21 +91,21 @@ contract RestrictedToken is ERC20 {
     _;
   }
 
-  /// @notice Authorizes an address holder to write transfer restriction rules
+  /// @dev Authorizes an address holder to write transfer restriction rules
   /// @param addr The address to grant transfer admin rights to
   function grantTransferAdmin(address addr) external validAddress(addr) onlyContractAdmin {
     transferAdmins.add(addr);
     emit RoleChange(msg.sender, addr, "TransferAdmin", true);
   }
 
-  /// @notice Revokes authorization to write transfer restriction rules
+  /// @dev Revokes authorization to write transfer restriction rules
   /// @param addr The address to grant transfer admin rights to
   function revokeTransferAdmin(address addr) external validAddress(addr) onlyContractAdmin  {
     transferAdmins.remove(addr);
     emit RoleChange(msg.sender, addr, "TransferAdmin", false);
   }
  
-  /// @notice Authorizes an address holder to be a contract admin. Contract admins grant privalages to accounts.
+  /// @dev Authorizes an address holder to be a contract admin. Contract admins grant privalages to accounts.
   /// Contract admins can mint/burn tokens and freeze accounts.
   /// @param addr The address to grant transfer admin rights to
   function grantContractAdmin(address addr) external validAddress(addr) onlyContractAdmin {
@@ -114,7 +114,7 @@ contract RestrictedToken is ERC20 {
     emit RoleChange(msg.sender, addr, "ContractAdmin", true);
   }
 
-  /// @notice Revokes authorization as a contract admin.
+  /// @dev Revokes authorization as a contract admin.
   /// The contract requires there is at least 1 Contract Admin to avoid locking the Contract Admin functionality.
   /// @param addr The address to remove contract admin rights from
   function revokeContractAdmin(address addr) external validAddress(addr) onlyContractAdmin {
@@ -124,7 +124,7 @@ contract RestrictedToken is ERC20 {
     emit RoleChange(msg.sender, addr, "ContractAdmin", false);
   }
 
-  /// @notice Enforces transfer restrictions managed using the ERC-1404 standard functions.
+  /// @dev Enforces transfer restrictions managed using the ERC-1404 standard functions.
   /// The TransferRules contract defines what the rules are. The data inputs to those rules remains in the RestrictedToken contract.
   /// TransferRules is a separate contract so its logic can be upgraded.
   /// @param from The address the tokens are transferred from
@@ -135,7 +135,7 @@ contract RestrictedToken is ERC20 {
     require(transferRules.checkSuccess(restrictionCode), messageForTransferRestriction(restrictionCode));
   }
 
-  /// @notice Calls the TransferRules detectTransferRetriction function to determine if tokens can be transferred.
+  /// @dev Calls the TransferRules detectTransferRetriction function to determine if tokens can be transferred.
   /// detectTransferRestriction returns a status code.
   /// @param from The address the tokens are transferred from
   /// @param to The address the tokens would be transferred to
@@ -144,13 +144,13 @@ contract RestrictedToken is ERC20 {
     return transferRules.detectTransferRestriction(address(this), from, to, value);
   }
 
-  /// @notice Calls TransferRules to lookup a human readable error message that goes with an error code.
+  /// @dev Calls TransferRules to lookup a human readable error message that goes with an error code.
   /// @param restrictionCode is an error code to lookup an error code for
   function messageForTransferRestriction(uint8 restrictionCode) public view returns(string memory) {
     return transferRules.messageForTransferRestriction(restrictionCode);
   }
 
-  /// @notice Sets the maximum number of tokens an address will be allowed to hold.
+  /// @dev Sets the maximum number of tokens an address will be allowed to hold.
   /// Addresses can hold 0 tokens by default.
   /// @param addr The address to restrict
   /// @param updatedValue the maximum number of tokens the address can hold
@@ -159,13 +159,13 @@ contract RestrictedToken is ERC20 {
     emit AddressMaxBalance(msg.sender, addr, updatedValue);
   }
 
-  /// @notice Gets the maximum number of tokens an address is allowed to hold
+  /// @dev Gets the maximum number of tokens an address is allowed to hold
   /// @param addr The address to check restrictions for
   function getMaxBalance(address addr) external view returns(uint256) {
     return maxBalances[addr];
   }
 
-  /// @notice Lock tokens in the address from being transfered until the specified time
+  /// @dev Lock tokens in the address from being transfered until the specified time
   /// @param addr The address to restrict
   /// @param timestamp The time the tokens will be locked until as a Unix timetsamp.
   /// Unix timestamp is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
@@ -173,7 +173,7 @@ contract RestrictedToken is ERC20 {
     lockUntil[addr] = timestamp;
     emit AddressTimeLock(msg.sender, addr, timestamp);
   }
-  /// @notice A convenience method to remove an addresses timelock. It sets the lock date to 0 which corresponds to the
+  /// @dev A convenience method to remove an addresses timelock. It sets the lock date to 0 which corresponds to the
   /// earliest possible timestamp in the past 00:00:00 UTC on 1 January 1970.
   /// @param addr The address to remove the timelock for.
   function removeLockUntil(address addr) external validAddress(addr) onlyTransferAdmin {
@@ -181,7 +181,7 @@ contract RestrictedToken is ERC20 {
     emit AddressTimeLock(msg.sender, addr, 0);
   }
 
-  /// @notice Check when the address will be locked for transfers until
+  /// @dev Check when the address will be locked for transfers until
   /// @param addr The address to check
   /// @return timestamp The time the address will be locked until.
   /// The format is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
@@ -189,7 +189,7 @@ contract RestrictedToken is ERC20 {
     return lockUntil[addr];
   }
 
-  /// @notice Set the one group that the address belongs to, such as a US Reg CF investor group.
+  /// @dev Set the one group that the address belongs to, such as a US Reg CF investor group.
   /// @param addr The address to set the group for.
   /// @param groupID The uint256 numeric ID of the group.
   function setTransferGroup(address addr, uint256 groupID) public validAddress(addr) onlyTransferAdmin {
@@ -197,14 +197,14 @@ contract RestrictedToken is ERC20 {
     emit AddressTransferGroup(msg.sender, addr, groupID);
   }
 
-  /// @notice Gets the transfer group the address belongs to. The default group is 0.
+  /// @dev Gets the transfer group the address belongs to. The default group is 0.
   /// @param addr The address to check.
   /// @return groupID The group id of the address.
   function getTransferGroup(address addr) external view returns(uint256 groupID) {
     return transferGroups[addr];
   }
 
-  /// @notice Freezes or unfreezes an address.
+  /// @dev Freezes or unfreezes an address.
   /// Tokens in a frozen address cannot be transferred from until the address is unfrozen.
   /// @param addr The address to be frozen.
   /// @param status The frozenAddress status of the address. True means frozen false means not frozen.
@@ -213,14 +213,14 @@ contract RestrictedToken is ERC20 {
     emit AddressFrozen(msg.sender, addr, status);
   }
 
-  /// @notice Checks the status of an address to see if its frozen
+  /// @dev Checks the status of an address to see if its frozen
   /// @param addr The address to check
   /// @return status Returns true if the address is frozen and false if its not frozen.
   function getFrozenStatus(address addr) external view returns(bool status) {
     return frozenAddresses[addr];
   }
 
-  /// @notice A convenience method for updating the transfer group, lock until, max balance, and freeze status.
+  /// @dev A convenience method for updating the transfer group, lock until, max balance, and freeze status.
   /// The convenience method also helps to reduce gas costs.
   /// @param addr The address to set permissions for.
   /// @param groupID The ID of the address
@@ -236,7 +236,7 @@ contract RestrictedToken is ERC20 {
     freeze(addr, status);
   }
 
-  /// @notice Sets an allowed transfer from a group to another group beginning at a specific time.
+  /// @dev Sets an allowed transfer from a group to another group beginning at a specific time.
   /// There is only one definitive rule per from and to group.
   /// @param from The group the transfer is coming from.
   /// @param to The group the transfer is going to.
@@ -248,7 +248,7 @@ contract RestrictedToken is ERC20 {
     emit AllowGroupTransfer(msg.sender, from, to, lockedUntil);
   }
 
-  /// @notice Checks to see when a transfer between two addresses would be allowed.
+  /// @dev Checks to see when a transfer between two addresses would be allowed.
   /// @param from The address the transfer is coming from
   /// @param to The address the transfer is going to
   /// @return timestamp The Unix timestamp of the time the transfer would be allowed. A 0 means never.
@@ -257,7 +257,7 @@ contract RestrictedToken is ERC20 {
     return allowGroupTransfers[transferGroups[from]][transferGroups[to]];
   }
 
-  /// @notice Checks to see when a transfer between two groups would be allowed.
+  /// @dev Checks to see when a transfer between two groups would be allowed.
   /// @param from The group id the transfer is coming from
   /// @param to The group id the transfer is going to
   /// @return timestamp The Unix timestamp of the time the transfer would be allowed. A 0 means never.
@@ -266,7 +266,7 @@ contract RestrictedToken is ERC20 {
     return allowGroupTransfers[from][to];
   }
 
-  /// @notice Destroys tokens and removes them from the total supply. Can only be called by an address with a Contract Admin role.
+  /// @dev Destroys tokens and removes them from the total supply. Can only be called by an address with a Contract Admin role.
   /// @param from The address to destroy the tokens from.
   /// @param value The number of tokens to destroy from the address.
   function burnFrom(address from, uint256 value) external validAddress(from) onlyContractAdmin {
@@ -274,7 +274,7 @@ contract RestrictedToken is ERC20 {
     _burn(from, value);
   }
 
-  /// @notice Allows the contract admin to create new tokens in a specified address.
+  /// @dev Allows the contract admin to create new tokens in a specified address.
   /// The total number of tokens cannot exceed the maxTotalSupply (the "Hard Cap").
   /// @param to The addres to mint tokens into.
   /// @param value The number of tokens to mint.
@@ -283,19 +283,19 @@ contract RestrictedToken is ERC20 {
     _mint(to, value);
   }
 
-  /// @notice Allows the contract admin to pause transfers.
+  /// @dev Allows the contract admin to pause transfers.
   function pause() external onlyContractAdmin() {
     isPaused = true;
     emit Pause(msg.sender, true);
   }
 
-  /// @notice Allows the contract admin to unpause transfers.
+  /// @dev Allows the contract admin to unpause transfers.
   function unpause() external onlyContractAdmin() {
     isPaused = false;
     emit Pause(msg.sender, false);
   }
 
-  /// @notice Allows the contrac admin to upgrade the transfer rules.
+  /// @dev Allows the contrac admin to upgrade the transfer rules.
   /// The upgraded transfer rules must implement the ITransferRules interface which conforms to the ERC-1404 token standard.
   /// @param newTransferRules The address of the deployed TransferRules contract.
   function upgradeTransferRules(ITransferRules newTransferRules) external onlyContractAdmin {
