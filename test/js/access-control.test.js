@@ -106,9 +106,13 @@ contract("Access control tests", function (accounts) {
   })
 
   it("only contractAdmin can burnFrom", async () => {
+    assert.equal(await token.balanceOf(reserveAdmin), 100)
+
     await truffleAssert.passes(token.burnFrom(reserveAdmin, 1, {
       from: contractAdmin
     }))
+
+    assert.equal(await token.balanceOf(reserveAdmin), 99)
 
     let checkRevertsFor = async (from) => {
       await truffleAssert.reverts(token.burnFrom(reserveAdmin, 1, {

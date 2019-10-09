@@ -11,6 +11,7 @@ contract("Mutator calls and events", function (accounts) {
   var defaultGroup
   var token
   var startingRules
+  var emptyAddress = web3.utils.padLeft(0x0, 40)
 
   beforeEach(async function () {
     contractAdmin = accounts[0]
@@ -285,9 +286,9 @@ contract("Mutator calls and events", function (accounts) {
       from: contractAdmin
     })
 
-    truffleAssert.eventEmitted(tx, 'Burn', (ev) => {
-      assert.equal(ev.admin, contractAdmin)
-      assert.equal(ev.addr, reserveAdmin)
+    truffleAssert.eventEmitted(tx, 'Transfer', (ev) => {
+      assert.equal(ev.from, reserveAdmin)
+      assert.equal(ev.to, emptyAddress)
       assert.equal(ev.value, 17)
       return true
     })
@@ -301,9 +302,9 @@ contract("Mutator calls and events", function (accounts) {
       from: contractAdmin
     })
 
-    truffleAssert.eventEmitted(tx, 'Mint', (ev) => {
-      assert.equal(ev.admin, contractAdmin)
-      assert.equal(ev.addr, recipient)
+    truffleAssert.eventEmitted(tx, 'Transfer', (ev) => {
+      assert.equal(ev.from, emptyAddress)
+      assert.equal(ev.to, recipient)
       assert.equal(ev.value, 17)
       return true
     })

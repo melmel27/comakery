@@ -99,7 +99,7 @@ contract RestrictedTokenBasicsTest {
     function testApproveReturnValue() public {
         address someone = address(0x7);
         bool result = token.approve(someone, 10);
-        Assert.equal(result, false, "response should always be false to encourage use of safeApprove");
+        Assert.equal(result, true, "response should return true because it conforms to the OpenZeppelin interface expectations");
         Assert.equal(
             token.allowance(tokenContractOwner, someone),
             10,

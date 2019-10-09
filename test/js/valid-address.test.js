@@ -157,14 +157,14 @@ contract("Validate", function (accounts) {
       await truffleAssert.reverts(
         token.approve(emptyAddress, 1, {
           from: unpermissioned
-        }), expectedError)
+        }), "ERC20: approve to the zero address.")
     })
 
     it("safeApprove", async () => {
       await truffleAssert.reverts(
-        token.safeApprove(emptyAddress, 1, 0, 0, {
+        token.safeApprove(emptyAddress, 1, {
           from: unpermissioned
-        }), expectedError)
+        }), "ERC20: approve to the zero address.")
     })
 
     it("transferFrom", async () => {
