@@ -90,6 +90,16 @@ For example `0x2c3D7c64e2ada94D9ecB1EE2Aef992D127cE43De` is the address we are l
 
 It corresponds to this [test token deployment on Ropsten](https://ropsten.etherscan.io/token/0x2c3d7c64e2ada94d9ecb1ee2aef992d127ce43de).
 
+Knowing this address you can interact with the contract through the truffle console like this:
+
+And then from the console:
+```
+var token; RestrictedToken.at("0x2c3d7c64e2ada94d9ecb1ee2aef992d127ce43de").then((x) => { token = x })
+await token.symbol()
+```
+
+This returns the symbol of the testnet token "XYZ".
+
 ## Overview of Transfer Restriction Enforcement Functions
 
 | From | To | Restrict | Enforced By | Admin Role |
