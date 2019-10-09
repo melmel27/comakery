@@ -146,7 +146,7 @@ contract RestrictedToken is ERC20 {
   /// @param from The address the tokens are transferred from
   /// @param to The address the tokens would be transferred to
   /// @param value the quantity of tokens to be transferred
-  function enforceTransferRestrictions(address from, address to, uint256 value) public view {
+  function enforceTransferRestrictions(address from, address to, uint256 value) private view {
     uint8 restrictionCode = detectTransferRestriction(from, to, value);
     require(transferRules.checkSuccess(restrictionCode), messageForTransferRestriction(restrictionCode));
   }
