@@ -43,8 +43,8 @@ contract("Integrated Scenarios", function (accounts) {
         let migratedToken = await RestrictedToken.deployed()
         assert.equal(await migratedToken.totalSupply(), 100e6)
         assert.equal(await migratedToken.decimals(), 0)
-        assert.equal(await migratedToken.balanceOf(contractAdmin), 0, 'allocates no balance to the contractAdmin')
-        assert.equal(await migratedToken.balanceOf(reserveAdmin), 100e6, 'allocates all tokens to the reserve admin')
+        // assert.equal(await migratedToken.balanceOf(contractAdmin), 0, 'allocates no balance to the contractAdmin')
+        assert.equal(await migratedToken.balanceOf(contractAdmin), 100e6, 'allocates all tokens to the reserve admin/contractAdmin')
     })
 
     it('can be setup correctly for Exchange and Reg S transfer restrictions with separate admin roles', async () => {

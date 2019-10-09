@@ -18,7 +18,7 @@ Simplicity is desirable to make the full operations of the contract clear to use
 
 This open source software is provided with no warranty. This is not legal advice. CoMakery is not a legal firm and is not your lawyer. Securities are highly regulated across multiple jurisdictions. Issuing a security token incorrectly can result in financial penalties and jail time if you do it wrong. Consult a lawyer and tax advisor. Conduct an independent security audit of the code.
 
-# Transfer Restrictions
+## Transfer Restrictions
 
 Here's an overview of how transfer restrictions are configured and enforced.
 
@@ -31,11 +31,64 @@ The Transfer Admin for the Token Contract can provision account addresses to tra
 4. The Transfer Admin calls `setAddressPermissions(buyerAddress, transferGroup, addressTimeLock, maxTokens)` to provision the Buyer account.
 5. At this time or before, the Transfer Admin authorizes the transfer of tokens between account groups with `setAllowGroupTransfer(fromGroup, toGroup, afterTimestamp)` . Note that allowing a transfer from group A to group B by default does not allow the reverse transfer from group B to group A. This would have to be done separately. An example is that Reg CF unaccredited investors may be allowed to sell to Accredited US investors but not vice versa.
 
-# WARNING: Maximum Total Supply, Minting and Burning of Tokens
+## WARNING: Maximum Total Supply, Minting and Burning of Tokens
 
 The variable `maxTotalSupply` is set when the contract is created and limits the total number of tokens that can be minted.
 
 **Contract admins can mint tokens to and burn tokens from any address. This is primarily to comply with law enforcement, regulations and stock issuance scenarios - but this centralized power could be abused. Transfer admins, authorized by contract admins, can also update the transfer rules at any moment in time as many times as they want.**
+
+## Initial Deployment
+
+
+Setup an Infura account.
+Setup an Ethereum address and get the private key or mnemonic.
+
+Copy the `.env.example` file.
+
+```
+cp .env.example .env
+```
+
+Setup the `.env` file with your Infura credentials.
+
+Load your deployment wallet address with some ETH. Contract is estimated to cost about 0.09 ETH in gas costs to deploy. This is about $18 at an ETH price of $180 - although the price of ETH may vary widely.
+
+Sanity check that token constructor arguments are correct for:
+* contract admin address
+* reserve admin address (the address that will initially hold all of the tokens)
+* symbol
+* name
+* decimals
+* total supply of tokens
+* the max total supply of tokens (the "Hard Cap")
+
+Verify the configuration for the network you are deploying to in `truffle-config.js`
+
+Deploy the contracts to a test network or mainnet:
+```
+truffle deploy --network ropsten-infura --reset
+```
+
+Keep track of the blockchain address where the main RestrictedToken address is deployed.
+
+For example `0x2c3D7c64e2ada94D9ecB1EE2Aef992D127cE43De` is the address we are looking for in the sample output that follows.
+```
+   Deploying 'RestrictedToken'
+   ---------------------------
+   > transaction hash:    0x527a6d3bd25ca307b47475578bfb1fc90897aacaa47516fc6c18fb039a7af3ea
+   > Blocks: 1            Seconds: 24
+   > contract address:    0x2c3D7c64e2ada94D9ecB1EE2Aef992D127cE43De
+   > block number:        6538035
+   > block timestamp:     1570599971
+   > account:             0x66ebD5cdf54743A6164B0138330F74DCe436d842
+   > balance:             0.92941532
+   > gas used:            2579305
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.0515861 ETH
+```
+
+It corresponds to this [test token deployment on Ropsten](https://ropsten.etherscan.io/token/0x2c3d7c64e2ada94d9ecb1ee2aef992d127ce43de).
 
 ## Overview of Transfer Restriction Enforcement Functions
 
