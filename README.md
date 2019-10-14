@@ -22,7 +22,7 @@ This open source software is provided with no warranty. This is not legal advice
 
 Here's an overview of how transfer restrictions are configured and enforced.
 
-![](docs/plant-uml-diagrams/transfer-restrictions.png)
+![](diagrams/plant-uml-diagrams/transfer-restrictions.png)
 
 The Transfer Admin for the Token Contract can provision account addresses to transfer and receive tokens under certain conditions. This is the process for configuring transfer restrictions and transferring tokens:
 1. An Investor sends their Anti Money Laundering and Know Your Customer (AML/KYC) information to the Transfer Admin or to a proxy vetting service to verify this information. The benefit of using a qualified third party provider is to avoid needing to store privately identifiable information. This code does not provide a solution for collecting AML/KYC information.
@@ -164,7 +164,7 @@ Individual token holders have accounts that are provisioned by the transfer admi
 
 ## Initial Security Token Deployment
 
-![](docs/plant-uml-diagrams/setup.png)
+![](diagrams/plant-uml-diagrams/setup.png)
 
 1. The Deployer configures the parameters and deploys the smart contracts to a public blockchain. At the time of deployment, the deployer configures a separate token reserve address and Transfer Administrator address. This allows the reserve security tokens to be stored in cold storage since the treasury reserve address private keys are not needed for everyday use by the Transfer Admin.
 2. The Transfer Admin then provisions a hot wallet address for distributing tokens to investors or other stakeholders. The Transfer Admin uses `setAddressPermissions(investorAddress, transferGroup, addressTimeLock, maxTokens)` to set address restrictions.
@@ -196,7 +196,7 @@ Then the Hot Wallet Admin can distribute tokens to investors and stakeholders as
 
 ## Issuing the Token To AML / KYC'd Recipients
 
-![](docs/plant-uml-diagrams/basic-issuance.png)
+![](diagrams/plant-uml-diagrams/basic-issuance.png)
 
 1. The Transfer Admin gathers AML/KYC and accreditation information from investors and stakeholders who will receive tokens directly from the issuer (the Primary Issuance).
 2. Transfer Admin then configures approved blockchain account addresses for investor and stakeholders with `setAddressPermissions(address, transferGroup, LockupUntil, maxBalance)` . Based on the AML/KYC and accreditation process the investor can provision the account address with a maximum number of tokens; a transfer group designating a regulatory class like "Reg D", "Reg CF" or "Reg S"; and a date that the tokens in the address will be locked until.
