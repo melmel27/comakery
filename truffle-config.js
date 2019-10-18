@@ -19,11 +19,10 @@
  */
 
 require('dotenv').config()
+const Web3 = require('web3');
+
 const HDWalletProvider = require('truffle-hdwallet-provider');
-// const infuraKey = "fj4jll3k.....";
-//
-// const fs = require('fs');
-// const mnemonic = fs.readFileSync(".secret").toString().trim();
+const web3 = new Web3();
 
 module.exports = {
   /**
@@ -69,9 +68,23 @@ module.exports = {
         process.env.ROPSTEN_INFURA_PROJECT_URL),
       network_id: 3,       // Ropsten's id
       gas: 5500000,        // Ropsten has a lower block limit than mainnet
+      gasPrice: web3.utils.toWei('3', 'gwei'),
       confirmations: 2,    // # of confs to wait between deployments. (default: 0)
       timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
-      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+      skipDryRun: false     // Skip dry run before migrations? (default: false for public nets )
+    },
+
+    "mainnet-infura": {
+      provider: () => new HDWalletProvider(
+        process.env.MAINNET_DEPLOYER_PRIVATE_KEY, 
+        process.env.MAINNET_INFURA_PROJECT_URL),
+      network_id: 1,       // Mainnet id
+      gas: 5500000,
+      gasPrice: web3.utils.toWei('3', 'gwei'),
+      from: process.env.MAINNET_DEPLOYER_ADDRESS,
+      confirmations: 4,    // # of confs to wait between deployments. (default: 0)
+      timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: false     // Skip dry run before migrations? (default: false for public nets )
     },
 
     // Useful for private networks
