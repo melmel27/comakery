@@ -2,8 +2,6 @@
 
 ## An Open Source Security Token From Your Friends At CoMakery
 
-## Status: Work In Progress
-
 ## Overview
 
 This is an open source Security Token from CoMakery. The core purpose of the token is to enforce transfer restrictions for certain groups.
