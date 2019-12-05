@@ -65,3 +65,20 @@ end note
 
 @enduml
 ```
+
+```plantuml
+@startuml issuer-transfer-restriction-graph
+actor (Default) as "**0**\nNo Transfers\n(Address Default)"
+actor (Issuer) as "**1**\nIssuer\nToken Reserves"
+actor (Exchange) as "**2**\nRegulated Exchange"
+actor (Reg S) as "**3**\nReg S Non-US Approved"
+actor (Founders) as "**5**\nFounders\n(2 Year Lockup)"
+(Issuer) -> (Issuer)
+(Issuer) -down-> (Exchange)
+(Issuer) -left-> (Founders)
+(Exchange) -down-> (Exchange)
+(Exchange) -> (Issuer)
+(Exchange) -down-> (Reg S)
+(Reg S) -> (Exchange)
+@enduml
+```

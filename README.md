@@ -18,6 +18,10 @@ This open source software is provided with no warranty. This is not legal advice
 
 ## Transfer Restrictions
 
+The CoMakery Security Token can be configured after deployment to enforce transfer restrictions such as the ones shown in the diagram below. Each holders blockchain wallet address corresponds to a specific category. Only transfers between blockchain wallet address groups in the direction of the arrows are allowed:
+
+![](diagrams/plant-uml-diagrams/issuer-transfer-restriction-graph.png)
+
 Here's an overview of how transfer restrictions are configured and enforced.
 
 ![](diagrams/plant-uml-diagrams/transfer-restrictions.png)
