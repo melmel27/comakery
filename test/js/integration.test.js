@@ -39,13 +39,16 @@ contract("Integrated Scenarios", function (accounts) {
         })
     })
 
-    // it('initial setup after migrations', async () => {
-    //     let migratedToken = await RestrictedToken.deployed()
-    //     assert.equal(await migratedToken.totalSupply(), 100000000000000000000000000)
-    //     assert.equal(await migratedToken.decimals(), 18)
-    //     // assert.equal(await migratedToken.balanceOf(contractAdmin), 0, 'allocates no balance to the contractAdmin')
-    //     assert.equal(await migratedToken.balanceOf(contractAdmin), 100e6, 'allocates all tokens to the reserve admin/contractAdmin')
-    // })
+    it('default migration configuration for test environments', async () => {
+        let migratedToken = await RestrictedToken.deployed()
+        assert.equal(await migratedToken.checkContractAdmin(accounts[0]), true)
+        assert.equal(await migratedToken.balanceOf(accounts[0]), "100000000000000000000000000")
+        assert.equal(await migratedToken.symbol(), "TEST")
+        assert.equal(await migratedToken.name(), "Test Token")
+        assert.equal(await migratedToken.decimals(), 18)
+        assert.equal(await migratedToken.totalSupply(), "100000000000000000000000000")
+        assert.equal(await migratedToken.maxTotalSupply(), "100000000000000000000000000")
+    })
 
     it('can be setup correctly for Exchange and Reg S transfer restrictions with separate admin roles', async () => {
         // setup initial transfers groups

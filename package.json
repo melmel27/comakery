@@ -18,7 +18,9 @@
     "dev": "yarn build && nodemon --watch src public build --exec \"yarn run build && yarn run start\"",
     "start": "node app.js",
     "setup": "cd contracts && truffle compile && truffle deploy && cd - && yarn build",
-    "generate-docs": "doxygen Doxyfile"
+    "generate-docs": "doxygen Doxyfile",
+    "test": "yarn truffle test",
+    "test:js": "yarn truffle test test/js/*"
   },
   "devDependencies": {
     "eslint": "^6.1.0",
