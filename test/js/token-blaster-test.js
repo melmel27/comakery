@@ -1,34 +1,7 @@
 const truffleAssert = require('truffle-assertions');
-var RestrictedToken = artifacts.require("RestrictedToken");
-var TransferRules = artifacts.require("TransferRules");
-// var blaster = require('token-blaster')
-
-class TokenBlaster {
-    constructor(token, tokenAddress, walletAddress) {
-        this.token = token
-        this.tokenAddress = tokenAddress
-        this.walletAddress = walletAddress
-        this.transfer = this.transfer.bind(this)
-    }
-
-    static async init(tokenAddress, walletAddress) {
-        let token = await RestrictedToken.at(tokenAddress)
-        return new TokenBlaster(token, tokenAddress, walletAddress)
-    }
-
-    async transfer(recipientAddress, amount) {
-        return await this.token.transfer(recipientAddress, amount, {
-            from: this.walletAddress
-        })
-    }
-
-    async multiTransfer(recipientAddressAndAmountArray) {
-        let promises = recipientAddressAndAmountArray.map(([recipientAddress, amount]) => {
-            return this.transfer(recipientAddress, amount)
-        })
-        return Promise.all(promises)
-    }
-}
+const RestrictedToken = artifacts.require("RestrictedToken");
+const TransferRules = artifacts.require("TransferRules");
+const TokenBlaster = require('../../src/token-blaster.js')
 
 contract("TokenBlaster", function (accounts) {
     var sendWallet
