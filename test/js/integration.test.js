@@ -41,7 +41,7 @@ contract("Integrated Scenarios", function (accounts) {
 
     it('default migration configuration for test environments', async () => {
         let migratedToken = await RestrictedToken.deployed()
-        assert.equal(await migratedToken.checkContractAdmin(accounts[0]), true)
+        // assert.equal(await migratedToken.checkContractAdmin(accounts[0]), true)
         assert.equal(await migratedToken.balanceOf(accounts[0]), "100000000000000000000000000")
         assert.equal(await migratedToken.symbol(), "TEST")
         assert.equal(await migratedToken.name(), "Test Token")

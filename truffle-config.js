@@ -18,9 +18,11 @@
  *
  */
 
-require('dotenv').config()
-const Web3 = require('web3');
 
+ // use migration defaults for the test environment
+if(process.argv[2] !== 'test') require('dotenv').config()
+
+const Web3 = require('web3');
 const HDWalletProvider = require('truffle-hdwallet-provider');
 const web3 = new Web3();
 
