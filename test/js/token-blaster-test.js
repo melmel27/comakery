@@ -29,6 +29,10 @@ contract("TokenBlaster", function (accounts) {
             from: sendWallet
         })
 
+        await token.setAllowGroupTransfer(defaultGroup, 1, 1, {
+            from: sendWallet
+        })
+
         await token.setAddressPermissions(bob, defaultGroup, 1, 200, false, {
             from: sendWallet
         })
@@ -42,6 +46,27 @@ contract("TokenBlaster", function (accounts) {
         assert.equal(await token.balanceOf.call(bob), 50)
 
         truffleAssert.eventEmitted(tx, 'Transfer', (ev) => {
+            assert.equal(ev.from, sendWallet)
+            assert.equal(ev.to, bob)
+            assert.equal(ev.value, 50)
+            return true
+        })
+    })
+
+    it('can do a transfer and set the transfer group of the recipient address', async () => {
+        let txns = await blaster.setGroupAndTransfer(bob, 50, 1)
+
+        assert.equal(await token.balanceOf.call(bob), 50)
+        assert.equal(await token.getTransferGroup(bob), 1)
+
+        truffleAssert.eventEmitted(txns[0], 'AddressTransferGroup', (ev) => {
+            assert.equal(ev.admin, sendWallet)
+            assert.equal(ev.addr, bob)
+            assert.equal(ev.value, 1)
+            return true
+        })
+
+        truffleAssert.eventEmitted(txns[1], 'Transfer', (ev) => {
             assert.equal(ev.from, sendWallet)
             assert.equal(ev.to, bob)
             assert.equal(ev.value, 50)
