@@ -10,13 +10,21 @@ class TokenBlaster {
         this.token = token
         this.tokenAddress = tokenAddress
         this.walletAddress = walletAddress
+
         this.transfer = this.transfer.bind(this)
+        this.setGroupAndTransfer = this.setGroupAndTransfer.bind(this)
     }
 
     async transfer(recipientAddress, amount) {
         return await this.token.transfer(recipientAddress, amount, {
             from: this.walletAddress
         })
+    }
+
+    async setGroupAndTransfer(recipientAddress, amount, groupId) {
+        let txn0 = await this.token.setTransferGroup(recipientAddress, groupId)
+        let txn1 = await this.token.transfer(recipientAddress, amount)
+        return [txn0, txn1]
     }
 
     async multiTransfer(recipientAddressAndAmountArray) {
