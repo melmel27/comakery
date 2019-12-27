@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@openzeppelin/contracts": "^2.3.0",
+    "auto-bind": "^4.0.0",
     "bignumber": "^1.1.0",
     "browserify": "^16.5.0",
     "csvtojson": "^2.0.10",
