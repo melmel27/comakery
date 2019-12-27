@@ -80,7 +80,6 @@ contract("TokenBlaster", function (accounts) {
             [bob, 27]
         ])
         assert.equal(await token.balanceOf.call(bob), 50)
-        // var txns = await Promise.all(txnsP)
 
         truffleAssert.eventEmitted(txns[0], 'Transfer', (ev) => {
             assert.equal(ev.from, sendWallet)
@@ -95,5 +94,20 @@ contract("TokenBlaster", function (accounts) {
             assert.equal(ev.value, 27)
             return true
         })
+    })
+
+    it('can parse a csv file in preparation for transfers', async () => {
+        await blaster.getTransfers('./test/test_data/test-transfers.csv')
+        assert.deepEqual(blaster.pendingTransfers, [{
+                address: '0x123',
+                amount: '150',
+                transferGroupId: '1'
+            },
+            {
+                address: '0x456',
+                amount: '999',
+                transferGroupId: '0'
+            }
+        ])
     })
 })
