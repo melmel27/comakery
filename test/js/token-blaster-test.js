@@ -54,7 +54,7 @@ contract("TokenBlaster", function (accounts) {
     })
 
     it('can do a transfer and set the transfer group of the recipient address', async () => {
-        let txns = await blaster.setGroupAndTransfer({
+        let txns = await blaster.setAddressPermissionsAndTransfer({
             address: bob,
             amount: 50,
             transferGroupId: 1,
@@ -104,8 +104,8 @@ contract("TokenBlaster", function (accounts) {
         })
     })
 
-    it('can do a simple multiSetGroupAndTransfer', async () => {
-        let txns = await blaster.multiSetGroupAndTransfer([{
+    it('can do a simple multiSetAddressPermissionsAndTransfer', async () => {
+        let txns = await blaster.multiSetAddressPermissionsAndTransfer([{
                 address: bob,
                 amount: 23,
                 transferGroupId: 1,
