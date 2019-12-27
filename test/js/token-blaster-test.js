@@ -53,15 +53,15 @@ contract("TokenBlaster", function (accounts) {
         })
     })
 
-    it('can do a transfer and set the transfer group of the recipient address', async () => {
+    it('#setAddressPermissionsAndTransfer can do a transfer and set the transfer group of the recipient address', async () => {
         let txns = await blaster.setAddressPermissionsAndTransfer({
             address: bob,
             amount: 50,
-            transferGroupId: 1,
+            groupID: 1,
             frozen: "false",
             maxBalance: "10000",
             timeLockUntil: "0",
-            transferGroupId: '1'
+            groupID: '1'
         })
 
         assert.equal(await token.balanceOf.call(bob), 50)
@@ -82,7 +82,7 @@ contract("TokenBlaster", function (accounts) {
         })
     })
 
-    it('can do a simple multiTransfer', async () => {
+    it('#multiTransfer can transfer to tow recipients', async () => {
         let txns = await blaster.multiTransfer([
             [bob, 23],
             [bob, 27]
@@ -104,24 +104,24 @@ contract("TokenBlaster", function (accounts) {
         })
     })
 
-    it('can do a simple multiSetAddressPermissionsAndTransfer', async () => {
+    it('#multiSetAddressPermissionsAndTransfer can process 2 transfers', async () => {
         let txns = await blaster.multiSetAddressPermissionsAndTransfer([{
                 address: bob,
                 amount: 23,
-                transferGroupId: 1,
+                groupID: 1,
                 frozen: "false",
                 maxBalance: "10000",
                 timeLockUntil: "0",
-                transferGroupId: '1'
+                groupID: '1'
             },
             {
                 address: alice,
                 amount: 19,
-                transferGroupId: 1,
+                groupID: 1,
                 frozen: "false",
                 maxBalance: "10000",
                 timeLockUntil: "0",
-                transferGroupId: '1'
+                groupID: '1'
             }
         ])
         assert.equal(await token.balanceOf.call(bob), 23)
@@ -154,15 +154,15 @@ contract("TokenBlaster", function (accounts) {
         })
     })
 
-    it('can parse a csv file in preparation for transfers', async () => {
-        await blaster.getTransfers('./test/test_data/test-transfers.csv')
+    it('.parseTransfers can parse a csv file in preparation for transfers', async () => {
+        await blaster.getAddressPermissionsAndTransfers('./test/test_data/test-transfers.csv')
         assert.deepEqual(blaster.pendingTransfers, [{
                 address: '0x57ea4caa7c61c2f48ce26cd5149ee641a75f5f6f',
                 amount: '150',
                 frozen: "false",
                 maxBalance: "10000",
                 timeLockUntil: "0",
-                transferGroupId: '1'
+                groupID: '1'
             },
             {
                 address: '0x45d245d054a9cab4c8e74dc131c289207db1ace4',
@@ -170,7 +170,7 @@ contract("TokenBlaster", function (accounts) {
                 frozen: "false",
                 maxBalance: "10000",
                 timeLockUntil: "0",
-                transferGroupId: '1'
+                groupID: '1'
             }
         ])
     })

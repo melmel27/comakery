@@ -16,10 +16,6 @@ class TokenBlaster {
         this.setAddressPermissionsAndTransfer = this.setAddressPermissionsAndTransfer.bind(this)
     }
 
-    async getTransfers(csvFilePath) {
-        this.pendingTransfers = await csv().fromFile(csvFilePath);
-    }
-
     async transfer(recipientAddress, amount) {
         return await this.token.transfer(recipientAddress, amount, {
             from: this.walletAddress
@@ -32,10 +28,10 @@ class TokenBlaster {
         })
         return Promise.all(promises)
     }
-    
+
     async setAddressPermissionsAndTransfer(transfer) {
         let txn0 = await this.token.setAddressPermissions(
-            transfer.address, transfer.transferGroupId, transfer.timeLockUntil, transfer.maxBalance, transfer.frozen)
+            transfer.address, transfer.groupID, transfer.timeLockUntil, transfer.maxBalance, transfer.frozen)
         let txn1 = await this.token.transfer(transfer.address, transfer.amount)
         return [txn0, txn1]
     }
@@ -46,6 +42,11 @@ class TokenBlaster {
         })
         return Promise.all(promises)
     }
+
+    async getAddressPermissionsAndTransfers(csvFilePath) {
+        this.pendingTransfers = await csv().fromFile(csvFilePath);
+    }
+
 }
 
 exports.init = init
