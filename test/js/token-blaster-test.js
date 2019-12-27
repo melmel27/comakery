@@ -99,12 +99,12 @@ contract("TokenBlaster", function (accounts) {
     it('can parse a csv file in preparation for transfers', async () => {
         await blaster.getTransfers('./test/test_data/test-transfers.csv')
         assert.deepEqual(blaster.pendingTransfers, [{
-                address: '0x123',
+                address: '0x57ea4caa7c61c2f48ce26cd5149ee641a75f5f6f',
                 amount: '150',
                 transferGroupId: '1'
             },
             {
-                address: '0x456',
+                address: '0x45d245d054a9cab4c8e74dc131c289207db1ace4',
                 amount: '999',
                 transferGroupId: '0'
             }
