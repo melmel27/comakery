@@ -12,7 +12,6 @@ class TokenBlaster {
         this.token = token
         this.tokenAddress = tokenAddress
         this.walletAddress = walletAddress
-        this.pendingTransfers = []
         autoBind(this)
     }
 
@@ -44,8 +43,7 @@ class TokenBlaster {
     }
 
     async getAddressPermissionsAndTransfers(csvFilePath) {
-        this.pendingTransfers = await csv().fromFile(csvFilePath);
-        return this.pendingTransfers
+        return await csv().fromFile(csvFilePath);
     }
 
     async multiSetAddressPermissionsAndTransferFromFile(csvFilePath) {
