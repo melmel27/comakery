@@ -1,4 +1,5 @@
 const RestrictedToken = artifacts.require("RestrictedToken")
+const csv = require('csvtojson')
 
 async function init(tokenAddress, walletAddress) {
     let token = await RestrictedToken.at(tokenAddress)
@@ -10,9 +11,13 @@ class TokenBlaster {
         this.token = token
         this.tokenAddress = tokenAddress
         this.walletAddress = walletAddress
-
+        this.pendingTransfers = []
         this.transfer = this.transfer.bind(this)
         this.setGroupAndTransfer = this.setGroupAndTransfer.bind(this)
+    }
+
+    async getTransfers(csvFilePath) {
+        this.pendingTransfers = await csv().fromFile(csvFilePath);
     }
 
     async transfer(recipientAddress, amount) {
