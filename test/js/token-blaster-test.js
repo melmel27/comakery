@@ -19,7 +19,7 @@ contract("TokenBlaster", function (accounts) {
         defaultGroup = 0
 
         let rules = await TransferRules.new()
-        token = await RestrictedToken.new(rules.address, sendWallet, sendWallet, "xyz", "Ex Why Zee", 6, 100, 1e6)
+        token = await RestrictedToken.new(rules.address, sendWallet, sendWallet, "xyz", "Ex Why Zee", 6, 1e6, 1e6)
 
         await token.grantTransferAdmin(sendWallet, {
             from: sendWallet
@@ -173,5 +173,10 @@ contract("TokenBlaster", function (accounts) {
                 groupID: '1'
             }
         ])
+    })
+
+    it('.multiSetAddressPermissionsAndTransferFromFile', async () => {
+        await blaster.multiSetAddressPermissionsAndTransferFromFile('./test/test_data/test-transfers.csv')
+        assert.equal(await token.balanceOf.call('0x57ea4caa7c61c2f48ce26cd5149ee641a75f5f6f'), 150)
     })
 })

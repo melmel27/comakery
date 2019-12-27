@@ -1,5 +1,6 @@
 const RestrictedToken = artifacts.require("RestrictedToken")
 const csv = require('csvtojson')
+const autoBind = require('auto-bind')
 
 async function init(tokenAddress, walletAddress) {
     let token = await RestrictedToken.at(tokenAddress)
@@ -12,8 +13,7 @@ class TokenBlaster {
         this.tokenAddress = tokenAddress
         this.walletAddress = walletAddress
         this.pendingTransfers = []
-        this.transfer = this.transfer.bind(this)
-        this.setAddressPermissionsAndTransfer = this.setAddressPermissionsAndTransfer.bind(this)
+        autoBind(this)
     }
 
     async transfer(recipientAddress, amount) {
@@ -45,8 +45,14 @@ class TokenBlaster {
 
     async getAddressPermissionsAndTransfers(csvFilePath) {
         this.pendingTransfers = await csv().fromFile(csvFilePath);
+        return this.pendingTransfers
     }
 
+    async multiSetAddressPermissionsAndTransferFromFile(csvFilePath) {
+        let transfers = await this.getAddressPermissionsAndTransfers(csvFilePath)
+        let txns = await this.multiSetAddressPermissionsAndTransfer(transfers)
+        return txns
+    }
 }
 
 exports.init = init
