@@ -155,8 +155,8 @@ contract("TokenBlaster", function (accounts) {
     })
 
     it('.parseTransfers can parse a csv file in preparation for transfers', async () => {
-        await blaster.getAddressPermissionsAndTransfers('./test/test_data/test-transfers.csv')
-        assert.deepEqual(blaster.pendingTransfers, [{
+        let transfers = await blaster.getAddressPermissionsAndTransfers('./test/test_data/test-transfers.csv')
+        assert.deepEqual(transfers, [{
                 address: '0x57ea4caa7c61c2f48ce26cd5149ee641a75f5f6f',
                 amount: '150',
                 frozen: "false",
