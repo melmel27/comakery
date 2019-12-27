@@ -155,7 +155,7 @@ contract("TokenBlaster", function (accounts) {
     })
 
     it('.parseTransfers can parse a csv file in preparation for transfers', async () => {
-        let transfers = await blaster.getAddressPermissionsAndTransfers('./test/test_data/test-transfers.csv')
+        let transfers = await blaster.getAddressPermissionsAndTransfersFromCSV('./test/test_data/test-transfers.csv')
         assert.deepEqual(transfers, [{
                 address: '0x57ea4caa7c61c2f48ce26cd5149ee641a75f5f6f',
                 amount: '150',
@@ -175,8 +175,8 @@ contract("TokenBlaster", function (accounts) {
         ])
     })
 
-    it('.multiSetAddressPermissionsAndTransferFromFile', async () => {
-        await blaster.multiSetAddressPermissionsAndTransferFromFile('./test/test_data/test-transfers.csv')
+    it('.run', async () => {
+        await blaster.run('./test/test_data/test-transfers.csv')
         assert.equal(await token.balanceOf.call('0x57ea4caa7c61c2f48ce26cd5149ee641a75f5f6f'), 150)
     })
 })

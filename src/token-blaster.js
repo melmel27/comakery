@@ -42,12 +42,12 @@ class TokenBlaster {
         return Promise.all(promises)
     }
 
-    async getAddressPermissionsAndTransfers(csvFilePath) {
+    async getAddressPermissionsAndTransfersFromCSV(csvFilePath) {
         return await csv().fromFile(csvFilePath);
     }
 
-    async multiSetAddressPermissionsAndTransferFromFile(csvFilePath) {
-        let transfers = await this.getAddressPermissionsAndTransfers(csvFilePath)
+    async run(csvFilePath) {
+        let transfers = await this.getAddressPermissionsAndTransfersFromCSV(csvFilePath)
         let txns = await this.multiSetAddressPermissionsAndTransfer(transfers)
         return txns
     }
