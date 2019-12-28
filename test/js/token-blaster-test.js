@@ -37,7 +37,7 @@ contract("TokenBlaster", function (accounts) {
             from: sendWallet
         })
 
-        blaster = await TokenBlaster.init(token.address, sendWallet)
+        blaster = await TokenBlaster.init(token.address, sendWallet, web3)
 
     })
 

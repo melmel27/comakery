@@ -13,7 +13,8 @@
     "truffle": "^5.0.35",
     "truffle-assertions": "^0.9.1",
     "truffle-hdwallet-provider": "^1.0.17",
-    "web3": "^1.2.1"
+    "web3": "^1.2.1",
+    "yargs": "^15.0.2"
   },
   "scripts": {
     "build": "browserify src/*.js -o public/bundle.js",
