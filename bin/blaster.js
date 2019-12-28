@@ -53,12 +53,12 @@ async function main(){
     console.log(senderWalletAddress)
 
     var blaster = await TokenBlaster.init(argv.tokenAddress, senderWalletAddress, web3)
-    let token = blaster.token
+    // let token = blaster.token
 
     // move to test env setup script
-    if(!(await token.checkTransferAdmin(senderWalletAddress))) await token.grantTransferAdmin(senderWalletAddress)
-    await token.setAllowGroupTransfer(0, 0, 1)
-    await token.setAllowGroupTransfer(0, 1, 1)
+    // if(!(await token.checkTransferAdmin(senderWalletAddress))) await token.grantTransferAdmin(senderWalletAddress)
+    // await token.setAllowGroupTransfer(0, 0, 1)
+    // await token.setAllowGroupTransfer(0, 1, 1)
 
     await blaster.run(argv.csv)
 }
