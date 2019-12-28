@@ -1,10 +1,17 @@
-const RestrictedToken = artifacts.require("RestrictedToken")
+const restrictedTokenBuild = require('../build/contracts/RestrictedToken.json')
+const contract = require('truffle-contract')
+const RestrictedToken = contract(restrictedTokenBuild) 
+
 const csv = require('csvtojson')
 const autoBind = require('auto-bind')
 
-async function init(tokenAddress, walletAddress) {
+async function init(tokenAddress, walletAddress, web3) {
+    web3.eth.defaultAccount = walletAddress
+    web3.eth.personal.unlockAccount(walletAddress)
+    RestrictedToken.setProvider(web3.currentProvider) 
+    RestrictedToken.defaults({from: walletAddress})
     let token = await RestrictedToken.at(tokenAddress)
-    return new TokenBlaster(token, tokenAddress, walletAddress)
+    return new TokenBlaster(token, tokenAddress)
 }
 
 class TokenBlaster {
@@ -16,9 +23,7 @@ class TokenBlaster {
     }
 
     async transfer(recipientAddress, amount) {
-        return await this.token.transfer(recipientAddress, amount, {
-            from: this.walletAddress
-        })
+        return await this.token.transfer(recipientAddress, amount)
     }
 
     async multiTransfer(recipientAddressAndAmountArray) {
