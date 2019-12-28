@@ -18,7 +18,7 @@ async function main(){
     await token.setAllowGroupTransfer(0, 1, 1)
 
     console.log('\n\nTest token blaster with:')
-    console.log(`yarn truffle exec bin/blaster.js -t ${token.address}-c test/test_data/test-transfers.csv --network development`)
+    console.log(`yarn truffle exec bin/blaster.js -t ${token.address} -c test/test_data/test-transfers.csv --network development`)
 }
 
 // For truffle exec
