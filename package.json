@@ -17,13 +17,13 @@
     "yargs": "^15.0.2"
   },
   "scripts": {
-    "build": "browserify src/*.js -o public/bundle.js",
-    "dev": "yarn build && nodemon --watch src public build --exec \"yarn run build && yarn run start\"",
-    "start": "node app.js",
-    "setup": "cd contracts && truffle compile && truffle deploy && cd - && yarn build",
-    "generate-docs": "doxygen Doxyfile",
-    "test": "yarn truffle test",
-    "test:js": "yarn truffle test test/js/*"
+    "dev:deploy": "yarn truffle deploy && yarn truffle exec bin/development-restricted-token-init.js",
+    "dev:account:info": "yarn truffle exec bin/development-account-info.js",
+    "test": "yarn truffle test", 
+    "test:js": "yarn truffle test test/js/*",
+    "example-app-build": "browserify src/*.js -o public/bundle.js",
+    "example-app-dev": "yarn build && nodemon --watch src public build --exec \"yarn run build && yarn run start\"",
+    "example-app-start": "node app.js"
   },
   "devDependencies": {
     "eslint": "^6.1.0",

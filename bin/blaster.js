@@ -45,21 +45,14 @@ async function main(){
     let senderWalletAddress = await web3.eth.getCoinbase()
     var TokenBlaster = require('../src/token-blaster.js')
 
-    console.log("network type:"+newtworkType);
-    console.log("network id:"+networkId);
+    console.log("network type:\t"+newtworkType);
+    console.log("network id:\t"+networkId);
 
-    console.log(argv.tokenAddress)
-    console.log(argv.csv)
-    console.log(senderWalletAddress)
+    console.log("Token Address:\t", argv.tokenAddress)
+    console.log("Sender Wallet:\t", senderWalletAddress)
+    console.log("CSV Path:\t", argv.csv)
 
     var blaster = await TokenBlaster.init(argv.tokenAddress, senderWalletAddress, web3)
-    // let token = blaster.token
-
-    // move to test env setup script
-    // if(!(await token.checkTransferAdmin(senderWalletAddress))) await token.grantTransferAdmin(senderWalletAddress)
-    // await token.setAllowGroupTransfer(0, 0, 1)
-    // await token.setAllowGroupTransfer(0, 1, 1)
-
     await blaster.run(argv.csv)
 }
 
