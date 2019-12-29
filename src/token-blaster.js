@@ -1,6 +1,7 @@
 const restrictedTokenBuild = require('../build/contracts/RestrictedToken.json')
 const contract = require('truffle-contract')
-const RestrictedToken = contract(restrictedTokenBuild) 
+const RestrictedToken = contract(restrictedTokenBuild)
+const {boolean} = require('boolean')
 
 const csv = require('csvtojson')
 const autoBind = require('auto-bind')
@@ -35,7 +36,12 @@ class TokenBlaster {
 
     async setAddressPermissionsAndTransfer(transfer) {
         let txn0 = await this.token.setAddressPermissions(
-            transfer.address, transfer.groupID, transfer.timeLockUntil, transfer.maxBalance, transfer.frozen)
+            transfer.address, 
+            transfer.groupID,
+            transfer.timeLockUntil,
+            transfer.maxBalance,
+            boolean(transfer.frozen))
+            
         let txn1 = await this.token.transfer(transfer.address, transfer.amount)
         return [txn0, txn1]
     }

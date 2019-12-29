@@ -56,16 +56,39 @@ contract("TokenBlaster", function (accounts) {
     it('#setAddressPermissionsAndTransfer can do a transfer and set the transfer group of the recipient address', async () => {
         let txns = await blaster.setAddressPermissionsAndTransfer({
             address: bob,
-            amount: 50,
-            groupID: 1,
-            frozen: "false",
+            amount: '50',
+            groupID: '1',
+            frozen: 'false',
             maxBalance: "10000",
             timeLockUntil: "0",
-            groupID: '1'
         })
 
         assert.equal(await token.balanceOf.call(bob), 50)
         assert.equal(await token.getTransferGroup(bob), 1)
+        assert.equal(await token.getFrozenStatus(bob), false)
+        assert.equal(await token.getMaxBalance(bob), 10000)
+        assert.equal(await token.getLockUntil(bob), 0)
+
+        truffleAssert.eventEmitted(txns[0], 'AddressTransferGroup', (ev) => {
+            assert.equal(ev.admin, sendWallet)
+            assert.equal(ev.addr, bob)
+            assert.equal(ev.value, 1)
+            return true
+        })
+
+        truffleAssert.eventEmitted(txns[0], 'AddressMaxBalance', (ev) => {
+            assert.equal(ev.admin, sendWallet)
+            assert.equal(ev.addr, bob)
+            assert.equal(ev.value, 10000)
+            return true
+        })
+
+        truffleAssert.eventEmitted(txns[0], 'AddressTimeLock', (ev) => {
+            assert.equal(ev.admin, sendWallet)
+            assert.equal(ev.addr, bob)
+            assert.equal(ev.value, 0)
+            return true
+        })
 
         truffleAssert.eventEmitted(txns[0], 'AddressTransferGroup', (ev) => {
             assert.equal(ev.admin, sendWallet)
@@ -107,8 +130,7 @@ contract("TokenBlaster", function (accounts) {
     it('#multiSetAddressPermissionsAndTransfer can process 2 transfers', async () => {
         let txns = await blaster.multiSetAddressPermissionsAndTransfer([{
                 address: bob,
-                amount: 23,
-                groupID: 1,
+                amount: '23',
                 frozen: "false",
                 maxBalance: "10000",
                 timeLockUntil: "0",
@@ -116,8 +138,7 @@ contract("TokenBlaster", function (accounts) {
             },
             {
                 address: alice,
-                amount: 19,
-                groupID: 1,
+                amount: '19',
                 frozen: "false",
                 maxBalance: "10000",
                 timeLockUntil: "0",
