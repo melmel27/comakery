@@ -17,7 +17,12 @@ async function main(){
        console.log("\n\n", title, '\n',
         addr, '\n',
         'Balance: ', (await token.balanceOf(addr)).toString(), '\n',
-        'Transfer Admin:', (await token.checkTransferAdmin(addr)).toString(),
+        'Transfer Group:', (await token.getTransferGroup(addr)).toString(), '\n',
+        'Max Balance:', (await token.getMaxBalance(addr)).toString(), '\n',
+        'Lock Until:', time((await token.getLockUntil(addr))).toString(), '\n',
+        'Frozen:', (await token.getFrozenStatus(addr)).toString(), '\n',
+        'Transfer Admin:', (await token.checkTransferAdmin(addr)).toString(), '\n',
+        '\n'
         )
     }
 
@@ -30,4 +35,13 @@ async function main(){
 // For truffle exec
 module.exports = function(callback) {
     main().then(() => callback()).catch(err => callback(err))
-};
+}
+
+function time(unixTimestamp) {
+    let time = new Date(unixTimestamp*1e3)
+    // let date = time.toLocaleDateString('en-us')
+    // let hours = time.toLocaleTimeString('en-us')
+
+    // return `${date} ${time}`
+    return time.toLocaleString('en-us', {timeZone: 'UTC'})
+}
