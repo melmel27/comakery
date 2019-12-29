@@ -2,6 +2,7 @@ const restrictedTokenBuild = require('../build/contracts/RestrictedToken.json')
 const contract = require('truffle-contract')
 const RestrictedToken = contract(restrictedTokenBuild)
 const {boolean} = require('boolean')
+const Ajv = require('ajv')
 
 const csv = require('csvtojson')
 const autoBind = require('auto-bind')
@@ -23,6 +24,12 @@ class TokenBlaster {
         autoBind(this)
     }
 
+    async run(csvFilePath) {
+        let transfers = await this.getAddressPermissionsAndTransfersFromCSV(csvFilePath)
+        let txns = await this.multiSetAddressPermissionsAndTransfer(transfers)
+        return txns
+    }
+
     async transfer(recipientAddress, amount) {
         return await this.token.transfer(recipientAddress, amount)
     }
@@ -35,14 +42,18 @@ class TokenBlaster {
     }
 
     async setAddressPermissionsAndTransfer(transfer) {
-        let txn0 = await this.token.setAddressPermissions(
+        let validationResult = this.validateAddressPermissionAndTransfer(transfer)
+        let txn0 = null, txn1 = null
+        if(validationResult === null) {   
+            txn0 = await this.token.setAddressPermissions(
             transfer.address, 
             transfer.groupID,
             transfer.timeLockUntil,
             transfer.maxBalance,
             boolean(transfer.frozen))
-            
-        let txn1 = await this.token.transfer(transfer.address, transfer.amount)
+
+            txn1 = await this.token.transfer(transfer.address, transfer.amount)
+        }
         return [txn0, txn1]
     }
 
@@ -57,10 +68,24 @@ class TokenBlaster {
         return await csv().fromFile(csvFilePath);
     }
 
-    async run(csvFilePath) {
-        let transfers = await this.getAddressPermissionsAndTransfersFromCSV(csvFilePath)
-        let txns = await this.multiSetAddressPermissionsAndTransfer(transfers)
-        return txns
+    validateAddressPermissionAndTransfer(jsonTransfer) {
+        let ajv = new Ajv({ allErrors: true})
+        let schema = {
+            type: 'object',
+            additionalProperties: false,
+            required: ['address', 'amount', 'groupID', 'timeLockUntil', 'maxBalance', 'frozen'],
+            properties: {
+                address: {type: 'string'},
+                amount: {type: 'string'},
+                frozen: {type: 'string'},
+                maxBalance: {type: 'string'},
+                timeLockUntil: {type: 'string'},
+                groupID: {type: 'string'}
+            }
+        }
+        let test = ajv.compile(schema)
+        test(jsonTransfer)
+        return test.errors
     }
 }
 

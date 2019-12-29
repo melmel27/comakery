@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@openzeppelin/contracts": "^2.3.0",
+    "ajv": "^6.10.2",
     "auto-bind": "^4.0.0",
     "bignumber": "^1.1.0",
     "boolean": "^3.0.0",
