@@ -16,6 +16,13 @@ async function init(tokenAddress, walletAddress, web3) {
     return new TokenBlaster(token, tokenAddress)
 }
 
+async function validateCSV(csvPath) {
+    let blaster = new TokenBlaster(null, null)
+    let permissionsAndTransfers = await blaster.getAddressPermissionsAndTransfersFromCSV(csvPath)
+    let validationErrors = blaster.multiValidateAddressPermissionAndTransferData(permissionsAndTransfers)
+    return validationErrors
+}
+
 class TokenBlaster {
     constructor(token, tokenAddress, walletAddress) {
         this.token = token
@@ -83,10 +90,23 @@ class TokenBlaster {
                 groupID: {type: 'string'}
             }
         }
-        let test = ajv.compile(schema)
-        test(jsonTransfer)
-        return test.errors
+
+        let validator = ajv.compile(schema)
+        validator(jsonTransfer)
+        return validator.errors
+    }
+
+    multiValidateAddressPermissionAndTransferData(transfers) {
+        let errors = []
+        transfers.forEach((transfer) => {
+            let result = this.validateAddressPermissionAndTransferData(transfer)
+            if(result !== null) {
+                errors.push(result)
+            }
+        })
+        return errors
     }
 }
 
 exports.init = init
+exports.validateCSV = validateCSV
