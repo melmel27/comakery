@@ -73,6 +73,8 @@ contract("TokenBlaster", function (accounts) {
 
         it('can do a transfer and set the transfer group of the recipient address', async () => {
             let txns = await blaster.setAddressPermissionsAndTransfer({
+                transferID: '2',
+                email: 'bob@example.com',
                 address: bob,
                 amount: '50',
                 groupID: '1',
@@ -148,6 +150,8 @@ contract("TokenBlaster", function (accounts) {
 
     it('#multiSetAddressPermissionsAndTransfer can process 2 transfers', async () => {
         let txns = await blaster.multiSetAddressPermissionsAndTransfer([{
+                transferID: '2',
+                email: 'bob@example.com',
                 address: bob,
                 amount: '23',
                 frozen: "false",
@@ -156,6 +160,8 @@ contract("TokenBlaster", function (accounts) {
                 groupID: '1'
             },
             {
+                transferID: '1',
+                email: 'alice@example.com',
                 address: alice,
                 amount: '19',
                 frozen: "false",
@@ -197,6 +203,8 @@ contract("TokenBlaster", function (accounts) {
     it('.parseTransfers can parse a csv file in preparation for transfers', async () => {
         let transfers = await blaster.getAddressPermissionsAndTransfersFromCSV('./test/test_data/test-transfers.csv')
         assert.deepEqual(transfers, [{
+                transferID: '1',
+                email: 'alice@example.com',
                 address: '0x57ea4caa7c61c2f48ce26cd5149ee641a75f5f6f',
                 amount: '150',
                 frozen: "false",
@@ -205,6 +213,8 @@ contract("TokenBlaster", function (accounts) {
                 groupID: '1'
             },
             {
+                transferID: '2',
+                email: 'bob@example.com',
                 address: '0x45d245d054a9cab4c8e74dc131c289207db1ace4',
                 amount: '999',
                 frozen: "false",
@@ -224,11 +234,15 @@ contract("TokenBlaster", function (accounts) {
             results.forEach(result => {
                 if (result.keyword == 'required') requiredFields.push(result.params.missingProperty)
             })
-            assert.sameMembers(requiredFields, ['address', 'amount', 'groupID', 'timeLockUntil', 'frozen', 'maxBalance'])
+            assert.sameMembers(requiredFields, [
+                'transferID', 'email', 'address', 'amount', 'groupID', 'timeLockUntil', 'frozen', 'maxBalance'
+            ])
         })
 
         it('should have no errors for valid object', () => {
             let input = {
+                transferID: '2',
+                email: 'bob@example.com',
                 address: bob,
                 amount: '23',
                 frozen: "false",
@@ -244,6 +258,8 @@ contract("TokenBlaster", function (accounts) {
     describe('#multiValidateAddressPermissionAndTransferData', () => {
         it('returns valid for a valid list', () => {
             let result = blaster.multiValidateAddressPermissionAndTransferData([{
+                    transferID: '1',
+                    email: 'alice@example.com',
                     address: '0x57ea4caa7c61c2f48ce26cd5149ee641a75f5f6f',
                     amount: '150',
                     frozen: "false",
@@ -252,6 +268,8 @@ contract("TokenBlaster", function (accounts) {
                     groupID: '1'
                 },
                 {
+                    transferID: '2',
+                    email: 'bob@example.com',
                     address: '0x45d245d054a9cab4c8e74dc131c289207db1ace4',
                     amount: '999',
                     frozen: "false",
@@ -265,6 +283,8 @@ contract("TokenBlaster", function (accounts) {
 
         it('returns validation errors for invalid transactions', () => {
             let result = blaster.multiValidateAddressPermissionAndTransferData([{
+                    transferID: '1',
+                    email: 'alice@example.com',
                     address: '0x57ea4caa7c61c2f48ce26cd5149ee641a75f5f6f',
                     // amount: '150',
                     frozen: "false",
@@ -273,6 +293,8 @@ contract("TokenBlaster", function (accounts) {
                     groupID: '1'
                 },
                 {
+                    transferID: '2',
+                    email: 'bob@example.com',
                     address: '0x45d245d054a9cab4c8e74dc131c289207db1ace4',
                     amount: '999',
                     // frozen: "false",

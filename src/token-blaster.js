@@ -80,8 +80,10 @@ class TokenBlaster {
         let schema = {
             type: 'object',
             additionalProperties: false,
-            required: ['address', 'amount', 'groupID', 'timeLockUntil', 'maxBalance', 'frozen'],
+            required: ['transferID','email','address', 'amount', 'groupID', 'timeLockUntil', 'maxBalance', 'frozen'],
             properties: {
+                transferID: {type: 'string'},
+                email: {type: 'string'},
                 address: {type: 'string'},
                 amount: {type: 'string'},
                 frozen: {type: 'string'},
