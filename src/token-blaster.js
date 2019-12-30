@@ -12,9 +12,16 @@ async function init(tokenAddress, walletAddress, web3) {
     web3.eth.defaultAccount = walletAddress
     web3.eth.personal.unlockAccount(walletAddress)
     RestrictedToken.setProvider(web3.currentProvider) 
-    RestrictedToken.defaults({from: walletAddress})
+    
+    RestrictedToken.defaults({
+            from: walletAddress,   
+            gas: 6700000, 
+            gasPrice: 20000000000
+    })
+    
     let token = await RestrictedToken.at(tokenAddress)
-    return new TokenBlaster(token, tokenAddress)
+    let blaster = await new TokenBlaster(token, tokenAddress)
+    return blaster
 }
 
 async function validateCSV(csvPath) {
@@ -61,6 +68,7 @@ class TokenBlaster {
     async setAddressPermissionsAndTransfer(transfer) {
         let validationResult = this.validateAddressPermissionAndTransferData(transfer)
         let txn0 = null, txn1 = null
+        
         if(validationResult === null) {   
             txn0 = await this.token.setAddressPermissions(
             transfer.address, 
@@ -68,6 +76,9 @@ class TokenBlaster {
             transfer.timeLockUntil,
             transfer.maxBalance,
             boolean(transfer.frozen))
+
+            // let restriction = this.token.detectTransferRestriction(this.walletAddress, transfer.address, transfer.amount)
+            // console.log("Restriction:", restriction)
 
             txn1 = await this.token.transfer(transfer.address, transfer.amount)
         }
