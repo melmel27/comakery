@@ -62,7 +62,7 @@ contract("TokenBlaster", function (accounts) {
             let txns = await blaster.setAddressPermissionsAndTransfer({
                 address: alice,
             })
-            
+
             assert.equal(await token.balanceOf.call(alice), 0)
             assert.equal(await token.getTransferGroup(alice), 0)
             assert.equal(await token.getFrozenStatus(alice), false)
@@ -80,41 +80,41 @@ contract("TokenBlaster", function (accounts) {
                 maxBalance: "10000",
                 timeLockUntil: "0",
             })
-            
+
             assert.equal(await token.balanceOf.call(bob), 50)
             assert.equal(await token.getTransferGroup(bob), 1)
             assert.equal(await token.getFrozenStatus(bob), false)
             assert.equal(await token.getMaxBalance(bob), 10000)
             assert.equal(await token.getLockUntil(bob), 0)
-            
+
             truffleAssert.eventEmitted(txns[0], 'AddressTransferGroup', (ev) => {
                 assert.equal(ev.admin, sendWallet)
                 assert.equal(ev.addr, bob)
                 assert.equal(ev.value, 1)
                 return true
             })
-            
+
             truffleAssert.eventEmitted(txns[0], 'AddressMaxBalance', (ev) => {
                 assert.equal(ev.admin, sendWallet)
                 assert.equal(ev.addr, bob)
                 assert.equal(ev.value, 10000)
                 return true
             })
-            
+
             truffleAssert.eventEmitted(txns[0], 'AddressTimeLock', (ev) => {
                 assert.equal(ev.admin, sendWallet)
                 assert.equal(ev.addr, bob)
                 assert.equal(ev.value, 0)
                 return true
             })
-            
+
             truffleAssert.eventEmitted(txns[0], 'AddressTransferGroup', (ev) => {
                 assert.equal(ev.admin, sendWallet)
                 assert.equal(ev.addr, bob)
                 assert.equal(ev.value, 1)
                 return true
             })
-            
+
             truffleAssert.eventEmitted(txns[1], 'Transfer', (ev) => {
                 assert.equal(ev.from, sendWallet)
                 assert.equal(ev.to, bob)
@@ -220,11 +220,11 @@ contract("TokenBlaster", function (accounts) {
             let input = {}
             let results = blaster.validateAddressPermissionAndTransferData(input)
             let requiredFields = []
-            
+
             results.forEach(result => {
-                if(result.keyword == 'required') requiredFields.push(result.params.missingProperty)
+                if (result.keyword == 'required') requiredFields.push(result.params.missingProperty)
             })
-            assert.sameMembers(requiredFields, ['address', 'amount', 'groupID', 'timeLockUntil', 'frozen','maxBalance'])
+            assert.sameMembers(requiredFields, ['address', 'amount', 'groupID', 'timeLockUntil', 'frozen', 'maxBalance'])
         })
 
         it('should have no errors for valid object', () => {
@@ -238,6 +238,70 @@ contract("TokenBlaster", function (accounts) {
             }
             let results = blaster.validateAddressPermissionAndTransferData(input)
             assert.deepEqual(results, null)
+        })
+    })
+
+    describe('#multiValidateAddressPermissionAndTransferData', () => {
+        it('returns valid for a valid list', () => {
+            let result = blaster.multiValidateAddressPermissionAndTransferData([{
+                    address: '0x57ea4caa7c61c2f48ce26cd5149ee641a75f5f6f',
+                    amount: '150',
+                    frozen: "false",
+                    maxBalance: "10000",
+                    timeLockUntil: "0",
+                    groupID: '1'
+                },
+                {
+                    address: '0x45d245d054a9cab4c8e74dc131c289207db1ace4',
+                    amount: '999',
+                    frozen: "false",
+                    maxBalance: "10000",
+                    timeLockUntil: "0",
+                    groupID: '1'
+                }
+            ])
+            assert.deepEqual(result, [])
+        })
+
+        it('returns validation errors for invalid transactions', () => {
+            let result = blaster.multiValidateAddressPermissionAndTransferData([{
+                    address: '0x57ea4caa7c61c2f48ce26cd5149ee641a75f5f6f',
+                    // amount: '150',
+                    frozen: "false",
+                    maxBalance: "10000",
+                    timeLockUntil: "0",
+                    groupID: '1'
+                },
+                {
+                    address: '0x45d245d054a9cab4c8e74dc131c289207db1ace4',
+                    amount: '999',
+                    // frozen: "false",
+                    maxBalance: "10000",
+                    timeLockUntil: "0",
+                    groupID: '1'
+                }
+            ])
+            // assert.sameMembers(result, [])
+            assert.sameDeepMembers(result, [
+                [{
+                    "dataPath": "",
+                    "keyword": "required",
+                    "message": "should have required property 'amount'",
+                    "params": {
+                        "missingProperty": "amount"
+                    },
+                    "schemaPath": "#/required"
+                }],
+                [{
+                    "dataPath": "",
+                    "keyword": "required",
+                    "message": "should have required property 'frozen'",
+                    "params": {
+                        "missingProperty": "frozen"
+                    },
+                    "schemaPath": "#/required"
+                }]
+            ])
         })
     })
 })

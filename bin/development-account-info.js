@@ -39,9 +39,5 @@ module.exports = function(callback) {
 
 function time(unixTimestamp) {
     let time = new Date(unixTimestamp*1e3)
-    // let date = time.toLocaleDateString('en-us')
-    // let hours = time.toLocaleTimeString('en-us')
-
-    // return `${date} ${time}`
     return time.toLocaleString('en-us', {timeZone: 'UTC'})
 }

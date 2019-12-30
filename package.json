@@ -22,6 +22,7 @@
   "scripts": {
     "dev:deploy": "yarn truffle deploy && yarn truffle exec bin/development-restricted-token-init.js",
     "dev:account:info": "yarn truffle exec bin/development-account-info.js",
+    "validate:csv:mint": "yarn truffle exec bin/validate-permissions-and-transfers-csv.js -c",
     "test": "yarn truffle test",
     "test:js": "yarn truffle test test/js/*",
     "example-app-build": "browserify src/*.js -o public/bundle.js",
