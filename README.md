@@ -292,13 +292,13 @@ Your CSV file should be in the format
 transferID,email, address, amount, groupID, timeLockUntil, maxBalance, frozen
 ```
 
-* **transferID** - a unique ID used for tracking if the transaction has been processed. This is different than the blockchain transaction receipt that will be generated when the file is processed.
-* **email** - the email address of the user. Not broadcast to the blockchain but needed to sync with other AML/KYC and token administration systems like CoMakery.
-* **amount** - the number of tokens to transfer. These are in the base unit of the currency. For example: 1 dollar would be represented as 100 cents (assuming 2 decimal precision on the blockchain). Also, 1 ETH would be represented as 1 x 1e18 - the value of ETH - in Wei its smallest unit.
-* **groupID** - the regulatory group used by the RestrictedToken for enforcing transfer rules.
+* **transferID** - A unique ID used for tracking if the transaction has been processed. This is different than the blockchain transaction receipt that will be generated when the file is processed.
+* **email** - The email address of the user. Not broadcast to the blockchain but needed to sync with other AML/KYC and token administration systems like CoMakery.
+* **amount** - The number of tokens to transfer. These are in the base unit of the currency. For example: 1 dollar would be represented as 100 cents (assuming 2 decimal precision on the blockchain). Also, 1 ETH would be represented as 1 x 1e18 - the value of ETH - in Wei its smallest unit.
+* **groupID** - The regulatory group used by the RestrictedToken for enforcing transfer rules.
 * **timeLockUntil** - Freeze the addresses tokens until the the unix timestamp. 0 effectively means not frozen. The unix timestamp is an integer of seconds from Jan 1, 1970 UTC (the Unix Epoch).
 * **maxBalance** - The maximum number of tokens that the user can hold in their blockchain account address. This number is also in the smallest unit - so dollars with 2 decimal precision would have a maximum balance indicated in cents.
-* **frozen** - indicates if the RestrictedTokens can be transferred out of the blockchain account address at all.
+* **frozen** - Indicates if the RestrictedTokens can be transferred out of the blockchain account address at all.
 
 ## Processing a Permissions & Transfers CSV File
 
