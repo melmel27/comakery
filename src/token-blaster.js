@@ -3,6 +3,7 @@ const contract = require('truffle-contract')
 const RestrictedToken = contract(restrictedTokenBuild)
 const {boolean} = require('boolean')
 const Ajv = require('ajv')
+const util = require('util')
 
 const csv = require('csvtojson')
 const autoBind = require('auto-bind')
@@ -33,6 +34,15 @@ class TokenBlaster {
 
     async run(csvFilePath) {
         let transfers = await this.getAddressPermissionsAndTransfersFromCSV(csvFilePath)
+        let validationErrors = this.multiValidateAddressPermissionAndTransferData(transfers)
+        if(validationErrors.length > 0) {
+            let report = util.inspect(validationErrors, false, null, false)
+            throw new Error(
+                "Error: Invalid CSV file. Transfers not initiated. Validation Errors:\n" +
+                report +
+                "\n\nError: Invalid CSV file. Transfers not initiated."
+                )
+        }
         let txns = await this.multiSetAddressPermissionsAndTransfer(transfers)
         return txns
     }
