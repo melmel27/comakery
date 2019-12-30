@@ -41,10 +41,26 @@ contract("TokenBlaster", function (accounts) {
 
     })
 
-    it('.run', async () => {
-        await blaster.run('./test/test_data/test-transfers.csv')
-        assert.equal(await token.balanceOf.call('0x57ea4caa7c61c2f48ce26cd5149ee641a75f5f6f'), 150)
+    describe('.run', () => {
+        it('loads files from a CSV, sets permissions and does transfers from the truffle configured web3 wallet', async () => {
+            await blaster.run('./test/test_data/test-transfers.csv')
+            assert.equal(await token.balanceOf.call('0x57ea4caa7c61c2f48ce26cd5149ee641a75f5f6f'), 150)
+        })
+
+        it('if the csv is invalid it raises an error and does not do the transfer', async () => {
+            let errorMessage = null
+            try {
+                await blaster.run('./test/test_data/test-transfers-bad-columns.csv')
+            } catch(e) {
+                errorMessage = e.message
+            }
+            assert.match(errorMessage, /data:/)
+            assert.match(errorMessage, /errors:/)
+            assert.equal(await token.balanceOf.call('0x57ea4caa7c61c2f48ce26cd5149ee641a75f5f6f'), 0)
+        })
     })
+
+
 
     it('can do a simple transfer', async () => {
         let tx = await blaster.transfer(bob, 50)
@@ -304,8 +320,7 @@ contract("TokenBlaster", function (accounts) {
                 }
             ])
             // assert.sameMembers(result, [])
-            assert.sameDeepMembers(result, [
-                {
+            assert.sameDeepMembers(result, [{
                     data: {
                         "address": "0x57ea4caa7c61c2f48ce26cd5149ee641a75f5f6f",
                         "email": "alice@example.com",
@@ -327,14 +342,14 @@ contract("TokenBlaster", function (accounts) {
                 },
                 {
                     "data": {
-                              "address": "0x45d245d054a9cab4c8e74dc131c289207db1ace4",
-                              "amount": "999",
-                              "email": "bob@example.com",
-                              "groupID": "1",
-                              "maxBalance": "10000",
-                              "timeLockUntil": "0",
-                              "transferID": "2"
-                             },
+                        "address": "0x45d245d054a9cab4c8e74dc131c289207db1ace4",
+                        "amount": "999",
+                        "email": "bob@example.com",
+                        "groupID": "1",
+                        "maxBalance": "10000",
+                        "timeLockUntil": "0",
+                        "transferID": "2"
+                    },
                     errors: [{
                         "dataPath": "",
                         "keyword": "required",
