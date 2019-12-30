@@ -126,7 +126,7 @@ contract("TokenBlaster", function (accounts) {
         })
     })
 
-    it('#multiTransfer can transfer to tow recipients', async () => {
+    it('#multiTransfer can transfer to recipients', async () => {
         let txns = await blaster.multiTransfer([
             [bob, 23],
             [bob, 27]
