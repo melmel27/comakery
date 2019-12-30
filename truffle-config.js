@@ -69,8 +69,9 @@ module.exports = {
         process.env.ROPSTEN_PRIVATE_KEY, 
         process.env.ROPSTEN_INFURA_PROJECT_URL),
       network_id: 3,       // Ropsten's id
-      gas: 5500000,        // Ropsten has a lower block limit than mainnet
-      gasPrice: web3.utils.toWei('3', 'gwei'),
+      gas: 4712388,        // Ropsten has a lower block limit than mainnet
+      gasPrice: 100000000000, //web3.utils.toWei('3', 'gwei'),
+      from: process.env.ROPSTEN_DEPLOYER_ADDRESS,
       confirmations: 2,    // # of confs to wait between deployments. (default: 0)
       timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
       skipDryRun: false     // Skip dry run before migrations? (default: false for public nets )

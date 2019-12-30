@@ -23,7 +23,7 @@
     "dev:deploy": "yarn truffle deploy && yarn truffle exec bin/development-restricted-token-init.js",
     "dev:account:info": "yarn truffle exec bin/development-account-info.js",
     "csv:transfers:validate": "yarn truffle exec bin/validate-permissions-and-transfers-csv.js -c",
-    "csv:transfers:send": "yarn truffle exec bin/development-restricted-token-init.js",
+    "csv:transfers:send": "yarn truffle exec bin/blaster.js",
     "test": "yarn truffle test",
     "test:js": "yarn truffle test test/js/*",
     "example-app-build": "browserify src/*.js -o public/bundle.js",
