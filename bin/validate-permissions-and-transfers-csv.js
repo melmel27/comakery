@@ -1,5 +1,7 @@
 // 'use strict';
 const yargs =  require('yargs')
+const util = require('util')
+
 const argv = yargs
     .option('csv',{
         alias: 'c',
@@ -21,8 +23,8 @@ async function main(){
     console.log("network id:\t"+networkId);
     console.log("CSV Path:\t", argv.csv)
 
-    var results = await TokenBlaster.validateCSV(argv.csv)
-    console.log(results)
+    let results = await TokenBlaster.validateCSV(argv.csv)
+    console.log(util.inspect(results, false, null, true))
 }
 
 // For truffle exec

@@ -99,14 +99,16 @@ class TokenBlaster {
     }
 
     multiValidateAddressPermissionAndTransferData(transfers) {
-        let errors = []
+        let badTransfers = []
         transfers.forEach((transfer) => {
-            let result = this.validateAddressPermissionAndTransferData(transfer)
-            if(result !== null) {
-                errors.push(result)
+            let validationErrors = this.validateAddressPermissionAndTransferData(transfer)
+            if(validationErrors !== null) {
+                badTransfers.push({ 
+                    data: transfer, errors: validationErrors
+                 })
             }
         })
-        return errors
+        return badTransfers
     }
 }
 
