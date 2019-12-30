@@ -215,10 +215,10 @@ contract("TokenBlaster", function (accounts) {
         ])
     })
 
-    describe('#validateAddressPermissionAndTransfer', () => {
+    describe('#validateAddressPermissionAndTransferData', () => {
         it('should check for required attributes', () => {
             let input = {}
-            let results = blaster.validateAddressPermissionAndTransfer(input)
+            let results = blaster.validateAddressPermissionAndTransferData(input)
             let requiredFields = []
             
             results.forEach(result => {
@@ -236,7 +236,7 @@ contract("TokenBlaster", function (accounts) {
                 timeLockUntil: "0",
                 groupID: '1'
             }
-            let results = blaster.validateAddressPermissionAndTransfer(input)
+            let results = blaster.validateAddressPermissionAndTransferData(input)
             assert.deepEqual(results, null)
         })
     })

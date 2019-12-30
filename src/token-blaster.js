@@ -42,7 +42,7 @@ class TokenBlaster {
     }
 
     async setAddressPermissionsAndTransfer(transfer) {
-        let validationResult = this.validateAddressPermissionAndTransfer(transfer)
+        let validationResult = this.validateAddressPermissionAndTransferData(transfer)
         let txn0 = null, txn1 = null
         if(validationResult === null) {   
             txn0 = await this.token.setAddressPermissions(
@@ -68,7 +68,7 @@ class TokenBlaster {
         return await csv().fromFile(csvFilePath);
     }
 
-    validateAddressPermissionAndTransfer(jsonTransfer) {
+    validateAddressPermissionAndTransferData(jsonTransfer) {
         let ajv = new Ajv({ allErrors: true})
         let schema = {
             type: 'object',
