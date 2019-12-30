@@ -305,24 +305,46 @@ contract("TokenBlaster", function (accounts) {
             ])
             // assert.sameMembers(result, [])
             assert.sameDeepMembers(result, [
-                [{
-                    "dataPath": "",
-                    "keyword": "required",
-                    "message": "should have required property 'amount'",
-                    "params": {
-                        "missingProperty": "amount"
+                {
+                    data: {
+                        "address": "0x57ea4caa7c61c2f48ce26cd5149ee641a75f5f6f",
+                        "email": "alice@example.com",
+                        "frozen": "false",
+                        "groupID": "1",
+                        "maxBalance": "10000",
+                        "timeLockUntil": "0",
+                        "transferID": "1"
                     },
-                    "schemaPath": "#/required"
-                }],
-                [{
-                    "dataPath": "",
-                    "keyword": "required",
-                    "message": "should have required property 'frozen'",
-                    "params": {
-                        "missingProperty": "frozen"
-                    },
-                    "schemaPath": "#/required"
-                }]
+                    errors: [{
+                        "dataPath": "",
+                        "keyword": "required",
+                        "message": "should have required property 'amount'",
+                        "params": {
+                            "missingProperty": "amount"
+                        },
+                        "schemaPath": "#/required"
+                    }]
+                },
+                {
+                    "data": {
+                              "address": "0x45d245d054a9cab4c8e74dc131c289207db1ace4",
+                              "amount": "999",
+                              "email": "bob@example.com",
+                              "groupID": "1",
+                              "maxBalance": "10000",
+                              "timeLockUntil": "0",
+                              "transferID": "2"
+                             },
+                    errors: [{
+                        "dataPath": "",
+                        "keyword": "required",
+                        "message": "should have required property 'frozen'",
+                        "params": {
+                            "missingProperty": "frozen"
+                        },
+                        "schemaPath": "#/required"
+                    }]
+                }
             ])
         })
     })
