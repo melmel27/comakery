@@ -1,4 +1,17 @@
 'use strict';
+const yargs =  require('yargs')
+const util = require('util')
+
+const argv = yargs
+    .option('tokenAddress',{
+        alias: 't',
+        description: 'address of the restricted token to check balances',
+        type: 'string',
+        demand: 'ERROR: you must specify the token you want to check balances for'
+    })
+    .help('help')
+    .usage('Usage: $0 -t [address]')
+    .argv
 
 global.artifacts = artifacts;
 global.web3 = web3;
@@ -10,7 +23,7 @@ async function main(){
     console.log("network id:"+networkId);
 
     const RestrictedToken = await artifacts.require('RestrictedToken')
-    const token = await RestrictedToken.deployed() 
+    const token = await RestrictedToken.at(argv.tokenAddress) 
     const sender = await web3.eth.getCoinbase()
 
     async function info(title, addr) {
