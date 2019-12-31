@@ -1,4 +1,12 @@
-{
+{ "name": "comakery-security-token",
+  "author": {
+    "name": "CoMakery, Inc.",
+    "email": "noah@comakery.com",
+    "url": "https://www.comakery.com"
+  },
+  "version": "1.0.0",
+  "description": "An open source ERC-20, ERC-1404 and CoMakery compatible security token",
+  "license": "MIT",
   "dependencies": {
     "@openzeppelin/contracts": "^2.3.0",
     "ajv": "^6.10.2",
