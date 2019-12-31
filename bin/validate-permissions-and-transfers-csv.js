@@ -24,7 +24,13 @@ async function main(){
     console.log("CSV Path:\t", argv.csv)
 
     let results = await TokenBlaster.validateCSV(argv.csv)
-    console.log(util.inspect(results, false, null, true))
+    if(results.length == 0) {
+        console.log('NO VALIDATION ERRORS FOUND')
+    } else {
+        console.log('VALIDATION ERRORS:')
+        console.log(util.inspect(results, false, null, true))
+        console.log('VALIDATION ERRORS FOUND!!!')
+    }
 }
 
 // For truffle exec
