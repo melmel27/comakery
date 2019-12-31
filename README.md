@@ -330,5 +330,5 @@ yarn truffle exec bin/blaster.js -t [restrictedTokenAddress] -c test/test_data/t
 
 Check that the transfers from the CSV went through by looking at the account balance output from:
 ```
-yarn dev:account:info
+yarn dev:account:info --tokenAddress [restrictedTokenAddress] --network [from truffle-config.js]
 ```
