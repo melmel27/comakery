@@ -4,15 +4,20 @@
 
 ## Install
 
+In your terminal
+
 ```
 git clone https://github.com/CoMakery/comakery-security-token.git
+cd comakery-security-token
 git checkout [correct branch]
 yarn install
 npm install ganache-cli -g
 
 # in terminal run the blockchain testing simulator in its own tab
 ganache-cli
-yarn setup
+
+# in a new tab run
+yarn dev:deploy
 yarn test
 ```
 
