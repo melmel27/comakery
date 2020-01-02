@@ -2,6 +2,22 @@
 
 ## An Open Source Security Token From Your Friends At CoMakery
 
+## Install
+
+```
+git clone https://github.com/CoMakery/comakery-security-token.git
+git checkout [correct branch]
+yarn install
+npm install ganache-cli -g
+
+# in terminal run the blockchain testing simulator in its own tab
+ganache-cli
+yarn setup
+yarn test
+```
+
+The automated test suite should run solidity and javascript tests. They should all pass.
+
 ## Overview
 
 This is an open source Security Token from CoMakery. The core purpose of the token is to enforce transfer restrictions for certain groups.
