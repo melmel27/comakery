@@ -8,6 +8,8 @@ const util = require('util')
 const csv = require('csvtojson')
 const autoBind = require('auto-bind')
 
+const log4js = require('log4js')
+
 async function init(tokenAddress, walletAddress, web3) {
     web3.eth.defaultAccount = walletAddress
     web3.eth.personal.unlockAccount(walletAddress)
@@ -18,6 +20,17 @@ async function init(tokenAddress, walletAddress, web3) {
             gas: 6700000, 
             gasPrice: 20000000000
     })
+
+    let networkType = await web3.eth.net.getNetworkType()
+    let networkID = await web3.eth.net.getId()
+    log4js.configure({
+        appenders: {
+          everything: { type: 'dateFile', filename: `logs/token-blaster-${networkType}-${networkID}.log` }
+        },
+        categories: {
+          default: { appenders: [ 'everything' ], level: 'debug' }
+        }
+      })
     
     let token = await RestrictedToken.at(tokenAddress)
     let blaster = await new TokenBlaster(token, tokenAddress)
@@ -36,6 +49,7 @@ class TokenBlaster {
         this.token = token
         this.tokenAddress = tokenAddress
         this.walletAddress = walletAddress
+        this.log = log4js.getLogger()
         autoBind(this)
     }
 
@@ -69,6 +83,11 @@ class TokenBlaster {
         let validationResult = this.validateAddressPermissionAndTransferData(transfer)
         let txn0 = null, txn1 = null
         
+        this.log.info(
+            `setAddresPermission\t${transfer.address}\t${transfer.groupID}\t` +
+            `${transfer.timeLockUntil}\t${transfer.maxBalance}\t${transfer.frozen}`
+            )
+            
         if(validationResult === null) {   
             txn0 = await this.token.setAddressPermissions(
             transfer.address, 
@@ -77,9 +96,11 @@ class TokenBlaster {
             transfer.maxBalance,
             boolean(transfer.frozen))
 
+
             // let restriction = this.token.detectTransferRestriction(this.walletAddress, transfer.address, transfer.amount)
             // console.log("Restriction:", restriction)
-
+            
+            this.log.info(`transfer\t${transfer.transferID}\t${transfer.address}\t${transfer.amount}`)
             txn1 = await this.token.transfer(transfer.address, transfer.amount)
         }
         return [txn0, txn1]
@@ -91,6 +112,13 @@ class TokenBlaster {
         })
         return Promise.all(promises)
     }
+
+    // async multiSetAddressPermissionsAndConfirm(transfers) {
+    //     let promises = transfers.map((transfer) => {
+    //         return this.setAddressPermissionsAndTransfer(transfer)
+    //     })
+    //     return Promise.all(promises)
+    // }
 
     async getAddressPermissionsAndTransfersFromCSV(csvFilePath) {
         return await csv().fromFile(csvFilePath);

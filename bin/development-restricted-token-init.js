@@ -4,10 +4,10 @@ global.artifacts = artifacts;
 global.web3 = web3;
 
 async function main(){
-    const newtworkType = await web3.eth.net.getNetworkType();
-    const networkId = await web3.eth.net.getId();
-    console.log("network type:"+newtworkType);
-    console.log("network id:"+networkId);
+    const newtworkType = await web3.eth.net.getNetworkType()
+    const networkId = await web3.eth.net.getId()
+    console.log("network type:"+newtworkType)
+    console.log("network id:"+networkId)
 
     const senderWalletAddress = await web3.eth.getCoinbase()
     const RestrictedToken = await artifacts.require('RestrictedToken')

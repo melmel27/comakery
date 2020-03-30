@@ -8,3 +8,9 @@ public/bundle.js.tmp-browserify-*
 build
 .env
 csv_local/*
+
+# ignore logs
+logs/*
+
+# keep logs folder
+!logs/.keep
