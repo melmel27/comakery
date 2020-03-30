@@ -83,7 +83,7 @@ module.exports = {
         process.env.MAINNET_INFURA_PROJECT_URL),
       network_id: 1,       // Mainnet id
       gas: 5500000,
-      gasPrice: web3.utils.toWei('3', 'gwei'),
+      gasPrice: web3.utils.toWei('4', 'gwei'),
       from: process.env.MAINNET_DEPLOYER_ADDRESS,
       confirmations: 4,    // # of confs to wait between deployments. (default: 0)
       timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
