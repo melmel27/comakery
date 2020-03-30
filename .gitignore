@@ -7,3 +7,4 @@ static/bundle.js.tmp-browserify-*
 public/bundle.js.tmp-browserify-*
 build
 .env
+csv_local/*
