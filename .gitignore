@@ -6,6 +6,16 @@ static/bundle.js.tmp-browserify-*
 public/bundle.js.tmp-browserify-*
 build
 .env
+<<<<<<< HEAD
 .env.bak
 logs/
 csv_local/
+=======
+csv_local/*
+
+# ignore logs
+logs/*
+
+# keep logs folder
+!logs/.keep
+>>>>>>> add logging
