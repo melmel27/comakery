@@ -8,7 +8,6 @@ const util = require('util')
 const csv = require('csvtojson')
 const autoBind = require('auto-bind')
 const prompts = require('prompts')
-
 const log4js = require('log4js')
 
 async function init(tokenAddress, walletAddress, web3) {
@@ -16,10 +15,11 @@ async function init(tokenAddress, walletAddress, web3) {
     web3.eth.personal.unlockAccount(walletAddress)
     RestrictedToken.setProvider(web3.currentProvider) 
     
+    // TODO: use truffle-config environment values for gas and gasPrice
     RestrictedToken.defaults({
             from: walletAddress,   
             gas: 6700000, 
-            gasPrice: 20000000000
+            gasPrice: 6100000000
     })
 
     let networkType = await web3.eth.net.getNetworkType()
