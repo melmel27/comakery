@@ -7,6 +7,7 @@ const util = require('util')
 
 const csv = require('csvtojson')
 const autoBind = require('auto-bind')
+const prompts = require('prompts')
 
 const log4js = require('log4js')
 
@@ -53,7 +54,7 @@ class TokenBlaster {
         autoBind(this)
     }
 
-    async run(csvFilePath) {
+    async run(csvFilePath, opts) {
         let transfers = await this.getAddressPermissionsAndTransfersFromCSV(csvFilePath)
         let validationErrors = this.multiValidateAddressPermissionAndTransferData(transfers)
         if(validationErrors.length > 0) {
@@ -64,7 +65,14 @@ class TokenBlaster {
                 "\n\nError: Invalid CSV file. Transfers not initiated."
                 )
         }
-        let txns = await this.multiSetAddressPermissionsAndTransfer(transfers)
+
+        let txns
+        if(opts != undefined && opts.confirm) {
+            txns = await this.multiSetAddressPermissionsAndConfirm(transfers)
+        } else {
+            txns = await this.multiSetAddressPermissionsAndTransfer(transfers)
+        }
+
         return txns
     }
 
@@ -113,12 +121,31 @@ class TokenBlaster {
         return Promise.all(promises)
     }
 
-    // async multiSetAddressPermissionsAndConfirm(transfers) {
-    //     let promises = transfers.map((transfer) => {
-    //         return this.setAddressPermissionsAndTransfer(transfer)
-    //     })
-    //     return Promise.all(promises)
-    // }
+    async multiSetAddressPermissionsAndConfirm(transfers) {
+        // let promises = transfers.map((transfer) => {
+        //     return this.setAddressPermissionsAndTransfer(transfer)
+        // })
+        // return Promise.all(promises)
+        let response
+        let yesContinue = true
+        let decimalDiv = BigInt(10**(await this.token.decimals()))
+
+        while(yesContinue && 
+            transfers.length > 0 &&
+
+            ( { yesContinue } = await prompts({
+            type: 'confirm',
+            name: 'yesContinue',
+            message: `Continue next transfer? id: ${transfers[0].transferID}\temail: ${transfers[0].email}\tamount: ${BigInt(transfers[0].amount) / decimalDiv}\taddr: ${transfers[0].address}`
+            })
+          )) {
+            if(yesContinue) {
+                let xfer = transfers.shift()
+                await this.setAddressPermissionsAndTransfer(xfer)
+            }
+          }
+
+    }
 
     async getAddressPermissionsAndTransfersFromCSV(csvFilePath) {
         return await csv().fromFile(csvFilePath);

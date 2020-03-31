@@ -34,7 +34,7 @@ async function main(){
     console.log("CSV Path:\t", argv.csv)
 
     var blaster = await TokenBlaster.init(argv.tokenAddress, senderWalletAddress, web3)
-    await blaster.run(argv.csv)
+    await blaster.run(argv.csv, {confirm: true})
 }
 
 // For truffle exec
