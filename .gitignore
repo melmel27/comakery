@@ -6,3 +6,6 @@ static/bundle.js.tmp-browserify-*
 public/bundle.js.tmp-browserify-*
 build
 .env
+.env.bak
+logs/
+csv_local/
