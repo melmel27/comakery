@@ -26,18 +26,18 @@ Here's an overview of how transfer restrictions are configured and enforced.
 
 ![](diagrams/plant-uml-diagrams/transfer-restrictions.png)
 
-The Wallet Admin for the Token Contract can provision account addresses to transfer and receive tokens under certain conditions. This is the process for configuring transfer restrictions and transferring tokens:
-1. An Investor sends their Anti Money Laundering and Know Your Customer (AML/KYC) information to the Wallet Admin or to a proxy vetting service to verify this information. The benefit of using a qualified third party provider is to avoid needing to store privately identifiable information. This code does not provide a solution for collecting AML/KYC information.
-2. The Wallet Admin calls `setAddressPermissions(investorAddress, transferGroup, addressTimeLock, maxTokens)` to provision their account. Initially this will be done for the Primary Issuance of tokens to investors where tokens are distributed directly from the issuer to holder accounts.
-3. A potential buyer sends their AML/KYC information to the Wallet Admin or a trusted AML/KYC provider.
-4. The Wallet Admin calls `setAddressPermissions(buyerAddress, transferGroup, addressTimeLock, maxTokens)` to provision the Buyer account.
-5. At this time or before, the Wallet Admin authorizes the transfer of tokens between account groups with `setAllowGroupTransfer(fromGroup, toGroup, afterTimestamp)` . Note that allowing a transfer from group A to group B by default does not allow the reverse transfer from group B to group A. This would have to be done separately. An example is that Reg CF unaccredited investors may be allowed to sell to Accredited US investors but not vice versa.
+The Transfer Admin for the Token Contract can provision account addresses to transfer and receive tokens under certain conditions. This is the process for configuring transfer restrictions and transferring tokens:
+1. An Investor sends their Anti Money Laundering and Know Your Customer (AML/KYC) information to the Transfer Admin or to a proxy vetting service to verify this information. The benefit of using a qualified third party provider is to avoid needing to store privately identifiable information. This code does not provide a solution for collecting AML/KYC information.
+2. The Transfer Admin calls `setAddressPermissions(investorAddress, transferGroup, addressTimeLock, maxTokens)` to provision their account. Initially this will be done for the Primary Issuance of tokens to investors where tokens are distributed directly from the issuer to holder accounts.
+3. A potential buyer sends their AML/KYC information to the Transfer Admin or a trusted AML/KYC provider.
+4. The Transfer Admin calls `setAddressPermissions(buyerAddress, transferGroup, addressTimeLock, maxTokens)` to provision the Buyer account.
+5. At this time or before, the Transfer Admin authorizes the transfer of tokens between account groups with `setAllowGroupTransfer(fromGroup, toGroup, afterTimestamp)` . Note that allowing a transfer from group A to group B by default does not allow the reverse transfer from group B to group A. This would have to be done separately. An example is that Reg CF unaccredited investors may be allowed to sell to Accredited US investors but not vice versa.
 
 ## WARNING: Maximum Total Supply, Minting and Burning of Tokens
 
 The variable `maxTotalSupply` is set when the contract is created and limits the total number of tokens that can be minted.
 
-**Reserve admins, authorized by contract admins, can mint tokens to and burn tokens from any address. This is primarily to comply with law enforcement, regulations and stock issuance scenarios - but this centralized power could be abused. Transfer admins, authorized by contract admins, can also update the transfer rules at any moment in time as many times as they want.**
+**Contract admins can mint tokens to and burn tokens from any address. This is primarily to comply with law enforcement, regulations and stock issuance scenarios - but this centralized power could be abused. Transfer admins, authorized by contract admins, can also update the transfer rules at any moment in time as many times as they want.**
 
 ## Initial Deployment
 
@@ -117,7 +117,7 @@ There is an [automatically generated dApp interface for the contract on Ethersca
 | Reg S Group | US Accredited | Forbidden During Flowback Restriction Period | `setAllowGroupTransfer(fromGroupS, toGroupD, afterTime)` | Transfer Admin |
 | Reg S Group | Reg S Group | Forbidden Until Shorter Reg S TimeLock Ended | `setAllowGroupTransfer(fromGroupS, toGroupS, afterTime)` | Transfer Admin |
 | Issuer | Reg CF with > maximum value of tokens allowed | Forbid transfers increasing token balances above max balance | `setMaxBalance(amount)` | Transfer Admin |
-| Stolen Tokens | Anyone | Fix With Freeze, Burn, Reissue| `freeze(stolenTokenAddress);`<br /> `burn(address, amount);`<br />`mint(newOwnerAddress);` | Contract Admin and Wallets Admin can `freeze()`, and Reserve Admin can do `mint()` `burn()` and `freeze()` |
+| Stolen Tokens | Anyone | Fix With Freeze, Burn, Reissue| `freeze(stolenTokenAddress);`<br /> `burn(address, amount);`<br />`mint(newOwnerAddress);` | Transfer Admin can `freeze()` and Contract Admin can do `mint()` `burn()` and `freeze()` |
 | Any Address During Regulatory Freeze| Anyone | Forbid all transfers while paused | `pause()` | Contract Admin |
 
 # Roles
@@ -128,34 +128,24 @@ The roles fall into two categories Admin Roles and Wallet Account Address Manage
 
 ## Admin Roles
 
-There are four admin roles, grouped by the area of responsibility:
-1. Contract Admin - enacts system-wide pauses and unpauses and grants or removes all of the other roles.
-1. Transfer Admin - sets up rules for transfers between groups, but not individual wallets.
-1. Wallets Admin - grants and revokes rights and restrictions for individual wallets, including assignment into groups.
-1. Reserve Admin - mints and burns tokens, can also freeze individual accounts to handle the Stolen Tokens use case.
-
-| Function | Contract Admin | Transfer Admin | Wallets Admin | Reserve Admin
-|-|-|-|-|-|
-| pause() | **yes** | no | no | no |
-| unpause() | **yes** | no | no | no |
-| grantContractAdmin() | **yes** | no | no | no |
-| removeContractAdmin() | **yes** | no | no | no |
-| grantTransferAdmin() | **yes** | no | no | no |
-| removeTransferAdmin() | **yes** | no | no | no |
-| grantWalletsAdmin() | **yes** | no | no | no |
-| removeWalletsAdmin() | **yes** | no | no | no |
-| grantReserveAdmin() | **yes** | no | no | no |
-| removeReserveAdmin() | **yes** | no | no | no |
-| upgradeTransferRules() | no | **yes** | no | no |
-| mint() | no | no | no | **yes** |
-| burn() | no | no | no | **yes** |
-| freeze() | **yes** | no | **yes** | **yes** |
-| setMaxBalance() | no | no | **yes** | no |
-| setLockUntil() | no | no | **yes** | no |
-| removeLockUntil() | no | no | **yes** | no |
-| setTransferGroup() | no | no | **yes** | no |
-| setAddressPermissions() | no | no | **yes** | no |
-| setAllowGroupTransfer() | no | **yes** | no | no |
+| Function | Contract Admin | Transfer Admin |
+|-|-|-|
+| pause() | **yes** | no |
+| unpause() | **yes** | no |
+| grantContractAdmin() | **yes** | no |
+| removeContractAdmin() | **yes** | no |
+| grantTransferAdmin() | **yes** | no |
+| removeTransferAdmin() | **yes** | no |
+| upgradeTransferRules() | **yes** | no |
+| mint() | **yes** | no |
+| burn() | **yes** | no |
+| freeze() | **yes** | **yes** |
+| setMaxBalance() | no | **yes** |
+| setLockUntil() | no | **yes** |
+| removeLockUntil() | no | **yes** |
+| setTransferGroup() | no | **yes** |
+| setAddressPermissions() | no | **yes** |
+| setAllowGroupTransfer() | no | **yes** |
 
 
 ## Wallet Account Address Managers
