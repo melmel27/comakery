@@ -1,4 +1,3 @@
-require('dotenv').config()
 const TransferRules = artifacts.require("TransferRules");
 const RestrictedToken = artifacts.require("RestrictedToken");
 

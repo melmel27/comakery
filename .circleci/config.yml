@@ -32,7 +32,7 @@ jobs:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
-
+      - run: yarn truffle build
       # run tests!
       - run: 
           command: yarn ganache-cli
