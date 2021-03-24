@@ -39,6 +39,10 @@ contract("ERC20 functionality", function (accounts) {
     })
 
     it('cannot receive tokens by default even in default group 0', async () => {
+        await token.setMaxBalance(charlie, 10, {
+            from: walletsAdmin
+        })
+
         await truffleAssert.reverts(token.transfer(charlie, 50, {
             from: alice
         }), "GREATER THAN RECIPIENT MAX BALANCE")

@@ -53,7 +53,7 @@ contract MaxReceiverBalanceTest {
         );
         Assert.equal(uint256(restrictionCode), 0, "should allow max value");
 
-        token.setMaxBalance(address(bob), 0);
+        token.setMaxBalance(address(bob), 1);
         restrictionCode = token.detectTransferRestriction(
             address(alice),
             address(bob),

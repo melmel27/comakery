@@ -54,8 +54,12 @@ contract("Access control tests", function (accounts) {
   })
 
   it("an unprivileged user can check transfer restrictions", async () => {
+    await token.setMaxBalance(reserveAdmin, 5, {
+        from: walletsAdmin
+    })
+
     assert.equal(await token.detectTransferRestriction
-      .call(contractAdmin, reserveAdmin, 1, {
+      .call(contractAdmin, reserveAdmin, 10, {
         from: unprivileged
       }), 1)
 
