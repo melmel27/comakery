@@ -69,6 +69,7 @@ contract RestrictedToken is ERC20 {
     maxTotalSupply = maxTotalSupply_;
 
     _contractAdmins.add(contractAdmin_);
+    _reserveAdmins.add(tokenReserveAdmin_);
     contractAdminCount = 1;
 
     _mint(tokenReserveAdmin_, totalSupply_);
