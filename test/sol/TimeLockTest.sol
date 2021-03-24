@@ -20,6 +20,7 @@ contract TimeLockTest {
         TransferRules rules = new TransferRules();
         token = new RestrictedToken(address(rules), tokenContractOwner, tokenContractOwner, "xyz", "Ex Why Zee", 0, 100, 1e6);
         token.grantTransferAdmin(tokenContractOwner);
+        token.grantWalletsAdmin(tokenContractOwner);
 
         alice = new UserProxy(token);
         bob = new UserProxy(token);

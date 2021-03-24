@@ -4,8 +4,10 @@ const truffleAssert = require('truffle-assertions');
 var RestrictedToken = artifacts.require("RestrictedToken");
 var TransferRules = artifacts.require("TransferRules");
 
-contract("Access control tests", function (accounts) {
+contract("Token minting tests", function (accounts) {
   var contractAdmin
+  var transferAdmin
+  var walletsAdmin
   var reserveAdmin
   var unprivileged
   var token
@@ -13,10 +15,12 @@ contract("Access control tests", function (accounts) {
 
   beforeEach(async function () {
     contractAdmin = accounts[0]
-    reserveAdmin = accounts[1]
-    transferAdmin = accounts[2]
+    transferAdmin = accounts[1]
+    walletsAdmin = accounts[2]
+    reserveAdmin = accounts[3]
 
     unprivileged = accounts[5]
+
     let rules = await TransferRules.new()
     token = await RestrictedToken.new(rules.address, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100, 1000)
 
@@ -31,13 +35,15 @@ contract("Access control tests", function (accounts) {
   })
 
   it('can burn', async () => {
-    await token.burn(reserveAdmin, 17);
+    await token.burn(reserveAdmin, 17, {
+        from: reserveAdmin
+    });
     assert.equal(await token.balanceOf(reserveAdmin), 83)
   })
 
   it('cannot burn more than address balance', async () => {
     await truffleAssert.reverts(token.burn(reserveAdmin, 101, {
-      from: contractAdmin
+      from: reserveAdmin
     }), "Insufficent tokens to burn")
   })
 
@@ -45,13 +51,13 @@ contract("Access control tests", function (accounts) {
     assert.equal(await token.maxTotalSupply(), 1000, 'should have max total supply')
 
     await truffleAssert.reverts(token.mint(reserveAdmin, 901, {
-      from: contractAdmin
+      from: reserveAdmin
     }), "Cannot mint more than the max total supply")
 
     assert.equal(await token.totalSupply(), 100, 'should not have increased the total tokens')
 
     await token.mint(reserveAdmin, 900, {
-      from: contractAdmin
+      from: reserveAdmin
     })
 
     assert.equal(await token.totalSupply(), 1000, 'should have increased the total tokens')

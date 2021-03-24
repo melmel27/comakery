@@ -4,14 +4,16 @@ var TransferRules = artifacts.require("TransferRules");
 
 contract("Validate", function (accounts) {
   var contractAdmin
+  var transferAdmin
   var reserveAdmin
   var unpermissioned
   var emptyAddress = web3.utils.padLeft(0x0, 40)
 
   beforeEach(async function () {
     contractAdmin = accounts[0]
-    reserveAdmin = accounts[1]
-    unpermissioned = accounts[2]
+    transferAdmin = accounts[1]
+    reserveAdmin = accounts[2]
+    unpermissioned = accounts[3]
   })
 
   it("cannot setup the contract with valid addresses", async () => {
@@ -140,9 +142,13 @@ contract("Validate", function (accounts) {
     })
 
     it("upgradeTransferRules", async () => {
+      await token.grantTransferAdmin(transferAdmin, {
+          from: contractAdmin
+      })
+
       await truffleAssert.reverts(
         token.upgradeTransferRules(emptyAddress, {
-          from: contractAdmin
+          from: transferAdmin
         }), expectedError)
     })
 

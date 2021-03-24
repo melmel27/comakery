@@ -11,8 +11,9 @@ contract("Transfer rules", function (accounts) {
 
   beforeEach(async function () {
     contractAdmin = accounts[0]
-    reserveAdmin = accounts[1]
-    transferAdmin = accounts[2]
+    transferAdmin = accounts[1]
+    walletsAdmin = accounts[2]
+    reserveAdmin = accounts[3]
 
     unprivileged = accounts[5]
 
@@ -20,6 +21,10 @@ contract("Transfer rules", function (accounts) {
     token = await RestrictedToken.new(rules.address, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100, 1e6)
 
     await token.grantTransferAdmin(transferAdmin, {
+      from: contractAdmin
+    })
+
+    await token.grantWalletsAdmin(walletsAdmin, {
       from: contractAdmin
     })
   })
@@ -31,7 +36,7 @@ contract("Transfer rules", function (accounts) {
 
   it('cannot exceed the max balance of an address', async () => {
     await token.setMaxBalance(unprivileged, 2, {
-      from: transferAdmin
+      from: walletsAdmin
     })
     await token.setAllowGroupTransfer(0, 0, 1, {
       from: transferAdmin

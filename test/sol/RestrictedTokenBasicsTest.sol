@@ -26,9 +26,11 @@ contract RestrictedTokenBasicsTest {
             1234567, 
             1e6
         );
-        token.grantTransferAdmin(tokenContractOwner);
 
+        token.grantWalletsAdmin(tokenContractOwner);
         token.setMaxBalance(tokenContractOwner, 1e18);
+        
+        token.grantTransferAdmin(tokenContractOwner);
         token.setAllowGroupTransfer(0, 0, now); // don't restrict default group transfers
     }
 

@@ -10,25 +10,31 @@ contract("ERC20 functionality", function (accounts) {
 
     beforeEach(async function () {
         contractAdmin = accounts[0]
-        alice = accounts[1]
-        bob = accounts[2]
-        charlie = accounts[3]
+        transferAdmin = accounts[1]
+        walletsAdmin = accounts[2]
+        alice = accounts[3]
+        bob = accounts[4]
+        charlie = accounts[5]
 
         defaultGroup = 0
 
         let rules = await TransferRules.new()
         token = await RestrictedToken.new(rules.address, contractAdmin, alice, "xyz", "Ex Why Zee", 6, 100, 1e6)
 
-        await token.grantTransferAdmin(contractAdmin, {
+        await token.grantTransferAdmin(transferAdmin, {
+            from: contractAdmin
+        })
+
+        await token.grantWalletsAdmin(walletsAdmin, {
             from: contractAdmin
         })
 
         await token.setAllowGroupTransfer(defaultGroup, defaultGroup, 1, {
-            from: contractAdmin
+            from: transferAdmin
         })
 
         await token.setAddressPermissions(bob, defaultGroup, 1, 200, false, {
-            from: contractAdmin
+            from: walletsAdmin
         })
     })
 

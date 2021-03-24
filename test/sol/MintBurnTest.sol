@@ -11,8 +11,6 @@ contract MintBurnTest {
     function beforeEach() public {
         TransferRules rules = new TransferRules();
         token = new RestrictedToken(address(rules), address(this), address(this), "xyz", "Ex Why Zee", 0, 100, 1e6);
-        token.grantTransferAdmin(address(this));
-
     }
 
     function testCannotMintMoreThanMaxUintValue() public {

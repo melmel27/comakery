@@ -28,6 +28,7 @@ contract MaxReceiverBalanceTest {
             1e6
         );
         token.grantTransferAdmin(tokenContractOwner);
+        token.grantWalletsAdmin(tokenContractOwner);
 
         alice = new UserProxy(token);
         bob = new UserProxy(token);

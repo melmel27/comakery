@@ -23,6 +23,7 @@ contract TransferRestrictionsTest {
         TransferRules rules = new TransferRules();
         token = new RestrictedToken(address(rules), tokenContractOwner, tokenContractOwner, "xyz", "Ex Why Zee", 0, 100, 1e6);
         token.grantTransferAdmin(tokenContractOwner);
+        token.grantWalletsAdmin(tokenContractOwner);
         
         alice = address(0x1);
         bob = address(0x2);
