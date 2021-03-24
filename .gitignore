@@ -8,5 +8,6 @@ build
 .env
 .env.bak
 *.un~
+*.swp
 logs/
 csv_local/
