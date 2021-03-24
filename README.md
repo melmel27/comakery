@@ -117,7 +117,7 @@ There is an [automatically generated dApp interface for the contract on Ethersca
 | Reg S Group | US Accredited | Forbidden During Flowback Restriction Period | `setAllowGroupTransfer(fromGroupS, toGroupD, afterTime)` | Transfer Admin |
 | Reg S Group | Reg S Group | Forbidden Until Shorter Reg S TimeLock Ended | `setAllowGroupTransfer(fromGroupS, toGroupS, afterTime)` | Transfer Admin |
 | Issuer | Reg CF with > maximum value of tokens allowed | Forbid transfers increasing token balances above max balance | `setMaxBalance(amount)` | Transfer Admin |
-| Stolen Tokens | Anyone | Fix With Freeze, Burn, Reissue| `freeze(stolenTokenAddress);`<br /> `burn(address, amount);`<br />`mint(newOwnerAddress);` | Contract Admin and Wallets Admin can `freeze()`, and Reserve Admin can do `mint()` `burn()` and `freeze()` |
+| Stolen Tokens | Anyone | Fix With Freeze, Burn, Reissue| `freeze(stolenTokenAddress);`<br /> `burn(address, amount);`<br />`mint(newOwnerAddress);` | Wallets Admin can `freeze()`, and Reserve Admin can do `mint()` `burn()` and `freeze()` |
 | Any Address During Regulatory Freeze| Anyone | Forbid all transfers while paused | `pause()` | Contract Admin |
 
 # Roles
@@ -149,7 +149,7 @@ There are four admin roles, grouped by the area of responsibility:
 | upgradeTransferRules() | no | **yes** | no | no |
 | mint() | no | no | no | **yes** |
 | burn() | no | no | no | **yes** |
-| freeze() | **yes** | no | **yes** | **yes** |
+| freeze() | no | no | **yes** | **yes** |
 | setMaxBalance() | no | no | **yes** | no |
 | setLockUntil() | no | no | **yes** | no |
 | removeLockUntil() | no | no | **yes** | no |
