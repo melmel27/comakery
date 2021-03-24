@@ -51,6 +51,19 @@ contract FreezeTest {
         "SENDER ADDRESS IS FROZEN", "wrong transfer restriction code for frozen account");
     }
 
+    function testReceiveToFrozenAddress() public {
+        token.grantWalletsAdmin(address(this));
+
+        token.transfer(alice, 10);
+        token.freeze(bob, true);
+
+        uint8 code = token.detectTransferRestriction(alice, address(bob), 1);
+        Assert.equal(uint256(code), 9, "wrong transfer restriction code for frozen account");
+
+        Assert.equal(token.transferRules().messageForTransferRestriction(code), 
+        "RECEIVER ADDRESS IS FROZEN", "wrong transfer restriction code for frozen account");
+    }
+
     function testCanPauseTransfers() public {
         Assert.isFalse(token.isPaused(), "should not be paused yet");
         token.pause();
