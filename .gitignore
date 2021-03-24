@@ -11,3 +11,9 @@ build
 *.swp
 logs/
 csv_local/
+
+# ignore logs
+logs/*
+
+# keep logs folder
+!logs/.keep
