@@ -18,6 +18,8 @@ contract RestrictedToken is ERC20 {
   using Roles for Roles.Role;
   Roles.Role private _contractAdmins;
   Roles.Role private _transferAdmins;
+  Roles.Role private _walletsAdmins;
+  Roles.Role private _reserveAdmins;
 
   uint256 public maxTotalSupply;
   uint256 public contractAdminCount;
@@ -82,9 +84,19 @@ contract RestrictedToken is ERC20 {
     _;
   }
 
-  modifier onlyTransferAdminOrContractAdmin() {
-    require((_contractAdmins.has(msg.sender) || _transferAdmins.has(msg.sender)),
-    "DOES NOT HAVE TRANSFER ADMIN OR CONTRACT ADMIN ROLE");
+   modifier onlyWalletsAdmin() {
+    require(_walletsAdmins.has(msg.sender), "DOES NOT HAVE WALLETS ADMIN ROLE");
+    _;
+  }
+
+   modifier onlyReserveAdmin() {
+    require(_reserveAdmins.has(msg.sender), "DOES NOT HAVE RESERVE ADMIN ROLE");
+    _;
+  }
+
+  modifier onlyWalletsAdminOrReserveAdmin() {
+    require((_walletsAdmins.has(msg.sender) || _reserveAdmins.has(msg.sender)),
+    "DOES NOT HAVE WALLETS ADMIN NOR RESERVE ADMIN ROLE");
     _;
   }
 
@@ -112,6 +124,50 @@ contract RestrictedToken is ERC20 {
   /// @return hasPermission returns true if the address has transfer admin permission and false if not.
   function checkTransferAdmin(address addr) external view returns(bool hasPermission) {
     return _transferAdmins.has(addr);
+  }
+
+  /// @dev Authorizes an address holder to grant and revoke rights and restrictions for \
+  ///      individual wallets, including assignment into groups.
+  /// @param addr The address to grant wallets admin rights to
+  function grantWalletsAdmin(address addr) external validAddress(addr) onlyContractAdmin {
+    _walletsAdmins.add(addr);
+    emit RoleChange(msg.sender, addr, "WalletsAdmin", true);
+  }
+
+  /// @dev Revokes authorization to grant and revoke rights and restrictions for \
+  ///      individual wallets, including assignment into groups.
+  /// @param addr The address to revoke wallets admin rights from.
+  function revokeWalletsAdmin(address addr) external validAddress(addr) onlyContractAdmin  {
+    _walletsAdmins.remove(addr);
+    emit RoleChange(msg.sender, addr, "WalletsAdmin", false);
+  }
+
+  /// @dev Checks if an address is an authorized wallets admin.
+  /// @param addr The address to check for wallets admin privileges.
+  /// @return hasPermission returns true if the address has wallets admin permission and false if not.
+  function checkWalletsAdmin(address addr) external view returns(bool hasPermission) {
+    return _walletsAdmins.has(addr);
+  }
+
+  /// @dev Authorizes an address holder to mint and burn tokens, and to freeze individual addresses
+  /// @param addr The address to grant reserve admin rights to.
+  function grantReserveAdmin(address addr) external validAddress(addr) onlyContractAdmin {
+    _reserveAdmins.add(addr);
+    emit RoleChange(msg.sender, addr, "ReserveAdmin", true);
+  }
+
+  /// @dev Revokes authorization to mint and burn tokens, and to freeze individual addresses
+  /// @param addr The address to revoke reserve admin rights from.
+  function revokeReserveAdmin(address addr) external validAddress(addr) onlyContractAdmin  {
+    _reserveAdmins.remove(addr);
+    emit RoleChange(msg.sender, addr, "ReserveAdmin", false);
+  }
+
+  /// @dev Checks if an address is an authorized reserve admin.
+  /// @param addr The address to check for reserve admin privileges.
+  /// @return hasPermission returns true if the address has reserve admin permission and false if not.
+  function checkReserveAdmin(address addr) external view returns(bool hasPermission) {
+    return _reserveAdmins.has(addr);
   }
 
   /// @dev Authorizes an address holder to be a contract admin. Contract admins grant privileges to accounts.
@@ -170,7 +226,7 @@ contract RestrictedToken is ERC20 {
   /// Addresses can hold 0 tokens by default.
   /// @param addr The address to restrict
   /// @param updatedValue the maximum number of tokens the address can hold
-  function setMaxBalance(address addr, uint256 updatedValue) public validAddress(addr) onlyTransferAdmin {
+  function setMaxBalance(address addr, uint256 updatedValue) public validAddress(addr) onlyWalletsAdmin {
     _maxBalances[addr] = updatedValue;
     emit AddressMaxBalance(msg.sender, addr, updatedValue);
   }
@@ -185,14 +241,14 @@ contract RestrictedToken is ERC20 {
   /// @param addr The address to restrict
   /// @param timestamp The time the tokens will be locked until as a Unix timetsamp.
   /// Unix timestamp is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
-  function setLockUntil(address addr, uint256 timestamp) public validAddress(addr)  onlyTransferAdmin {
+  function setLockUntil(address addr, uint256 timestamp) public validAddress(addr)  onlyWalletsAdmin {
     _lockUntil[addr] = timestamp;
     emit AddressTimeLock(msg.sender, addr, timestamp);
   }
   /// @dev A convenience method to remove an addresses timelock. It sets the lock date to 0 which corresponds to the
   /// earliest possible timestamp in the past 00:00:00 UTC on 1 January 1970.
   /// @param addr The address to remove the timelock for.
-  function removeLockUntil(address addr) external validAddress(addr) onlyTransferAdmin {
+  function removeLockUntil(address addr) external validAddress(addr) onlyWalletsAdmin {
     _lockUntil[addr] = 0;
     emit AddressTimeLock(msg.sender, addr, 0);
   }
@@ -208,7 +264,7 @@ contract RestrictedToken is ERC20 {
   /// @dev Set the one group that the address belongs to, such as a US Reg CF investor group.
   /// @param addr The address to set the group for.
   /// @param groupID The uint256 numeric ID of the group.
-  function setTransferGroup(address addr, uint256 groupID) public validAddress(addr) onlyTransferAdmin {
+  function setTransferGroup(address addr, uint256 groupID) public validAddress(addr) onlyWalletsAdmin {
     _transferGroups[addr] = groupID;
     emit AddressTransferGroup(msg.sender, addr, groupID);
   }
@@ -224,7 +280,7 @@ contract RestrictedToken is ERC20 {
   /// Tokens in a frozen address cannot be transferred from until the address is unfrozen.
   /// @param addr The address to be frozen.
   /// @param status The frozenAddress status of the address. True means frozen false means not frozen.
-  function freeze(address addr, bool status) public validAddress(addr)  onlyTransferAdminOrContractAdmin {
+  function freeze(address addr, bool status) public validAddress(addr)  onlyWalletsAdminOrReserveAdmin {
     _frozenAddresses[addr] = status;
     emit AddressFrozen(msg.sender, addr, status);
   }
@@ -245,7 +301,7 @@ contract RestrictedToken is ERC20 {
   /// @param maxBalance Is the maximum number of tokens the account can hold.
   /// @param status The frozenAddress status of the address. True means frozen false means not frozen.
   function setAddressPermissions(address addr, uint256 groupID, uint256 timeLockUntil,
-    uint256 maxBalance, bool status) public validAddress(addr) onlyTransferAdmin {
+    uint256 maxBalance, bool status) public validAddress(addr) onlyWalletsAdmin {
     setTransferGroup(addr, groupID);
     setLockUntil(addr, timeLockUntil);
     setMaxBalance(addr, maxBalance);
@@ -282,19 +338,19 @@ contract RestrictedToken is ERC20 {
     return _allowGroupTransfers[from][to];
   }
 
-  /// @dev Destroys tokens and removes them from the total supply. Can only be called by an address with a Contract Admin role.
+  /// @dev Destroys tokens and removes them from the total supply. Can only be called by an address with a Reserve Admin role.
   /// @param from The address to destroy the tokens from.
   /// @param value The number of tokens to destroy from the address.
-  function burn(address from, uint256 value) external validAddress(from) onlyContractAdmin {
+  function burn(address from, uint256 value) external validAddress(from) onlyReserveAdmin {
     require(value <= balanceOf(from), "Insufficent tokens to burn");
     _burn(from, value);
   }
 
-  /// @dev Allows the contract admin to create new tokens in a specified address.
+  /// @dev Allows the reserve admin to create new tokens in a specified address.
   /// The total number of tokens cannot exceed the maxTotalSupply (the "Hard Cap").
   /// @param to The addres to mint tokens into.
   /// @param value The number of tokens to mint.
-  function mint(address to, uint256 value) external validAddress(to) onlyContractAdmin  {
+  function mint(address to, uint256 value) external validAddress(to) onlyReserveAdmin  {
     require(SafeMath.add(totalSupply(), value) <= maxTotalSupply, "Cannot mint more than the max total supply");
     _mint(to, value);
   }
@@ -314,7 +370,7 @@ contract RestrictedToken is ERC20 {
   /// @dev Allows the contrac admin to upgrade the transfer rules.
   /// The upgraded transfer rules must implement the ITransferRules interface which conforms to the ERC-1404 token standard.
   /// @param newTransferRules The address of the deployed TransferRules contract.
-  function upgradeTransferRules(ITransferRules newTransferRules) external onlyContractAdmin {
+  function upgradeTransferRules(ITransferRules newTransferRules) external onlyTransferAdmin {
     require(address(newTransferRules) != address(0x0), "Address cannot be 0x0");
     address oldRules = address(transferRules);
     transferRules = newTransferRules;
