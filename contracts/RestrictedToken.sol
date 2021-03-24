@@ -76,7 +76,7 @@ contract RestrictedToken is ERC20 {
   }
 
   modifier onlyContractAdmin() {
-    require(_contractAdmins.has(msg.sender), "DOES NOT HAVE CONTRACT OWNER ROLE");
+    require(_contractAdmins.has(msg.sender), "DOES NOT HAVE CONTRACT ADMIN ROLE");
     _;
   }
 
@@ -97,7 +97,7 @@ contract RestrictedToken is ERC20 {
 
   modifier onlyWalletsAdminOrReserveAdmin() {
     require((_walletsAdmins.has(msg.sender) || _reserveAdmins.has(msg.sender)),
-    "DOES NOT HAVE WALLETS ADMIN NOR RESERVE ADMIN ROLE");
+    "DOES NOT HAVE WALLETS ADMIN OR RESERVE ADMIN ROLE");
     _;
   }
 
@@ -281,7 +281,7 @@ contract RestrictedToken is ERC20 {
   /// Tokens in a frozen address cannot be transferred from until the address is unfrozen.
   /// @param addr The address to be frozen.
   /// @param status The frozenAddress status of the address. True means frozen false means not frozen.
-  function freeze(address addr, bool status) public validAddress(addr)  onlyWalletsAdminOrReserveAdmin {
+  function freeze(address addr, bool status) public validAddress(addr) onlyWalletsAdminOrReserveAdmin {
     _frozenAddresses[addr] = status;
     emit AddressFrozen(msg.sender, addr, status);
   }
