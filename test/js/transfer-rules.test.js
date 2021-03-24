@@ -82,6 +82,6 @@ contract("Transfer rules", function (accounts) {
 
     await truffleAssert.reverts(token.transfer(bob, 5, {
       from: alice
-    }), "RECEIVER ADDRESS IS FROZEN")
+    }), "RECIPIENT ADDRESS IS FROZEN")
   })
 })

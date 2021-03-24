@@ -25,6 +25,10 @@ contract("TokenBlaster", function (accounts) {
             from: sendWallet
         })
 
+        await token.grantWalletsAdmin(sendWallet, {
+            from: sendWallet
+        })
+
         await token.setAllowGroupTransfer(defaultGroup, defaultGroup, 1, {
             from: sendWallet
         })
