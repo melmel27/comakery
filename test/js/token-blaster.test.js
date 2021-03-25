@@ -37,7 +37,7 @@ contract("TokenBlaster", function (accounts) {
             from: sendWallet
         })
 
-        await token.setAddressPermissions(bob, defaultGroup, 1, 200, false, {
+        await token.setAddressPermissions(bob, defaultGroup, 0, 0, 200, false, {
             from: sendWallet
         })
 
@@ -87,7 +87,7 @@ contract("TokenBlaster", function (accounts) {
             assert.equal(await token.getTransferGroup(alice), 0)
             assert.equal(await token.getFrozenStatus(alice), false)
             assert.equal(await token.getMaxBalance(alice), 0)
-            assert.equal(await token.getLockUntil(alice), 0)
+            assert.equal(await token.getCurrentlyLockedBalance(alice), 0)
 
         })
 
@@ -106,7 +106,7 @@ contract("TokenBlaster", function (accounts) {
             assert.equal(await token.balanceOf.call(bob), 50)
             assert.equal(await token.getTransferGroup(bob), 1)
             assert.equal(await token.getFrozenStatus(bob), false)
-            assert.equal(await token.getMaxBalance(bob), 10000)
+            assert.equal(await token.getCurrentlyLockedBalance(bob), 10000)
             assert.equal(await token.getLockUntil(bob), 0)
 
             truffleAssert.eventEmitted(txns[0], 'AddressTransferGroup', (ev) => {

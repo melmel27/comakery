@@ -33,7 +33,7 @@ contract("ERC20 functionality", function (accounts) {
             from: transferAdmin
         })
 
-        await token.setAddressPermissions(bob, defaultGroup, 1, 200, false, {
+        await token.setAddressPermissions(bob, defaultGroup, 0, 0, 200, false, {
             from: walletsAdmin
         })
     })

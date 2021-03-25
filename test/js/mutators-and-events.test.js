@@ -12,6 +12,7 @@ contract("Mutator calls and events", function (accounts) {
   var token
   var startingRules
   var emptyAddress = web3.utils.padLeft(0x0, 40)
+  var futureTimestamp = Date.now() + 3600 * 24 * 30;
 
   beforeEach(async function () {
     contractAdmin = accounts[0]
@@ -37,11 +38,11 @@ contract("Mutator calls and events", function (accounts) {
       from: transferAdmin
     })
 
-    await token.setAddressPermissions(reserveAdmin, defaultGroup, 1, 1000, false, {
+    await token.setAddressPermissions(reserveAdmin, defaultGroup, 0, 0, 1000, false, {
       from: walletsAdmin
     })
 
-    await token.setAddressPermissions(recipient, defaultGroup, 1, 1000, false, {
+    await token.setAddressPermissions(recipient, defaultGroup, 0, 0, 1000, false, {
       from: walletsAdmin
     })
 
@@ -161,32 +162,34 @@ contract("Mutator calls and events", function (accounts) {
     assert.equal(await token.getMaxBalance(recipient), 100)
   })
 
-  it("setLockUntil with events", async () => {
-    let tx = await token.setLockUntil(recipient, 97, {
+  it("addLockUntil with events", async () => {
+    let tx = await token.addLockUntil(recipient, futureTimestamp, 97, {
       from: walletsAdmin
     })
 
-    truffleAssert.eventEmitted(tx, 'AddressTimeLock', (ev) => {
+    truffleAssert.eventEmitted(tx, 'AddressTimeLockAdded', (ev) => {
       assert.equal(ev.admin, walletsAdmin)
       assert.equal(ev.addr, recipient)
+      assert.equal(ev.timestamp, futureTimestamp)
       assert.equal(ev.value, 97)
       return true
     })
 
-    assert.equal(await token.getLockUntil(recipient), 97)
+    assert.equal(await token.getLockUntilAtTimestamp(recipient, futureTimestamp), 97)
 
-    let tx2 = await token.removeLockUntil(recipient, {
+    let tx2 = await token.removeLockUntilIndexLookup(recipient, 0, {
       from: walletsAdmin
     })
 
-    truffleAssert.eventEmitted(tx2, 'AddressTimeLock', (ev) => {
+    truffleAssert.eventEmitted(tx2, 'AddressTimeLockRemoved', (ev) => {
       assert.equal(ev.admin, walletsAdmin)
       assert.equal(ev.addr, recipient)
-      assert.equal(ev.value, 0)
+      assert.equal(ev.timestamp, futureTimestamp)
+      assert.equal(ev.unlockedValue, 97)
       return true
     })
 
-    assert.equal(await token.getLockUntil(recipient), 0)
+    assert.equal(await token.getCurrentlyLockedBalance(recipient), 0)
   })
 
   it("setTransferGroup with events", async () => {
@@ -205,20 +208,13 @@ contract("Mutator calls and events", function (accounts) {
   })
   
   it("setAddressPermissions with events from all inner function calls", async () => {
-    let tx = await token.setAddressPermissions(unprivileged, 9, 1, 1000, true, {
+    let tx = await token.setAddressPermissions(unprivileged, 9, 0, 0, 1000, true, {
       from: walletsAdmin
     })
     truffleAssert.eventEmitted(tx, 'AddressTransferGroup', (ev) => {
       assert.equal(ev.admin, walletsAdmin)
       assert.equal(ev.addr, unprivileged)
       assert.equal(ev.value, 9)
-      return true
-    })
-
-    truffleAssert.eventEmitted(tx, 'AddressTimeLock', (ev) => {
-      assert.equal(ev.admin, walletsAdmin)
-      assert.equal(ev.addr, unprivileged)
-      assert.equal(ev.value, 1)
       return true
     })
 
@@ -237,7 +233,7 @@ contract("Mutator calls and events", function (accounts) {
     })
     
     assert.equal(await token.getTransferGroup(unprivileged), 9)
-    assert.equal(await token.getLockUntil(unprivileged), 1)
+    assert.equal(await token.getCurrentlyLockedBalance(recipient), 0)
     assert.equal(await token.getMaxBalance(unprivileged), 1000)
     assert.equal(await token.getFrozenStatus(unprivileged), true)  
   })

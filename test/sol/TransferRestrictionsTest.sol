@@ -16,6 +16,7 @@ contract TransferRestrictionsTest {
     uint256 groupB = 2;
     uint256 transferTimeIsNow = now;
     uint maxTokens = 1000;
+    uint lockedTokens = 100;
     uint restrictionCode;
 
     function beforeEach() public {
@@ -28,8 +29,8 @@ contract TransferRestrictionsTest {
         alice = address(0x1);
         bob = address(0x2);
 
-        token.setAddressPermissions(alice, groupA, transferTimeIsNow, maxTokens, false);
-        token.setAddressPermissions(bob, groupB, transferTimeIsNow, maxTokens, false);
+        token.setAddressPermissions(alice, groupA, 0, lockedTokens, maxTokens, false);
+        token.setAddressPermissions(bob, groupB, 0, lockedTokens, maxTokens, false);
     }
 
     function testTransferRestrictionsBetweenUsersNotOnWhitelist() public {

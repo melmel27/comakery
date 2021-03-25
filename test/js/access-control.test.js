@@ -10,6 +10,7 @@ contract("Access control tests", function (accounts) {
   var unprivileged
   var token
   var transferAdmin
+  var futureTimestamp = Date.now() + 3600 * 24 * 30;
 
   beforeEach(async function () {
     contractAdmin = accounts[0]
@@ -384,9 +385,9 @@ contract("Access control tests", function (accounts) {
     }))
   })
 
-  it("only Wallets Admin can setLockUntil", async () => {
+  it("only Wallets Admin can addLockUntil", async () => {
     let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.setLockUntil(unprivileged, 17, {
+      await truffleAssert.reverts(token.addLockUntil(unprivileged, futureTimestamp, 5, {
         from: from
       }), "DOES NOT HAVE WALLETS ADMIN ROLE")
     }
@@ -396,14 +397,14 @@ contract("Access control tests", function (accounts) {
     await checkRevertsFor(reserveAdmin)
     await checkRevertsFor(unprivileged)
 
-    await truffleAssert.passes(token.setLockUntil(unprivileged, 17, {
+    await truffleAssert.passes(token.addLockUntil(unprivileged, futureTimestamp, 5, {
       from: walletsAdmin
     }))
   })
 
-  it("only Wallets Admin can removeLockUntil", async () => {
+  it("only Wallets Admin can removeLockUntilTimestampLookup", async () => {
     let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.removeLockUntil(unprivileged, {
+      await truffleAssert.reverts(token.removeLockUntilTimestampLookup(unprivileged, futureTimestamp, {
         from: from
       }), "DOES NOT HAVE WALLETS ADMIN ROLE")
     }
@@ -413,7 +414,32 @@ contract("Access control tests", function (accounts) {
     await checkRevertsFor(reserveAdmin)
     await checkRevertsFor(unprivileged)
 
-    await truffleAssert.passes(token.removeLockUntil(unprivileged, {
+    token.addLockUntil(unprivileged, futureTimestamp, 5, {
+      from: walletsAdmin
+    })
+
+    await truffleAssert.passes(token.removeLockUntilTimestampLookup(unprivileged, futureTimestamp, {
+      from: walletsAdmin
+    }))
+  })
+
+  it("only Wallets Admin can removeLockUntilIndexLookup", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.removeLockUntilIndexLookup(unprivileged, 0, {
+        from: from
+      }), "DOES NOT HAVE WALLETS ADMIN ROLE")
+    }
+
+    await checkRevertsFor(contractAdmin)
+    await checkRevertsFor(transferAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    token.addLockUntil(unprivileged, futureTimestamp, 5, {
+      from: walletsAdmin
+    })
+
+    await truffleAssert.passes(token.removeLockUntilIndexLookup(unprivileged, 0, {
       from: walletsAdmin
     }))
   })
@@ -437,7 +463,7 @@ contract("Access control tests", function (accounts) {
 
   it("only Wallets Admin can setAddressPermissions", async () => {
     let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.setAddressPermissions(unprivileged, 1, 17, 100, false, {
+      await truffleAssert.reverts(token.setAddressPermissions(unprivileged, 1, futureTimestamp, 5, 100, false, {
         from: from
       }), "DOES NOT HAVE WALLETS ADMIN ROLE")
     }
@@ -447,7 +473,7 @@ contract("Access control tests", function (accounts) {
     await checkRevertsFor(reserveAdmin)
     await checkRevertsFor(unprivileged)
 
-    await truffleAssert.passes(token.setAddressPermissions(unprivileged, 1, 17, 100, false, {
+    await truffleAssert.passes(token.setAddressPermissions(unprivileged, 1, futureTimestamp, 5, 100, false, {
       from: walletsAdmin
     }))
   })

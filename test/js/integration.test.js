@@ -65,7 +65,7 @@ contract("Integrated Scenarios", function (accounts) {
         await token.setAllowGroupTransfer(groupReserve, groupForeignS, 1, {
             from: transferAdmin
         })
-        await token.setAddressPermissions(reserveAdmin, groupReserve, 1, 100, false, {
+        await token.setAddressPermissions(reserveAdmin, groupReserve, 0, 0, 100, false, {
             from: walletsAdmin
         })
 
@@ -73,7 +73,7 @@ contract("Integrated Scenarios", function (accounts) {
         await token.setAllowGroupTransfer(groupExchange, groupForeignS, 1, {
             from: transferAdmin
         })
-        await token.setAddressPermissions(exchangeOmnibus, groupExchange, 1, 100, false, {
+        await token.setAddressPermissions(exchangeOmnibus, groupExchange, 0, 0, 100, false, {
             from: walletsAdmin
         })
 
@@ -81,7 +81,7 @@ contract("Integrated Scenarios", function (accounts) {
         await token.setAllowGroupTransfer(groupForeignS, groupExchange, 1, {
             from: transferAdmin
         })
-        await token.setAddressPermissions(foreignInvestorS, groupForeignS, 1, 10, false, {
+        await token.setAddressPermissions(foreignInvestorS, groupForeignS, 0, 0, 10, false, {
             from: walletsAdmin
         })
 
@@ -109,7 +109,7 @@ contract("Integrated Scenarios", function (accounts) {
         await token.transfer(exchangeOmnibus, 1, { from: foreignInvestorS })
         
         // Reg S cannot transfer to another Reg S
-        await token.setAddressPermissions(foreignInvestorS2, groupForeignS, 1, 10, false, {
+        await token.setAddressPermissions(foreignInvestorS2, groupForeignS, 0, 0, 10, false, {
             from: walletsAdmin
         })
         await truffleAssert.reverts(token.transfer(foreignInvestorS2, 1, {
