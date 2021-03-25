@@ -341,7 +341,7 @@ contract RestrictedToken is ERC20 {
     uint256 totalLocked = 0;
 
     for (uint256 i=0; i<_locksUntil[addr].length; i++) {
-        if (_locksUntil[addr][i].timestamp >= timestamp) {
+        if (_locksUntil[addr][i].timestamp > timestamp) {
             totalLocked = totalLocked.add(_locksUntil[addr][i].minBalance);
         }
     }
@@ -486,6 +486,7 @@ contract RestrictedToken is ERC20 {
 
   function transfer(address to, uint256 value) public validAddress(to) returns(bool success) {
     require(value <= balanceOf(msg.sender), "Insufficent tokens");
+    cleanupTimelocks(msg.sender);
     enforceTransferRestrictions(msg.sender, to, value);
     super.transfer(to, value);
     return true;
@@ -494,6 +495,7 @@ contract RestrictedToken is ERC20 {
   function transferFrom(address from, address to, uint256 value) public validAddress(from) validAddress(to) returns(bool success) {
     require(value <= allowance(from, to), "The approved allowance is lower than the transfer amount");
     require(value <= balanceOf(from), "Insufficent tokens");
+    cleanupTimelocks(from);
     enforceTransferRestrictions(from, to, value);
     super.transferFrom(from, to, value);
     return true;
@@ -528,7 +530,7 @@ contract RestrictedToken is ERC20 {
 
   /// @dev Removes expired timelocks for a user (therefore unlocking the tokens).
   /// @param addr Address for which the timelocks are being cleaned up.
-  function cleanupTimelocks(address addr) private {
+  function cleanupTimelocks(address addr) public {
     // Since we delete efficiently (by moving the last element to replace the one being deleted),
     // we clean up right to left, emitting events and mutating the list on the go.
     // 1. Go right to left
