@@ -4,15 +4,19 @@ var TransferRules = artifacts.require("TransferRules");
 
 contract("Access control tests", function (accounts) {
   var contractAdmin
+  var transferAdmin
+  var walletsAdmin
   var reserveAdmin
   var unprivileged
   var token
   var transferAdmin
+  var futureTimestamp = Date.now() + 3600 * 24 * 30;
 
   beforeEach(async function () {
     contractAdmin = accounts[0]
-    reserveAdmin = accounts[1]
-    transferAdmin = accounts[2]
+    transferAdmin = accounts[1]
+    walletsAdmin = accounts[2]
+    reserveAdmin = accounts[3]
 
     unprivileged = accounts[5]
 
@@ -20,6 +24,10 @@ contract("Access control tests", function (accounts) {
     token = await RestrictedToken.new(rules.address, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100, 100e6)
 
     await token.grantTransferAdmin(transferAdmin, {
+      from: contractAdmin
+    })
+
+    await token.grantWalletsAdmin(walletsAdmin, {
       from: contractAdmin
     })
 
@@ -47,8 +55,12 @@ contract("Access control tests", function (accounts) {
   })
 
   it("an unprivileged user can check transfer restrictions", async () => {
+    await token.setMaxBalance(reserveAdmin, 5, {
+        from: walletsAdmin
+    })
+
     assert.equal(await token.detectTransferRestriction
-      .call(contractAdmin, reserveAdmin, 1, {
+      .call(contractAdmin, reserveAdmin, 10, {
         from: unprivileged
       }), 1)
 
@@ -57,18 +69,19 @@ contract("Access control tests", function (accounts) {
     }), "GREATER THAN RECIPIENT MAX BALANCE")
   })
 
-  it("only contractAdmin can pause transfers", async () => {
+  it("only Contract Admin can pause transfers", async () => {
     await truffleAssert.passes(token.pause({
       from: contractAdmin
     }))
 
     let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.pause({
+        await truffleAssert.reverts(token.pause({
         from: from
-      }), "DOES NOT HAVE CONTRACT OWNER ROLE")
+        }), "DOES NOT HAVE CONTRACT ADMIN ROLE")
     }
 
     await checkRevertsFor(transferAdmin)
+    await checkRevertsFor(walletsAdmin)
     await checkRevertsFor(reserveAdmin)
     await checkRevertsFor(unprivileged)
   })
@@ -79,109 +92,87 @@ contract("Access control tests", function (accounts) {
     }))
 
     let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.unpause({
+        await truffleAssert.reverts(token.unpause({
         from: from
-      }), "DOES NOT HAVE CONTRACT OWNER ROLE")
+        }), "DOES NOT HAVE CONTRACT ADMIN ROLE")
     }
 
     await checkRevertsFor(transferAdmin)
+    await checkRevertsFor(walletsAdmin)
     await checkRevertsFor(reserveAdmin)
     await checkRevertsFor(unprivileged)
   })
 
-  it("only contractAdmin can mint transfers", async () => {
+  it("only Reserve Admin can mint", async () => {
     await truffleAssert.passes(token.mint(unprivileged, 123, {
-      from: contractAdmin
+      from: reserveAdmin
     }))
 
+    assert.equal(await token.balanceOf(unprivileged), 123)
+
     let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.mint(unprivileged, 123, {
+        await truffleAssert.reverts(token.mint(unprivileged, 1, {
         from: from
-      }), "DOES NOT HAVE CONTRACT OWNER ROLE")
+        }), "DOES NOT HAVE RESERVE ADMIN ROLE")
     }
 
+    await checkRevertsFor(contractAdmin)
     await checkRevertsFor(transferAdmin)
-    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(walletsAdmin)
     await checkRevertsFor(unprivileged)
   })
 
-  it("only contractAdmin can burn", async () => {
+  it("only Reserve Admin can burn", async () => {
     assert.equal(await token.balanceOf(reserveAdmin), 100)
 
     await truffleAssert.passes(token.burn(reserveAdmin, 1, {
-      from: contractAdmin
+      from: reserveAdmin
     }))
 
     assert.equal(await token.balanceOf(reserveAdmin), 99)
 
+
     let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.burn(reserveAdmin, 1, {
+        await truffleAssert.reverts(token.burn(reserveAdmin, 1, {
         from: from
-      }), "DOES NOT HAVE CONTRACT OWNER ROLE")
+        }), "DOES NOT HAVE RESERVE ADMIN ROLE")
     }
 
+    await checkRevertsFor(contractAdmin)
     await checkRevertsFor(transferAdmin)
-    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(walletsAdmin)
     await checkRevertsFor(unprivileged)
   })
 
-  it("only contractAdmin and transferAdmin can freeze", async () => {
+  it("only Wallets Admin and Reserve Admin can freeze", async () => {
     await truffleAssert.passes(token.freeze(reserveAdmin, true, {
-      from: contractAdmin
+      from: walletsAdmin
     }))
 
     await truffleAssert.passes(token.freeze(reserveAdmin, true, {
-      from: transferAdmin
+      from: reserveAdmin
     }))
 
     await truffleAssert.reverts(token.freeze(reserveAdmin, true, {
-      from: reserveAdmin
-    }), "DOES NOT HAVE TRANSFER ADMIN OR CONTRACT ADMIN ROLE")
+      from: contractAdmin
+    }), "DOES NOT HAVE WALLETS ADMIN OR RESERVE ADMIN ROLE")
+
+    await truffleAssert.reverts(token.freeze(reserveAdmin, true, {
+      from: transferAdmin
+    }), "DOES NOT HAVE WALLETS ADMIN OR RESERVE ADMIN ROLE")
 
     await truffleAssert.reverts(token.freeze(reserveAdmin, true, {
       from: unprivileged
-    }), "DOES NOT HAVE TRANSFER ADMIN OR CONTRACT ADMIN ROLE")
+    }), "DOES NOT HAVE WALLETS ADMIN OR RESERVE ADMIN ROLE")
   })
 
-  it("only contractAdmin can grant transferAdmin privileges", async () => {
-    let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.grantTransferAdmin(unprivileged, {
-        from: from
-      }), "DOES NOT HAVE CONTRACT OWNER ROLE")
-    }
-
-    await checkRevertsFor(transferAdmin)
-    await checkRevertsFor(reserveAdmin)
-    await checkRevertsFor(unprivileged)
-
-    await truffleAssert.passes(token.grantTransferAdmin(unprivileged, {
-      from: contractAdmin
-    }))
-  })
-
-  it("only contractAdmin can revoke transferAdmin privileges", async () => {
-    let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.revokeTransferAdmin(transferAdmin, {
-        from: from
-      }), "DOES NOT HAVE CONTRACT OWNER ROLE")
-    }
-
-    await checkRevertsFor(transferAdmin)
-    await checkRevertsFor(reserveAdmin)
-    await checkRevertsFor(unprivileged)
-
-    await truffleAssert.passes(token.revokeTransferAdmin(transferAdmin, {
-      from: contractAdmin
-    }))
-  })
-
-
+  // GRANTING AND REVOKING ADMIN PRIVILEGES
 
   it("only contractAdmin can grant contractAdmin privileges", async () => {
     let checkRevertsFor = async (from) => {
       await truffleAssert.reverts(token.grantContractAdmin(unprivileged, {
         from: from
-      }), "DOES NOT HAVE CONTRACT OWNER ROLE")
+      }), "DOES NOT HAVE CONTRACT ADMIN ROLE")
     }
 
     await checkRevertsFor(transferAdmin)
@@ -198,7 +189,7 @@ contract("Access control tests", function (accounts) {
     let checkRevertsFor = async (from) => {
       await truffleAssert.reverts(token.revokeContractAdmin(unprivileged, {
         from: from
-      }), "DOES NOT HAVE CONTRACT OWNER ROLE")
+      }), "DOES NOT HAVE CONTRACT ADMIN ROLE")
     }
 
     await checkRevertsFor(transferAdmin)
@@ -217,104 +208,146 @@ contract("Access control tests", function (accounts) {
     }))
   })
 
-  it("only contractAdmin can change and upgrade the transfer rules with upgradeTransferRules", async () => {
+
+  it("only contractAdmin can grant transferAdmin privileges", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.grantTransferAdmin(unprivileged, {
+        from: from
+      }), "DOES NOT HAVE CONTRACT ADMIN ROLE")
+    }
+
+    await checkRevertsFor(transferAdmin)
+    await checkRevertsFor(walletsAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    await truffleAssert.passes(token.grantTransferAdmin(unprivileged, {
+      from: contractAdmin
+    }))
+  })
+
+  it("only contractAdmin can revoke transferAdmin privileges", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.revokeTransferAdmin(unprivileged, {
+        from: from
+      }), "DOES NOT HAVE CONTRACT ADMIN ROLE")
+    }
+
+    await token.grantTransferAdmin(unprivileged, {
+        from: contractAdmin
+    })
+
+    await checkRevertsFor(transferAdmin)
+    await checkRevertsFor(walletsAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    await truffleAssert.passes(token.revokeTransferAdmin(unprivileged, {
+      from: contractAdmin
+    }))
+  })
+  
+
+  it("only contractAdmin can grant walletsAdmin privileges", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.grantWalletsAdmin(unprivileged, {
+        from: from
+      }), "DOES NOT HAVE CONTRACT ADMIN ROLE")
+    }
+
+    await checkRevertsFor(walletsAdmin)
+    await checkRevertsFor(walletsAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    await truffleAssert.passes(token.grantWalletsAdmin(unprivileged, {
+      from: contractAdmin
+    }))
+  })
+
+  it("only contractAdmin can revoke walletsAdmin privileges", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.revokeWalletsAdmin(unprivileged, {
+        from: from
+      }), "DOES NOT HAVE CONTRACT ADMIN ROLE")
+    }
+
+    await token.grantWalletsAdmin(unprivileged, {
+        from: contractAdmin
+    })
+
+    await checkRevertsFor(walletsAdmin)
+    await checkRevertsFor(walletsAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    await truffleAssert.passes(token.revokeWalletsAdmin(unprivileged, {
+      from: contractAdmin
+    }))
+  })
+
+
+  it("only contractAdmin can grant reserveAdmin privileges", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.grantReserveAdmin(unprivileged, {
+        from: from
+      }), "DOES NOT HAVE CONTRACT ADMIN ROLE")
+    }
+
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    await truffleAssert.passes(token.grantReserveAdmin(unprivileged, {
+      from: contractAdmin
+    }))
+  })
+
+  it("only contractAdmin can revoke reserveAdmin privileges", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.revokeReserveAdmin(unprivileged, {
+        from: from
+      }), "DOES NOT HAVE CONTRACT ADMIN ROLE")
+    }
+
+    await token.grantReserveAdmin(unprivileged, {
+        from: contractAdmin
+    })
+
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    await truffleAssert.passes(token.revokeReserveAdmin(unprivileged, {
+      from: contractAdmin
+    }))
+  })
+
+
+  // TRANSFER ADMIN FUNCTIONS 
+  
+  it("only Transfer Admin can change and upgrade the transfer rules with upgradeTransferRules", async () => {
     let nextTransferRules = await TransferRules.new()
     let transferRulesAddress = nextTransferRules.address
     await truffleAssert.passes(token.upgradeTransferRules(transferRulesAddress, {
-      from: contractAdmin
+      from: transferAdmin
     }))
 
     let checkRevertsFor = async (from) => {
 
       await truffleAssert.reverts(token.upgradeTransferRules(transferRulesAddress, {
         from: from
-      }), "DOES NOT HAVE CONTRACT OWNER ROLE")
-    }
-
-    await checkRevertsFor(transferAdmin)
-    await checkRevertsFor(reserveAdmin)
-    await checkRevertsFor(unprivileged)
-  })
-
-  it("only transferAdmin can setMaxBalance", async () => {
-    let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.setMaxBalance(unprivileged, 100, {
-        from: from
       }), "DOES NOT HAVE TRANSFER ADMIN ROLE")
     }
 
     await checkRevertsFor(contractAdmin)
+    await checkRevertsFor(walletsAdmin)
     await checkRevertsFor(reserveAdmin)
     await checkRevertsFor(unprivileged)
-
-    await truffleAssert.passes(token.setMaxBalance(unprivileged, 100, {
-      from: transferAdmin
-    }))
   })
 
-  it("only transferAdmin can setLockUntil", async () => {
-    let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.setLockUntil(unprivileged, 17, {
-        from: from
-      }), "DOES NOT HAVE TRANSFER ADMIN ROLE")
-    }
-
-    await checkRevertsFor(contractAdmin)
-    await checkRevertsFor(reserveAdmin)
-    await checkRevertsFor(unprivileged)
-
-    await truffleAssert.passes(token.setLockUntil(unprivileged, 17, {
-      from: transferAdmin
-    }))
-  })
-
-  it("only transferAdmin can removeLockUntil", async () => {
-    let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.removeLockUntil(unprivileged, {
-        from: from
-      }), "DOES NOT HAVE TRANSFER ADMIN ROLE")
-    }
-
-    await checkRevertsFor(contractAdmin)
-    await checkRevertsFor(reserveAdmin)
-    await checkRevertsFor(unprivileged)
-
-    await truffleAssert.passes(token.removeLockUntil(unprivileged, {
-      from: transferAdmin
-    }))
-  })
-
-  it("only transferAdmin can setTransferGroup", async () => {
-    let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.setTransferGroup(unprivileged, 1, {
-        from: from
-      }), "DOES NOT HAVE TRANSFER ADMIN ROLE")
-    }
-
-    await checkRevertsFor(contractAdmin)
-    await checkRevertsFor(reserveAdmin)
-    await checkRevertsFor(unprivileged)
-
-    await truffleAssert.passes(token.setTransferGroup(unprivileged, 1, {
-      from: transferAdmin
-    }))
-  })
-
-  it("only transferAdmin can setAddressPermissions", async () => {
-    let checkRevertsFor = async (from) => {
-      await truffleAssert.reverts(token.setAddressPermissions(unprivileged, 1, 17, 100, false, {
-        from: from
-      }), "DOES NOT HAVE TRANSFER ADMIN ROLE")
-    }
-
-    await checkRevertsFor(contractAdmin)
-    await checkRevertsFor(reserveAdmin)
-    await checkRevertsFor(unprivileged)
-
-    await truffleAssert.passes(token.setAddressPermissions(unprivileged, 1, 17, 100, false, {
-      from: transferAdmin
-    }))
-  })
 
   it("only transferAdmin can setAllowGroupTransfer", async () => {
     let checkRevertsFor = async (from) => {
@@ -324,11 +357,124 @@ contract("Access control tests", function (accounts) {
     }
 
     await checkRevertsFor(contractAdmin)
+    await checkRevertsFor(walletsAdmin)
     await checkRevertsFor(reserveAdmin)
     await checkRevertsFor(unprivileged)
 
     await truffleAssert.passes(token.setAllowGroupTransfer(0, 1, 17, {
       from: transferAdmin
+    }))
+  })
+
+  // WALLETS ADMIN FUNCTIONS 
+  
+  it("only Wallets Admin can setMaxBalance", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.setMaxBalance(unprivileged, 100, {
+        from: from
+      }), "DOES NOT HAVE WALLETS ADMIN ROLE")
+    }
+
+    await checkRevertsFor(contractAdmin)
+    await checkRevertsFor(transferAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    await truffleAssert.passes(token.setMaxBalance(unprivileged, 100, {
+      from: walletsAdmin
+    }))
+  })
+
+  it("only Wallets Admin can addLockUntil", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.addLockUntil(unprivileged, futureTimestamp, 5, {
+        from: from
+      }), "DOES NOT HAVE WALLETS ADMIN ROLE")
+    }
+
+    await checkRevertsFor(contractAdmin)
+    await checkRevertsFor(transferAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    await truffleAssert.passes(token.addLockUntil(unprivileged, futureTimestamp, 5, {
+      from: walletsAdmin
+    }))
+  })
+
+  it("only Wallets Admin can removeLockUntilTimestampLookup", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.removeLockUntilTimestampLookup(unprivileged, futureTimestamp, {
+        from: from
+      }), "DOES NOT HAVE WALLETS ADMIN ROLE")
+    }
+
+    await checkRevertsFor(contractAdmin)
+    await checkRevertsFor(transferAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    token.addLockUntil(unprivileged, futureTimestamp, 5, {
+      from: walletsAdmin
+    })
+
+    await truffleAssert.passes(token.removeLockUntilTimestampLookup(unprivileged, futureTimestamp, {
+      from: walletsAdmin
+    }))
+  })
+
+  it("only Wallets Admin can removeLockUntilIndexLookup", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.removeLockUntilIndexLookup(unprivileged, 0, {
+        from: from
+      }), "DOES NOT HAVE WALLETS ADMIN ROLE")
+    }
+
+    await checkRevertsFor(contractAdmin)
+    await checkRevertsFor(transferAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    token.addLockUntil(unprivileged, futureTimestamp, 5, {
+      from: walletsAdmin
+    })
+
+    await truffleAssert.passes(token.removeLockUntilIndexLookup(unprivileged, 0, {
+      from: walletsAdmin
+    }))
+  })
+
+  it("only Wallets Admin can setTransferGroup", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.setTransferGroup(unprivileged, 1, {
+        from: from
+      }), "DOES NOT HAVE WALLETS ADMIN ROLE")
+    }
+
+    await checkRevertsFor(contractAdmin)
+    await checkRevertsFor(transferAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    await truffleAssert.passes(token.setTransferGroup(unprivileged, 1, {
+      from: walletsAdmin
+    }))
+  })
+
+  it("only Wallets Admin can setAddressPermissions", async () => {
+    let checkRevertsFor = async (from) => {
+      await truffleAssert.reverts(token.setAddressPermissions(unprivileged, 1, futureTimestamp, 5, 100, false, {
+        from: from
+      }), "DOES NOT HAVE WALLETS ADMIN ROLE")
+    }
+
+    await checkRevertsFor(contractAdmin)
+    await checkRevertsFor(transferAdmin)
+    await checkRevertsFor(reserveAdmin)
+    await checkRevertsFor(unprivileged)
+
+    await truffleAssert.passes(token.setAddressPermissions(unprivileged, 1, futureTimestamp, 5, 100, false, {
+      from: walletsAdmin
     }))
   })
 

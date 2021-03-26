@@ -19,11 +19,12 @@ contract("Integrated Scenarios", function (accounts) {
 
     beforeEach(async function () {
         contractAdmin = accounts[0]
-        reserveAdmin = accounts[1]
-        transferAdmin = accounts[2]
-        exchangeOmnibus = accounts[3]
-        foreignInvestorS = accounts[4]
-        foreignInvestorS2 = accounts[5]
+        transferAdmin = accounts[1]
+        walletsAdmin = accounts[2]
+        reserveAdmin = accounts[3]
+        exchangeOmnibus = accounts[4]
+        foreignInvestorS = accounts[5]
+        foreignInvestorS2 = accounts[6]
 
         groupDefault = 0
         groupReserve = 1
@@ -35,6 +36,10 @@ contract("Integrated Scenarios", function (accounts) {
 
         // configure initial transferAdmin
         await token.grantTransferAdmin(transferAdmin, {
+            from: contractAdmin
+        })
+
+        await token.grantWalletsAdmin(walletsAdmin, {
             from: contractAdmin
         })
     })
@@ -60,24 +65,24 @@ contract("Integrated Scenarios", function (accounts) {
         await token.setAllowGroupTransfer(groupReserve, groupForeignS, 1, {
             from: transferAdmin
         })
-        await token.setAddressPermissions(reserveAdmin, groupReserve, 1, 100, false, {
-            from: transferAdmin
+        await token.setAddressPermissions(reserveAdmin, groupReserve, 0, 0, 100, false, {
+            from: walletsAdmin
         })
 
         // // exchange allows Reg S to withdraw to their own accounts
         await token.setAllowGroupTransfer(groupExchange, groupForeignS, 1, {
             from: transferAdmin
         })
-        await token.setAddressPermissions(exchangeOmnibus, groupExchange, 1, 100, false, {
-            from: transferAdmin
+        await token.setAddressPermissions(exchangeOmnibus, groupExchange, 0, 0, 100, false, {
+            from: walletsAdmin
         })
 
         // // foreign Reg S can deposit into exchange accounts for trading on exchanges
         await token.setAllowGroupTransfer(groupForeignS, groupExchange, 1, {
             from: transferAdmin
         })
-        await token.setAddressPermissions(foreignInvestorS, groupForeignS, 1, 10, false, {
-            from: transferAdmin
+        await token.setAddressPermissions(foreignInvestorS, groupForeignS, 0, 0, 10, false, {
+            from: walletsAdmin
         })
 
         // // distribute tokens to the exchange for regulated token sale
@@ -104,8 +109,8 @@ contract("Integrated Scenarios", function (accounts) {
         await token.transfer(exchangeOmnibus, 1, { from: foreignInvestorS })
         
         // Reg S cannot transfer to another Reg S
-        await token.setAddressPermissions(foreignInvestorS2, groupForeignS, 1, 10, false, {
-            from: transferAdmin
+        await token.setAddressPermissions(foreignInvestorS2, groupForeignS, 0, 0, 10, false, {
+            from: walletsAdmin
         })
         await truffleAssert.reverts(token.transfer(foreignInvestorS2, 1, {
             from: foreignInvestorS

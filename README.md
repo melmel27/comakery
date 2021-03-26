@@ -134,11 +134,11 @@ There is an [automatically generated dApp interface for the contract on Ethersca
 
 | From | To | Restrict | Enforced By | Admin Role |
 |:-|:-|:-|:-|:-|
-| Reg D/S/CF | Anyone | Until TimeLock ends | `setLockUntil(investorAddress)` | Transfer Admin |
+| Reg D/S/CF | Anyone | Until TimeLock ends | `addLockUntil(investorAddress, balanceReserved)` | Wallets Admin |
 | Reg S Group | US Accredited | Forbidden During Flowback Restriction Period | `setAllowGroupTransfer(fromGroupS, toGroupD, afterTime)` | Transfer Admin |
 | Reg S Group | Reg S Group | Forbidden Until Shorter Reg S TimeLock Ended | `setAllowGroupTransfer(fromGroupS, toGroupS, afterTime)` | Transfer Admin |
-| Issuer | Reg CF with > maximum value of tokens allowed | Forbid transfers increasing token balances above max balance | `setMaxBalance(amount)` | Transfer Admin |
-| Stolen Tokens | Anyone | Fix With Freeze, Burn, Reissue| `freeze(stolenTokenAddress);`<br /> `burn(address, amount);`<br />`mint(newOwnerAddress);` | Transfer Admin can `freeze()` and Contract Admin can do `mint()` `burn()` and `freeze()` |
+| Issuer | Reg CF with > maximum value of tokens allowed | Forbid transfers increasing token balances above max balance | `setMaxBalance(amount)` | Wallets Admin |
+| Stolen Tokens | Anyone | Fix With Freeze, Burn, Reissue| `freeze(stolenTokenAddress);`<br /> `burn(address, amount);`<br />`mint(newOwnerAddress);` | Wallets Admin can `freeze()` and Reserve Admin can do `mint()` `burn()` and `freeze()` |
 | Any Address During Regulatory Freeze| Anyone | Forbid all transfers while paused | `pause()` | Contract Admin |
 
 # Roles
@@ -189,8 +189,8 @@ Individual token holders have accounts that are provisioned by the transfer admi
 
 ![](diagrams/plant-uml-diagrams/setup.png)
 
-1. The Deployer configures the parameters and deploys the smart contracts to a public blockchain. At the time of deployment, the deployer configures a separate token reserve address and Transfer Administrator address. This allows the reserve security tokens to be stored in cold storage since the treasury reserve address private keys are not needed for everyday use by the Transfer Admin.
-2. The Transfer Admin then provisions a hot wallet address for distributing tokens to investors or other stakeholders. The Transfer Admin uses `setAddressPermissions(investorAddress, transferGroup, addressTimeLock, maxTokens)` to set address restrictions.
+1. The Deployer configures the parameters and deploys the smart contracts to a public blockchain. At the time of deployment, the deployer configures a separate token reserve address, a Transfer Administrator address, and a Wallets administrator address. This allows the reserve security tokens to be stored in cold storage since the treasury reserve address private keys are not needed for everyday use by the Transfer Admin.
+2. The Reserve Admin then provisions a hot wallet address for distributing tokens to investors or other stakeholders. The Wallets Admin uses `setAddressPermissions(investorAddress, transferGroup, addressTimeLock, reservedTimeLockedBalance, maxTokens)` to set address restrictions.
 3. The Transfer Admin authorizes the transfer of tokens between account groups with `setAllowGroupTransfer(fromGroup, toGroup, afterTimestamp)` .
 4. The Reserve Admin then transfers tokens to the Hot Wallet address.
 5. The Hot Wallet Admin then transfers tokens to investors or other stakeholders who are entitled to tokens.
@@ -303,53 +303,3 @@ Once again, although this is not in the spirit of a cryptocurrency, it is availa
 
 Although this code does not implement dividend distribution or staking, it can be used with staking and dividend contracts with payments in stable coins like USDC, DAI as well as ETH or ERC20 tokens. Contact noah@comakery.com for further details.
 
-# Token Blaster
-
-Token Blaster is a script for processing batches of token transfers to blockchain addresses. For example, its useful for the initial distribution of tokens after a token sale in USD. It also provisions addresses for tokens with restricted transfers. 
-
-##  Permissions & Transfers CSV Format
-Your CSV file should be in the format
-```
-transferID,email, address, amount, groupID, timeLockUntil, maxBalance, frozen
-```
-
-* **transferID** - A unique ID used for tracking if the transaction has been processed. This is different than the blockchain transaction receipt that will be generated when the file is processed.
-* **email** - The email address of the user. Not broadcast to the blockchain but needed to sync with other AML/KYC and token administration systems like CoMakery.
-* **amount** - The number of tokens to transfer. These are in the base unit of the currency. For example: 1 dollar would be represented as 100 cents (assuming 2 decimal precision on the blockchain). Also, 1 ETH would be represented as 1 x 1e18 - the value of ETH - in Wei its smallest unit.
-* **groupID** - The regulatory group used by the RestrictedToken for enforcing transfer rules.
-* **timeLockUntil** - Freeze the addresses tokens until the the unix timestamp. 0 effectively means not frozen. The unix timestamp is an integer of seconds from Jan 1, 1970 UTC (the Unix Epoch).
-* **maxBalance** - The maximum number of tokens that the user can hold in their blockchain account address. This number is also in the smallest unit - so dollars with 2 decimal precision would have a maximum balance indicated in cents.
-* **frozen** - Indicates if the RestrictedTokens can be transferred out of the blockchain account address at all.
-
-## Processing a Permissions & Transfers CSV File
-
-Validate that the file is in the correct format with:
-```
-yarn csv:transfers:validate [pathToCSVTransfersFIle]
-```
-
-The following command sets your address permissions and transfer tokens to the appropriate accounts. This will sign the blockchain transactions with your local wallet configured in the `truffle-config.js` file.
-```
-yarn csv:transfers:send --tokenAddress [restrictedTokenBlockchainAddress] --csv [csvPath] --network [from truffle-config.js]
-```
-
-## Dev Environment Setup
-Kickoff your local development environment test blockchain with:
-```
-ganache-cli
-```
-
-Deploy your contracts and grant Transfer Admin rights to your default wallet for the Restricted Token:
-```
-yarn dev:deploy
-```
-
-Copy the helpful output from `yarn dev:deploy` that pre-fills the transfers command flags for you. It will look something like the following command:
-```
-yarn truffle exec bin/blaster.js -t [restrictedTokenAddress] -c test/test_data/test-transfers.csv --network development
-```
-
-Check that the transfers from the CSV went through by looking at the account balance output from:
-```
-yarn dev:account:info --tokenAddress [restrictedTokenAddress] --network [from truffle-config.js]
-```

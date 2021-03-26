@@ -16,6 +16,7 @@ contract TransferRules is ITransferRules {
     uint8 public constant ALL_TRANSFERS_PAUSED = 6;
     uint8 public constant TRANSFER_GROUP_NOT_APPROVED = 7;
     uint8 public constant TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER = 8;
+    uint8 public constant RECIPIENT_ADDRESS_FROZEN = 9;
 
   constructor() public {
     errorMessage[SUCCESS] = "SUCCESS";
@@ -27,6 +28,7 @@ contract TransferRules is ITransferRules {
     errorMessage[ALL_TRANSFERS_PAUSED] = "ALL TRANSFERS PAUSED";
     errorMessage[TRANSFER_GROUP_NOT_APPROVED] = "TRANSFER GROUP NOT APPROVED";
     errorMessage[TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER] = "TRANSFER GROUP NOT ALLOWED UNTIL LATER";
+    errorMessage[RECIPIENT_ADDRESS_FROZEN] = "RECIPIENT ADDRESS IS FROZEN";
   }
 
   /// @notice Detects if a transfer will be reverted and if so returns an appropriate reference code
@@ -40,13 +42,18 @@ contract TransferRules is ITransferRules {
     if (to == address(0)) return DO_NOT_SEND_TO_EMPTY_ADDRESS;
     if (to == address(token)) return DO_NOT_SEND_TO_TOKEN_CONTRACT;
 
-    if (token.balanceOf(to).add(value) > token.getMaxBalance(to)) return GREATER_THAN_RECIPIENT_MAX_BALANCE;
-    if (now < token.getLockUntil(from)) return SENDER_TOKENS_TIME_LOCKED;
+    if ((token.getMaxBalance(to) > 0) &&
+        (token.balanceOf(to).add(value) > token.getMaxBalance(to))
+       ) return GREATER_THAN_RECIPIENT_MAX_BALANCE;
     if (token.getFrozenStatus(from)) return SENDER_ADDRESS_FROZEN;
+    if (token.getFrozenStatus(to)) return RECIPIENT_ADDRESS_FROZEN;
 
     uint256 lockedUntil = token.getAllowTransferTime(from, to);
     if (0 == lockedUntil) return TRANSFER_GROUP_NOT_APPROVED;
     if (now < lockedUntil) return TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER;
+    if ( value < token.balanceOf(from)
+        && (value > token.getCurrentlyUnlockedBalance(from))
+       ) return SENDER_TOKENS_TIME_LOCKED;
 
     return SUCCESS;
   }

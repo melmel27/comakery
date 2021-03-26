@@ -28,6 +28,7 @@ contract MaxReceiverBalanceTest {
             1e6
         );
         token.grantTransferAdmin(tokenContractOwner);
+        token.grantWalletsAdmin(tokenContractOwner);
 
         alice = new UserProxy(token);
         bob = new UserProxy(token);
@@ -52,7 +53,7 @@ contract MaxReceiverBalanceTest {
         );
         Assert.equal(uint256(restrictionCode), 0, "should allow max value");
 
-        token.setMaxBalance(address(bob), 0);
+        token.setMaxBalance(address(bob), 1);
         restrictionCode = token.detectTransferRestriction(
             address(alice),
             address(bob),

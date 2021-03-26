@@ -7,6 +7,9 @@ public/bundle.js.tmp-browserify-*
 build
 .env
 .env.bak
+*.un~
+*.swp
+logs/
 csv_local/
 
 # ignore logs

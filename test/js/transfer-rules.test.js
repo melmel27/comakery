@@ -11,10 +11,13 @@ contract("Transfer rules", function (accounts) {
 
   beforeEach(async function () {
     contractAdmin = accounts[0]
-    reserveAdmin = accounts[1]
-    transferAdmin = accounts[2]
+    transferAdmin = accounts[1]
+    walletsAdmin = accounts[2]
+    reserveAdmin = accounts[3]
 
     unprivileged = accounts[5]
+    alice = accounts[6]
+    bob = accounts[7]
 
     let rules = await TransferRules.new()
     token = await RestrictedToken.new(rules.address, contractAdmin, reserveAdmin, "xyz", "Ex Why Zee", 6, 100, 1e6)
@@ -22,6 +25,14 @@ contract("Transfer rules", function (accounts) {
     await token.grantTransferAdmin(transferAdmin, {
       from: contractAdmin
     })
+
+    await token.grantWalletsAdmin(walletsAdmin, {
+      from: contractAdmin
+    })
+
+    await token.mint(alice, 40, {
+        from: reserveAdmin
+    });
   })
 
   it('contract contractAdmin is not the same address as treasury admin', async () => {
@@ -31,7 +42,7 @@ contract("Transfer rules", function (accounts) {
 
   it('cannot exceed the max balance of an address', async () => {
     await token.setMaxBalance(unprivileged, 2, {
-      from: transferAdmin
+      from: walletsAdmin
     })
     await token.setAllowGroupTransfer(0, 0, 1, {
       from: transferAdmin
@@ -52,5 +63,25 @@ contract("Transfer rules", function (accounts) {
     }))
 
     assert.equal(await token.balanceOf(unprivileged), 2)
+  })
+
+  it('cannot transfer from a frozen address', async () => {
+    await token.freeze(alice, true, {
+        from: walletsAdmin
+    })
+
+    await truffleAssert.reverts(token.transfer(bob, 5, {
+      from: alice
+    }), "SENDER ADDRESS IS FROZEN")
+  })
+
+  it('cannot transfer to a frozen address', async () => {
+    await token.freeze(bob, true, {
+        from: walletsAdmin
+    })
+
+    await truffleAssert.reverts(token.transfer(bob, 5, {
+      from: alice
+    }), "RECIPIENT ADDRESS IS FROZEN")
   })
 })

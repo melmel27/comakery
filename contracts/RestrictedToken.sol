@@ -18,14 +18,21 @@ contract RestrictedToken is ERC20 {
   using Roles for Roles.Role;
   Roles.Role private _contractAdmins;
   Roles.Role private _transferAdmins;
+  Roles.Role private _walletsAdmins;
+  Roles.Role private _reserveAdmins;
 
   uint256 public maxTotalSupply;
   uint256 public contractAdminCount;
 
+  struct LockUntil {
+      uint256 timestamp; // unix timestamp to lock funds until
+      uint256 minBalance; // minimal balance that has to remain at the address until the timestamp
+  }
+
   // Transfer restriction "eternal storage" mappings that can be used by future TransferRules contract upgrades
   // They are accessed through getter and setter methods
   mapping(address => uint256) private _maxBalances;
-  mapping(address => uint256) private _lockUntil; // unix timestamp to lock funds until
+  mapping(address => LockUntil[]) private _locksUntil;
   mapping(address => uint256) private _transferGroups; // restricted groups like Reg D Accredited US, Reg CF Unaccredited US and Reg S Foreign
   mapping(uint256 => mapping(uint256 => uint256)) private _allowGroupTransfers; // approve transfers between groups: from => to => TimeLockUntil
   mapping(address => bool) private _frozenAddresses;
@@ -33,10 +40,13 @@ contract RestrictedToken is ERC20 {
   bool public isPaused = false;
 
   uint256 public constant MAX_UINT256 = ((2 ** 255 - 1) * 2) + 1; // get max uint256 without overflow
+  uint256 public constant MAX_TIMELOCKS = 32; // maximum supported number of token timelocks
 
   event RoleChange(address indexed grantor, address indexed grantee, string role, bool indexed status);
   event AddressMaxBalance(address indexed admin, address indexed addr, uint256 indexed value);
-  event AddressTimeLock(address indexed admin, address indexed addr, uint256 indexed value);
+  event AddressTimeLockAdded(address indexed admin, address indexed addr, uint256 indexed timestamp, uint256 value);
+  event AddressTimeLockRemoved(address indexed admin, address indexed addr, uint256 indexed timestamp, uint256 unlockedValue);
+  event AddressTimeLockExpired(address indexed addr, uint256 indexed timestamp, uint256 unlockedValue);
   event AddressTransferGroup(address indexed admin, address indexed addr, uint256 indexed value);
   event AddressFrozen(address indexed admin, address indexed addr, bool indexed status);
   event AllowGroupTransfer(address indexed admin, uint256 indexed fromGroup, uint256 indexed toGroup, uint256 lockedUntil);
@@ -67,13 +77,14 @@ contract RestrictedToken is ERC20 {
     maxTotalSupply = maxTotalSupply_;
 
     _contractAdmins.add(contractAdmin_);
+    _reserveAdmins.add(tokenReserveAdmin_);
     contractAdminCount = 1;
 
     _mint(tokenReserveAdmin_, totalSupply_);
   }
 
   modifier onlyContractAdmin() {
-    require(_contractAdmins.has(msg.sender), "DOES NOT HAVE CONTRACT OWNER ROLE");
+    require(_contractAdmins.has(msg.sender), "DOES NOT HAVE CONTRACT ADMIN ROLE");
     _;
   }
 
@@ -82,9 +93,19 @@ contract RestrictedToken is ERC20 {
     _;
   }
 
-  modifier onlyTransferAdminOrContractAdmin() {
-    require((_contractAdmins.has(msg.sender) || _transferAdmins.has(msg.sender)),
-    "DOES NOT HAVE TRANSFER ADMIN OR CONTRACT ADMIN ROLE");
+   modifier onlyWalletsAdmin() {
+    require(_walletsAdmins.has(msg.sender), "DOES NOT HAVE WALLETS ADMIN ROLE");
+    _;
+  }
+
+   modifier onlyReserveAdmin() {
+    require(_reserveAdmins.has(msg.sender), "DOES NOT HAVE RESERVE ADMIN ROLE");
+    _;
+  }
+
+  modifier onlyWalletsAdminOrReserveAdmin() {
+    require((_walletsAdmins.has(msg.sender) || _reserveAdmins.has(msg.sender)),
+    "DOES NOT HAVE WALLETS ADMIN OR RESERVE ADMIN ROLE");
     _;
   }
 
@@ -112,6 +133,50 @@ contract RestrictedToken is ERC20 {
   /// @return hasPermission returns true if the address has transfer admin permission and false if not.
   function checkTransferAdmin(address addr) external view returns(bool hasPermission) {
     return _transferAdmins.has(addr);
+  }
+
+  /// @dev Authorizes an address holder to grant and revoke rights and restrictions for \
+  ///      individual wallets, including assignment into groups.
+  /// @param addr The address to grant wallets admin rights to
+  function grantWalletsAdmin(address addr) external validAddress(addr) onlyContractAdmin {
+    _walletsAdmins.add(addr);
+    emit RoleChange(msg.sender, addr, "WalletsAdmin", true);
+  }
+
+  /// @dev Revokes authorization to grant and revoke rights and restrictions for \
+  ///      individual wallets, including assignment into groups.
+  /// @param addr The address to revoke wallets admin rights from.
+  function revokeWalletsAdmin(address addr) external validAddress(addr) onlyContractAdmin  {
+    _walletsAdmins.remove(addr);
+    emit RoleChange(msg.sender, addr, "WalletsAdmin", false);
+  }
+
+  /// @dev Checks if an address is an authorized wallets admin.
+  /// @param addr The address to check for wallets admin privileges.
+  /// @return hasPermission returns true if the address has wallets admin permission and false if not.
+  function checkWalletsAdmin(address addr) external view returns(bool hasPermission) {
+    return _walletsAdmins.has(addr);
+  }
+
+  /// @dev Authorizes an address holder to mint and burn tokens, and to freeze individual addresses
+  /// @param addr The address to grant reserve admin rights to.
+  function grantReserveAdmin(address addr) external validAddress(addr) onlyContractAdmin {
+    _reserveAdmins.add(addr);
+    emit RoleChange(msg.sender, addr, "ReserveAdmin", true);
+  }
+
+  /// @dev Revokes authorization to mint and burn tokens, and to freeze individual addresses
+  /// @param addr The address to revoke reserve admin rights from.
+  function revokeReserveAdmin(address addr) external validAddress(addr) onlyContractAdmin  {
+    _reserveAdmins.remove(addr);
+    emit RoleChange(msg.sender, addr, "ReserveAdmin", false);
+  }
+
+  /// @dev Checks if an address is an authorized reserve admin.
+  /// @param addr The address to check for reserve admin privileges.
+  /// @return hasPermission returns true if the address has reserve admin permission and false if not.
+  function checkReserveAdmin(address addr) external view returns(bool hasPermission) {
+    return _reserveAdmins.has(addr);
   }
 
   /// @dev Authorizes an address holder to be a contract admin. Contract admins grant privileges to accounts.
@@ -170,7 +235,7 @@ contract RestrictedToken is ERC20 {
   /// Addresses can hold 0 tokens by default.
   /// @param addr The address to restrict
   /// @param updatedValue the maximum number of tokens the address can hold
-  function setMaxBalance(address addr, uint256 updatedValue) public validAddress(addr) onlyTransferAdmin {
+  function setMaxBalance(address addr, uint256 updatedValue) public validAddress(addr) onlyWalletsAdmin {
     _maxBalances[addr] = updatedValue;
     emit AddressMaxBalance(msg.sender, addr, updatedValue);
   }
@@ -181,34 +246,129 @@ contract RestrictedToken is ERC20 {
     return _maxBalances[addr];
   }
 
-  /// @dev Lock tokens in the address from being transfered until the specified time
+  /// @dev Lock the minimum amount of tokens in the address from being transfered until the specified time
   /// @param addr The address to restrict
   /// @param timestamp The time the tokens will be locked until as a Unix timetsamp.
   /// Unix timestamp is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
-  function setLockUntil(address addr, uint256 timestamp) public validAddress(addr)  onlyTransferAdmin {
-    _lockUntil[addr] = timestamp;
-    emit AddressTimeLock(msg.sender, addr, timestamp);
-  }
-  /// @dev A convenience method to remove an addresses timelock. It sets the lock date to 0 which corresponds to the
-  /// earliest possible timestamp in the past 00:00:00 UTC on 1 January 1970.
-  /// @param addr The address to remove the timelock for.
-  function removeLockUntil(address addr) external validAddress(addr) onlyTransferAdmin {
-    _lockUntil[addr] = 0;
-    emit AddressTimeLock(msg.sender, addr, 0);
+  /// @param minBalance Tokens reserved in the wallet until the specified time. Reservations are exclusive
+  function addLockUntil(address addr, uint256 timestamp, uint256 minBalance) public validAddress(addr) onlyWalletsAdmin {
+    require(timestamp > now, "Lock timestamp cannot be in the past");
+    require(minBalance > 0, "Locked balance cannot be zero");
+
+    cleanupTimelocks(addr);
+
+    require(_locksUntil[addr].length < MAX_TIMELOCKS, "Timelock limit exceeded, cannot add more");
+
+    bool timestampFound = false;
+
+    for (uint256 i=0; i < _locksUntil[addr].length; i++) {
+        if (_locksUntil[addr][i].timestamp == timestamp) {
+            _locksUntil[addr][i].minBalance = _locksUntil[addr][i].minBalance.add(minBalance);
+            timestampFound = true;
+        }
+    }
+
+    if (!timestampFound) {
+        _locksUntil[addr].push(LockUntil(timestamp, minBalance));
+    }
+
+    emit AddressTimeLockAdded(msg.sender, addr, timestamp, minBalance);
   }
 
-  /// @dev Check when the address will be locked for transfers until
+  /// @dev A convenience method to remove an addresses timelock, looking one up by timestamp.
+  /// @param addr The address to remove the timelock for.
+  /// @param timestamp The timestamp for which the timelock has to be removed.
+  function removeLockUntilTimestampLookup(address addr, uint256 timestamp) external validAddress(addr) onlyWalletsAdmin {
+    uint256 index = findTimelockIndex(addr, timestamp);
+    uint256 tokensUnlocked = _locksUntil[addr][index].minBalance;
+
+    _deleteTimelock(addr, index);
+
+    emit AddressTimeLockRemoved(msg.sender, addr, timestamp, tokensUnlocked);
+  }
+
+  /// @dev A convenience method to remove an addresses timelock, looking one up by its index on the list.
+  /// @param addr The address to remove the timelock for.
+  /// @param index The index at which the timelock has to be removed.
+  function removeLockUntilIndexLookup(address addr, uint256 index) external validAddress(addr) onlyWalletsAdmin {
+    require(_locksUntil[addr].length > index, "Timelock index outside range");
+
+    uint256 timestamp = _locksUntil[addr][index].timestamp;
+    uint256 tokensUnlocked = _locksUntil[addr][index].minBalance;
+
+    _deleteTimelock(addr, index);
+
+    emit AddressTimeLockRemoved(msg.sender, addr, timestamp, tokensUnlocked);
+  }
+
+
+  /// @dev Check the total amount of timelocks issued for an address
   /// @param addr The address to check
   /// @return timestamp The time the address will be locked until.
   /// The format is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
-  function getLockUntil(address addr) external view returns(uint256 timestamp) {
-    return _lockUntil[addr];
+  function getTotalLocksUntil(address addr) public view returns (uint256 locksTotal) {
+    return _locksUntil[addr].length;
+  }
+
+  /// @dev Check a particular timelock issued for an address, by index
+  /// @param addr The address to check
+  /// @param index the index at which the lock is checked
+  /// @return lockedUntil The timestamp for the selected lock.
+  /// The format is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
+  /// @return balanceLocked The balance reserved by the selected lock.
+  function getLockUntilIndexLookup(address addr, uint256 index) public view returns(uint256 lockedUntil, uint256 balanceLocked) {
+    require(index < _locksUntil[addr].length, "Index too big, no lock at that index.");
+
+    return (_locksUntil[addr][index].timestamp, _locksUntil[addr][index].minBalance);
+  }
+
+  /// @dev Check a particular timelock issued for an address, by timestamp
+  /// @param addr The address to check
+  /// @param timestamp The particular timestamp to look up
+  /// @return lockedUntil The timestamp for the selected lock.
+  /// The format is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
+  /// @return balanceLocked The balance reserved by the selected lock.
+  function getLockUntilTimestampLookup(address addr, uint256 timestamp) public view returns(uint256 lockedUntil, uint256 balanceLocked) {
+    return getLockUntilIndexLookup(addr, findTimelockIndex(addr, timestamp));
+  }
+
+  /// @dev Check total balance locked at the given timestamp, across all applicable locks
+  /// @param addr The address to check
+  /// @param timestamp The timestamp to check the total locks at
+  /// The format is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
+  /// @return balance The combined amount of tokens reserved until the timestamp.
+  function getLockUntilAtTimestamp(address addr, uint256 timestamp) public view returns(uint256 balanceLocked) {
+    uint256 totalLocked = 0;
+
+    for (uint256 i=0; i<_locksUntil[addr].length; i++) {
+        if (_locksUntil[addr][i].timestamp > timestamp) {
+            totalLocked = totalLocked.add(_locksUntil[addr][i].minBalance);
+        }
+    }
+
+    return totalLocked;
+  }
+
+  /// @dev Checks how many tokens are locked at the time of the request
+  /// @param addr The address to check
+  /// @return balanceLocked The number of tokens that cannot be accessed now
+  function getCurrentlyLockedBalance(address addr) public view returns (uint256 balanceLocked) {
+    return getLockUntilAtTimestamp(addr, now);
+  }
+
+  /// @dev Checks how many tokens are available to move at the time of the request
+  /// @param addr The address to check
+  /// @return balanceLocked The number of tokens that can be accessed now
+  function getCurrentlyUnlockedBalance(address addr) external view returns (uint256 balanceUnlocked) {
+    uint256 lockedNow = getCurrentlyLockedBalance(addr);
+
+    return balanceOf(addr).sub(lockedNow);
   }
 
   /// @dev Set the one group that the address belongs to, such as a US Reg CF investor group.
   /// @param addr The address to set the group for.
   /// @param groupID The uint256 numeric ID of the group.
-  function setTransferGroup(address addr, uint256 groupID) public validAddress(addr) onlyTransferAdmin {
+  function setTransferGroup(address addr, uint256 groupID) public validAddress(addr) onlyWalletsAdmin {
     _transferGroups[addr] = groupID;
     emit AddressTransferGroup(msg.sender, addr, groupID);
   }
@@ -224,7 +384,7 @@ contract RestrictedToken is ERC20 {
   /// Tokens in a frozen address cannot be transferred from until the address is unfrozen.
   /// @param addr The address to be frozen.
   /// @param status The frozenAddress status of the address. True means frozen false means not frozen.
-  function freeze(address addr, bool status) public validAddress(addr)  onlyTransferAdminOrContractAdmin {
+  function freeze(address addr, bool status) public validAddress(addr) onlyWalletsAdminOrReserveAdmin {
     _frozenAddresses[addr] = status;
     emit AddressFrozen(msg.sender, addr, status);
   }
@@ -242,12 +402,15 @@ contract RestrictedToken is ERC20 {
   /// @param groupID The ID of the address
   /// @param timeLockUntil The unix timestamp that the address should be locked until. Use 0 if it's not locked.
   /// The format is the number of seconds since the Unix epoch of 00:00:00 UTC on 1 January 1970.
+  /// @param lockedBalanceUntil The amount of tokens to be reserved until the timelock expires. Reservation is exclusive.
   /// @param maxBalance Is the maximum number of tokens the account can hold.
   /// @param status The frozenAddress status of the address. True means frozen false means not frozen.
-  function setAddressPermissions(address addr, uint256 groupID, uint256 timeLockUntil,
-    uint256 maxBalance, bool status) public validAddress(addr) onlyTransferAdmin {
+  function setAddressPermissions(address addr, uint256 groupID, uint256 timeLockUntil, uint256 lockedBalanceUntil,
+    uint256 maxBalance, bool status) public validAddress(addr) onlyWalletsAdmin {
     setTransferGroup(addr, groupID);
-    setLockUntil(addr, timeLockUntil);
+    if (timeLockUntil > 0) {
+        addLockUntil(addr, timeLockUntil, lockedBalanceUntil);
+    }
     setMaxBalance(addr, maxBalance);
     freeze(addr, status);
   }
@@ -282,19 +445,19 @@ contract RestrictedToken is ERC20 {
     return _allowGroupTransfers[from][to];
   }
 
-  /// @dev Destroys tokens and removes them from the total supply. Can only be called by an address with a Contract Admin role.
+  /// @dev Destroys tokens and removes them from the total supply. Can only be called by an address with a Reserve Admin role.
   /// @param from The address to destroy the tokens from.
   /// @param value The number of tokens to destroy from the address.
-  function burn(address from, uint256 value) external validAddress(from) onlyContractAdmin {
+  function burn(address from, uint256 value) external validAddress(from) onlyReserveAdmin {
     require(value <= balanceOf(from), "Insufficent tokens to burn");
     _burn(from, value);
   }
 
-  /// @dev Allows the contract admin to create new tokens in a specified address.
+  /// @dev Allows the reserve admin to create new tokens in a specified address.
   /// The total number of tokens cannot exceed the maxTotalSupply (the "Hard Cap").
   /// @param to The addres to mint tokens into.
   /// @param value The number of tokens to mint.
-  function mint(address to, uint256 value) external validAddress(to) onlyContractAdmin  {
+  function mint(address to, uint256 value) external validAddress(to) onlyReserveAdmin  {
     require(SafeMath.add(totalSupply(), value) <= maxTotalSupply, "Cannot mint more than the max total supply");
     _mint(to, value);
   }
@@ -314,7 +477,7 @@ contract RestrictedToken is ERC20 {
   /// @dev Allows the contrac admin to upgrade the transfer rules.
   /// The upgraded transfer rules must implement the ITransferRules interface which conforms to the ERC-1404 token standard.
   /// @param newTransferRules The address of the deployed TransferRules contract.
-  function upgradeTransferRules(ITransferRules newTransferRules) external onlyContractAdmin {
+  function upgradeTransferRules(ITransferRules newTransferRules) external onlyTransferAdmin {
     require(address(newTransferRules) != address(0x0), "Address cannot be 0x0");
     address oldRules = address(transferRules);
     transferRules = newTransferRules;
@@ -323,6 +486,7 @@ contract RestrictedToken is ERC20 {
 
   function transfer(address to, uint256 value) public validAddress(to) returns(bool success) {
     require(value <= balanceOf(msg.sender), "Insufficent tokens");
+    cleanupTimelocks(msg.sender);
     enforceTransferRestrictions(msg.sender, to, value);
     super.transfer(to, value);
     return true;
@@ -331,6 +495,7 @@ contract RestrictedToken is ERC20 {
   function transferFrom(address from, address to, uint256 value) public validAddress(from) validAddress(to) returns(bool success) {
     require(value <= allowance(from, to), "The approved allowance is lower than the transfer amount");
     require(value <= balanceOf(from), "Insufficent tokens");
+    cleanupTimelocks(from);
     enforceTransferRestrictions(from, to, value);
     super.transferFrom(from, to, value);
     return true;
@@ -344,5 +509,69 @@ contract RestrictedToken is ERC20 {
         "Cannot approve from non-zero to non-zero allowance"
     );
     approve(spender, value);
+  }
+
+
+  // TIMELOCK UTILITY FUNCTIONS
+
+  /// @dev Locates an index of a particular timelock for a user, by timestamp. Reverts if unable.
+  /// @param addr Address for which the timelocks are being searched.
+  /// @param timestamp Timestamp at which the required timelock resides.
+  /// @return index The index of the timelock in the mapping for that address.
+  function findTimelockIndex(address addr, uint256 timestamp) private view returns (uint256 index) {
+    for (uint256 i=0; i <_locksUntil[addr].length; i++) {
+      if (_locksUntil[addr][i].timestamp == timestamp) {
+        return i;
+      }
+    }
+
+    revert("Coundn't find an index by timestamp: no lock with that timestamp.");
+  }
+
+  /// @dev Removes expired timelocks for a user (therefore unlocking the tokens).
+  /// @param addr Address for which the timelocks are being cleaned up.
+  function cleanupTimelocks(address addr) public {
+    // Since we delete efficiently (by moving the last element to replace the one being deleted),
+    // we clean up right to left, emitting events and mutating the list on the go.
+    // 1. Go right to left
+    // 2. If the timelock we're looking at is expired, 
+    // -- emit an expiration event before we overwrite the data
+    // -- overwrite the element with the last one on the list
+    // -- pop the list.
+    // 3. Until beginning is reached.
+
+    uint256 totalLocks = getTotalLocksUntil(addr);
+
+    for (uint256 i=0; i < totalLocks; i++) {
+        uint256 curInd = totalLocks - 1 - i;
+        if (_locksUntil[addr][curInd].timestamp <= now) {
+
+          emit AddressTimeLockExpired(
+            addr, 
+            _locksUntil[addr][curInd].timestamp, 
+            _locksUntil[addr][curInd].minBalance
+          );
+
+          _deleteTimelock(addr, curInd);
+        }
+    }
+  }
+
+  /// @dev Deletes a timelock given an address and an index. Mutates the list, breaks ordering, 
+  // doesn't emit events. Reverts if inputs are wrong.
+  /// @param addr Address for which the timelock is being removed.
+  /// @param index Index for the timelock being removed.
+  function _deleteTimelock(address addr, uint256 index) private {
+    require(_locksUntil[addr].length > index, "Timelock index outside range");
+
+    uint256 totalLocks = getTotalLocksUntil(addr);
+
+    // If the element we plan to remove is not the last on the list, we copy the last element over it
+    // After that check, we delete the last element
+    if (index < totalLocks - 1) {
+        _locksUntil[addr][index] = _locksUntil[addr][totalLocks - 1];
+    }
+
+    _locksUntil[addr].pop();
   }
 }

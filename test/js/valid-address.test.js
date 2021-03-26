@@ -2,16 +2,19 @@ const truffleAssert = require('truffle-assertions');
 var RestrictedToken = artifacts.require("RestrictedToken");
 var TransferRules = artifacts.require("TransferRules");
 
-contract("Validate", function (accounts) {
+contract("Validatsion of addresses", function (accounts) {
   var contractAdmin
+  var transferAdmin
   var reserveAdmin
   var unpermissioned
   var emptyAddress = web3.utils.padLeft(0x0, 40)
+  var futureTimestamp = Date.now() + 3600;
 
   beforeEach(async function () {
     contractAdmin = accounts[0]
-    reserveAdmin = accounts[1]
-    unpermissioned = accounts[2]
+    transferAdmin = accounts[1]
+    reserveAdmin = accounts[2]
+    unpermissioned = accounts[3]
   })
 
   it("cannot setup the contract with valid addresses", async () => {
@@ -90,16 +93,16 @@ contract("Validate", function (accounts) {
         }), expectedError)
     })
 
-    it("setLockUntil", async () => {
+    it("addLockUntil", async () => {
       await truffleAssert.reverts(
-        token.setLockUntil(emptyAddress, 100, {
+        token.addLockUntil(emptyAddress, futureTimestamp, 100, {
           from: unpermissioned
         }), expectedError)
     })
 
-    it("removeLockUntil", async () => {
+    it("removeLockUntilTimestampLookup", async () => {
       await truffleAssert.reverts(
-        token.removeLockUntil(emptyAddress, {
+        token.removeLockUntilTimestampLookup(emptyAddress, futureTimestamp, {
           from: unpermissioned
         }), expectedError)
     })
@@ -120,7 +123,7 @@ contract("Validate", function (accounts) {
 
     it("setAddressPermissions", async () => {
       await truffleAssert.reverts(
-        token.setAddressPermissions(emptyAddress, 1, 3, 4, true, {
+        token.setAddressPermissions(emptyAddress, 1, 0, 0, 4, true, {
           from: unpermissioned
         }), expectedError)
     })
@@ -140,9 +143,13 @@ contract("Validate", function (accounts) {
     })
 
     it("upgradeTransferRules", async () => {
+      await token.grantTransferAdmin(transferAdmin, {
+          from: contractAdmin
+      })
+
       await truffleAssert.reverts(
         token.upgradeTransferRules(emptyAddress, {
-          from: contractAdmin
+          from: transferAdmin
         }), expectedError)
     })
 
