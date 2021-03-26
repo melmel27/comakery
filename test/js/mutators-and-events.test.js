@@ -175,7 +175,7 @@ contract("Mutator calls and events", function (accounts) {
       return true
     })
 
-    assert.equal(await token.getLockUntilAtTimestamp(recipient, futureTimestamp), 97)
+    assert.equal(await token.getLockUntilAtTimestamp(recipient, futureTimestamp-1), 97)
 
     let tx2 = await token.removeLockUntilIndexLookup(recipient, 0, {
       from: walletsAdmin
@@ -184,7 +184,6 @@ contract("Mutator calls and events", function (accounts) {
     truffleAssert.eventEmitted(tx2, 'AddressTimeLockRemoved', (ev) => {
       assert.equal(ev.admin, walletsAdmin)
       assert.equal(ev.addr, recipient)
-      assert.equal(ev.timestamp, futureTimestamp)
       assert.equal(ev.unlockedValue, 97)
       return true
     })
