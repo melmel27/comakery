@@ -32,4 +32,6 @@ jobs:
       run: ./node_modules/.bin/truffle build
 
     - name: Run test
-      run: ./node_modules/.bin/ganache-cli && ./node_modules/.bin/truffle test
+      run: |
+        ./node_modules/.bin/ganache-cli &
+        ./node_modules/.bin/truffle test
