@@ -1,4 +1,6 @@
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: UNLICENSED
+
+pragma solidity 0.8.4;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
@@ -14,7 +16,7 @@ contract TransferRestrictionsTest {
 
     uint256 groupA = 1;
     uint256 groupB = 2;
-    uint256 transferTimeIsNow = now;
+    uint256 transferTimeIsNow = block.timestamp;
     uint maxTokens = 1000;
     uint lockedTokens = 100;
     uint restrictionCode;

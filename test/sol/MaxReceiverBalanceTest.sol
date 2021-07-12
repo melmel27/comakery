@@ -1,4 +1,6 @@
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: UNLICENSED
+
+pragma solidity 0.8.4;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
@@ -33,7 +35,7 @@ contract MaxReceiverBalanceTest {
         alice = new UserProxy(token);
         bob = new UserProxy(token);
 
-        token.setAllowGroupTransfer(0, 0, now); // don't restrict default group transfers
+        token.setAllowGroupTransfer(0, 0, block.timestamp); // don't restrict default group transfers
     }
 
     function testAdminCanAddAccountToWhitelistAndBeApprovedForTransfer()

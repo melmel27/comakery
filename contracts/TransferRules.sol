@@ -1,7 +1,9 @@
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: UNLICENSED
+
+pragma solidity 0.8.4;
 import './RestrictedToken.sol';
 import './ITransferRules.sol';
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract TransferRules is ITransferRules {
     using SafeMath for uint256;
@@ -18,7 +20,7 @@ contract TransferRules is ITransferRules {
     uint8 public constant TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER = 8;
     uint8 public constant RECIPIENT_ADDRESS_FROZEN = 9;
 
-  constructor() public {
+  constructor() {
     errorMessage[SUCCESS] = "SUCCESS";
     errorMessage[GREATER_THAN_RECIPIENT_MAX_BALANCE] = "GREATER THAN RECIPIENT MAX BALANCE";
     errorMessage[SENDER_TOKENS_TIME_LOCKED] = "SENDER TOKENS LOCKED";
@@ -36,7 +38,17 @@ contract TransferRules is ITransferRules {
   /// @param to Receiving address
   /// @param value Amount of tokens being transferred
   /// @return Code by which to reference message for rejection reason
-  function detectTransferRestriction(address _token, address from, address to, uint256 value) external view returns(uint8) {
+  function detectTransferRestriction(
+    address _token,
+    address from,
+    address to,
+    uint256 value
+  )
+    external
+    override
+    view
+    returns(uint8)
+  {
     RestrictedToken token = RestrictedToken(_token);
     if (token.isPaused()) return ALL_TRANSFERS_PAUSED;
     if (to == address(0)) return DO_NOT_SEND_TO_EMPTY_ADDRESS;
@@ -50,7 +62,7 @@ contract TransferRules is ITransferRules {
 
     uint256 lockedUntil = token.getAllowTransferTime(from, to);
     if (0 == lockedUntil) return TRANSFER_GROUP_NOT_APPROVED;
-    if (now < lockedUntil) return TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER;
+    if (block.timestamp < lockedUntil) return TRANSFER_GROUP_NOT_ALLOWED_UNTIL_LATER;
     if ( value < token.balanceOf(from)
         && (value > token.getCurrentlyUnlockedBalance(from))
        ) return SENDER_TOKENS_TIME_LOCKED;
@@ -61,7 +73,12 @@ contract TransferRules is ITransferRules {
   /// @notice Returns a human-readable message for a given restriction code
   /// @param restrictionCode Identifier for looking up a message
   /// @return Text showing the restriction's reasoning
-  function messageForTransferRestriction(uint8 restrictionCode) external view returns(string memory) {
+  function messageForTransferRestriction(uint8 restrictionCode)
+    external
+    override
+    view
+    returns(string memory)
+  {
     return errorMessage[restrictionCode];
   }
 
@@ -71,7 +88,12 @@ contract TransferRules is ITransferRules {
   /// as specified in ERC-1066 instead of 0 as specified in ERC-1404.
   /// @param restrictionCode The code to check.
   /// @return isSuccess A boolean indicating if the code is the SUCCESS code.
-  function checkSuccess(uint8 restrictionCode) external view returns(bool isSuccess) {
+  function checkSuccess(uint8 restrictionCode)
+    external
+    override
+    pure
+    returns(bool isSuccess)
+  {
     return restrictionCode == SUCCESS;
   }
 }
