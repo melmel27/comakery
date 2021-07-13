@@ -1,12 +1,10 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.4;
 import './RestrictedToken.sol';
 import './ITransferRules.sol';
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract TransferRules is ITransferRules {
-    using SafeMath for uint256;
     mapping(uint8 => string) internal errorMessage;
 
     uint8 public constant SUCCESS = 0;
@@ -55,7 +53,7 @@ contract TransferRules is ITransferRules {
     if (to == address(token)) return DO_NOT_SEND_TO_TOKEN_CONTRACT;
 
     if ((token.getMaxBalance(to) > 0) &&
-        (token.balanceOf(to).add(value) > token.getMaxBalance(to))
+        (token.balanceOf(to) + value > token.getMaxBalance(to))
        ) return GREATER_THAN_RECIPIENT_MAX_BALANCE;
     if (token.getFrozenStatus(from)) return SENDER_ADDRESS_FROZEN;
     if (token.getFrozenStatus(to)) return RECIPIENT_ADDRESS_FROZEN;

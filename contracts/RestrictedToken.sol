@@ -1,25 +1,22 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.4;
 
 import "./ITransferRules.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 /// @title Restricted Token
 /// @author CoMakery, Inc.
 /// @notice An ERC-20 token with ERC-1404 transfer restrictions for managing security tokens, etc.
 contract RestrictedToken is ERC20, AccessControl {
-  using SafeMath for uint256;
-
   uint8 public _decimals;
   ITransferRules public transferRules;
 
-  bytes32 private constant _contractAdmins = DEFAULT_ADMIN_ROLE;
-  bytes32 private constant _transferAdmins = keccak256("TRANSFER_ADMINS");
-  bytes32 private constant _walletsAdmins = keccak256("WALLET_ADMINS");
-  bytes32 private constant _reserveAdmins = keccak256("RESERVE_ADMINS");
+  bytes32 private constant CONTRACT_ADMIN_ROLE = DEFAULT_ADMIN_ROLE;
+  bytes32 private constant TRANSFER_ADMIN_ROLE = keccak256("TRANSFER_ADMINS");
+  bytes32 private constant WALLETS_ADMIN_ROLE = keccak256("WALLET_ADMINS");
+  bytes32 private constant RESERVE_ADMIN_ROLE = keccak256("RESERVE_ADMINS");
 
   uint256 public maxTotalSupply;
   uint256 public contractAdminCount;
@@ -74,35 +71,35 @@ contract RestrictedToken is ERC20, AccessControl {
     _decimals = decimals_;
     maxTotalSupply = maxTotalSupply_;
 
-    _setupRole(_contractAdmins, contractAdmin_);
-    _setupRole(_reserveAdmins, tokenReserveAdmin_);
+    _setupRole(CONTRACT_ADMIN_ROLE, contractAdmin_);
+    _setupRole(RESERVE_ADMIN_ROLE, tokenReserveAdmin_);
     contractAdminCount = 1;
 
     _mint(tokenReserveAdmin_, totalSupply_);
   }
 
   modifier onlyContractAdmin() {
-    require(hasRole(_contractAdmins, msg.sender), "DOES NOT HAVE CONTRACT ADMIN ROLE");
+    require(hasRole(CONTRACT_ADMIN_ROLE, msg.sender), "DOES NOT HAVE CONTRACT ADMIN ROLE");
     _;
   }
 
    modifier onlyTransferAdmin() {
-    require(hasRole(_transferAdmins, msg.sender), "DOES NOT HAVE TRANSFER ADMIN ROLE");
+    require(hasRole(TRANSFER_ADMIN_ROLE, msg.sender), "DOES NOT HAVE TRANSFER ADMIN ROLE");
     _;
   }
 
    modifier onlyWalletsAdmin() {
-    require(hasRole(_walletsAdmins, msg.sender), "DOES NOT HAVE WALLETS ADMIN ROLE");
+    require(hasRole(WALLETS_ADMIN_ROLE, msg.sender), "DOES NOT HAVE WALLETS ADMIN ROLE");
     _;
   }
 
    modifier onlyReserveAdmin() {
-    require(hasRole(_reserveAdmins, msg.sender), "DOES NOT HAVE RESERVE ADMIN ROLE");
+    require(hasRole(RESERVE_ADMIN_ROLE, msg.sender), "DOES NOT HAVE RESERVE ADMIN ROLE");
     _;
   }
 
   modifier onlyWalletsAdminOrReserveAdmin() {
-    require((hasRole(_walletsAdmins, msg.sender) || hasRole(_reserveAdmins, msg.sender)),
+    require((hasRole(WALLETS_ADMIN_ROLE, msg.sender) || hasRole(RESERVE_ADMIN_ROLE, msg.sender)),
     "DOES NOT HAVE WALLETS ADMIN OR RESERVE ADMIN ROLE");
     _;
   }
@@ -119,14 +116,14 @@ contract RestrictedToken is ERC20, AccessControl {
   /// @dev Authorizes an address holder to write transfer restriction rules
   /// @param addr The address to grant transfer admin rights to
   function grantTransferAdmin(address addr) external validAddress(addr) onlyContractAdmin {
-    grantRole(_transferAdmins, addr);
+    grantRole(TRANSFER_ADMIN_ROLE, addr);
     emit RoleChange(msg.sender, addr, "TransferAdmin", true);
   }
 
   /// @dev Revokes authorization to write transfer restriction rules
   /// @param addr The address to grant transfer admin rights to
   function revokeTransferAdmin(address addr) external validAddress(addr) onlyContractAdmin  {
-    revokeRole(_transferAdmins, addr);
+    revokeRole(TRANSFER_ADMIN_ROLE, addr);
     emit RoleChange(msg.sender, addr, "TransferAdmin", false);
   }
 
@@ -134,14 +131,14 @@ contract RestrictedToken is ERC20, AccessControl {
   /// @param addr The address to check for transfer admin privileges.
   /// @return hasPermission returns true if the address has transfer admin permission and false if not.
   function checkTransferAdmin(address addr) external view returns(bool hasPermission) {
-    return hasRole(_transferAdmins, addr);
+    return hasRole(TRANSFER_ADMIN_ROLE, addr);
   }
 
   /// @dev Authorizes an address holder to grant and revoke rights and restrictions for \
   ///      individual wallets, including assignment into groups.
   /// @param addr The address to grant wallets admin rights to
   function grantWalletsAdmin(address addr) external validAddress(addr) onlyContractAdmin {
-    grantRole(_walletsAdmins, addr);
+    grantRole(WALLETS_ADMIN_ROLE, addr);
     emit RoleChange(msg.sender, addr, "WalletsAdmin", true);
   }
 
@@ -149,7 +146,7 @@ contract RestrictedToken is ERC20, AccessControl {
   ///      individual wallets, including assignment into groups.
   /// @param addr The address to revoke wallets admin rights from.
   function revokeWalletsAdmin(address addr) external validAddress(addr) onlyContractAdmin  {
-    revokeRole(_walletsAdmins, addr);
+    revokeRole(WALLETS_ADMIN_ROLE, addr);
     emit RoleChange(msg.sender, addr, "WalletsAdmin", false);
   }
 
@@ -157,20 +154,20 @@ contract RestrictedToken is ERC20, AccessControl {
   /// @param addr The address to check for wallets admin privileges.
   /// @return hasPermission returns true if the address has wallets admin permission and false if not.
   function checkWalletsAdmin(address addr) external view returns(bool hasPermission) {
-    return hasRole(_walletsAdmins, addr);
+    return hasRole(WALLETS_ADMIN_ROLE, addr);
   }
 
   /// @dev Authorizes an address holder to mint and burn tokens, and to freeze individual addresses
   /// @param addr The address to grant reserve admin rights to.
   function grantReserveAdmin(address addr) external validAddress(addr) onlyContractAdmin {
-    grantRole(_reserveAdmins, addr);
+    grantRole(RESERVE_ADMIN_ROLE, addr);
     emit RoleChange(msg.sender, addr, "ReserveAdmin", true);
   }
 
   /// @dev Revokes authorization to mint and burn tokens, and to freeze individual addresses
   /// @param addr The address to revoke reserve admin rights from.
   function revokeReserveAdmin(address addr) external validAddress(addr) onlyContractAdmin  {
-    revokeRole(_reserveAdmins, addr);
+    revokeRole(RESERVE_ADMIN_ROLE, addr);
     emit RoleChange(msg.sender, addr, "ReserveAdmin", false);
   }
 
@@ -178,15 +175,15 @@ contract RestrictedToken is ERC20, AccessControl {
   /// @param addr The address to check for reserve admin privileges.
   /// @return hasPermission returns true if the address has reserve admin permission and false if not.
   function checkReserveAdmin(address addr) external view returns(bool hasPermission) {
-    return hasRole(_reserveAdmins, addr);
+    return hasRole(RESERVE_ADMIN_ROLE, addr);
   }
 
   /// @dev Authorizes an address holder to be a contract admin. Contract admins grant privileges to accounts.
   /// Contract admins can mint/burn tokens and freeze accounts.
   /// @param addr The address to grant transfer admin rights to.
   function grantContractAdmin(address addr) external validAddress(addr) onlyContractAdmin {
-    grantRole(_contractAdmins, addr);
-    contractAdminCount = contractAdminCount.add(1);
+    grantRole(CONTRACT_ADMIN_ROLE, addr);
+    contractAdminCount += 1;
     emit RoleChange(msg.sender, addr, "ContractAdmin", true);
   }
 
@@ -195,8 +192,8 @@ contract RestrictedToken is ERC20, AccessControl {
   /// @param addr The address to remove contract admin rights from
   function revokeContractAdmin(address addr) external validAddress(addr) onlyContractAdmin {
     require(contractAdminCount > 1, "Must have at least one contract admin");
-    revokeRole(_contractAdmins, addr);
-    contractAdminCount = contractAdminCount.sub(1);
+    revokeRole(CONTRACT_ADMIN_ROLE, addr);
+    contractAdminCount -= 1;
     emit RoleChange(msg.sender, addr, "ContractAdmin", false);
   }
 
@@ -204,7 +201,7 @@ contract RestrictedToken is ERC20, AccessControl {
   /// @param addr The address to check for contract admin privileges.
   /// @return hasPermission returns true if the address has contract admin permission and false if not.
   function checkContractAdmin(address addr) external view returns(bool hasPermission) {
-    return hasRole(_contractAdmins, addr);
+    return hasRole(CONTRACT_ADMIN_ROLE, addr);
   }
 
   /// @dev Enforces transfer restrictions managed using the ERC-1404 standard functions.
@@ -265,7 +262,7 @@ contract RestrictedToken is ERC20, AccessControl {
 
     for (uint256 i=0; i < _locksUntil[addr].length; i++) {
       if (_locksUntil[addr][i].timestamp == timestamp) {
-        _locksUntil[addr][i].minBalance = _locksUntil[addr][i].minBalance.add(minBalance);
+        _locksUntil[addr][i].minBalance += minBalance;
         timestampFound = true;
       }
     }
@@ -344,7 +341,7 @@ contract RestrictedToken is ERC20, AccessControl {
 
     for (uint256 i=0; i<_locksUntil[addr].length; i++) {
         if (_locksUntil[addr][i].timestamp > timestamp) {
-            totalLocked = totalLocked.add(_locksUntil[addr][i].minBalance);
+            totalLocked += _locksUntil[addr][i].minBalance;
         }
     }
 
@@ -364,7 +361,7 @@ contract RestrictedToken is ERC20, AccessControl {
   function getCurrentlyUnlockedBalance(address addr) external view returns (uint256 balanceUnlocked) {
     uint256 lockedNow = getCurrentlyLockedBalance(addr);
 
-    return balanceOf(addr).sub(lockedNow);
+    return balanceOf(addr) - lockedNow;
   }
 
   /// @dev Set the one group that the address belongs to, such as a US Reg CF investor group.
@@ -460,7 +457,7 @@ contract RestrictedToken is ERC20, AccessControl {
   /// @param to The addres to mint tokens into.
   /// @param value The number of tokens to mint.
   function mint(address to, uint256 value) external validAddress(to) onlyReserveAdmin  {
-    require(SafeMath.add(totalSupply(), value) <= maxTotalSupply, "Cannot mint more than the max total supply");
+    require(totalSupply() + value <= maxTotalSupply, "Cannot mint more than the max total supply");
     _mint(to, value);
   }
 
