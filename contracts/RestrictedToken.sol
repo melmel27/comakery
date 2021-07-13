@@ -14,9 +14,9 @@ contract RestrictedToken is ERC20, AccessControl {
   ITransferRules public transferRules;
 
   bytes32 private constant CONTRACT_ADMIN_ROLE = DEFAULT_ADMIN_ROLE;
-  bytes32 private constant TRANSFER_ADMIN_ROLE = keccak256("TRANSFER_ADMINS");
-  bytes32 private constant WALLETS_ADMIN_ROLE = keccak256("WALLET_ADMINS");
-  bytes32 private constant RESERVE_ADMIN_ROLE = keccak256("RESERVE_ADMINS");
+  bytes32 private constant TRANSFER_ADMIN_ROLE = keccak256("TRANSFER_ADMIN");
+  bytes32 private constant WALLETS_ADMIN_ROLE = keccak256("WALLET_ADMIN");
+  bytes32 private constant RESERVE_ADMIN_ROLE = keccak256("RESERVE_ADMIN");
 
   uint256 public maxTotalSupply;
   uint256 public contractAdminCount;
