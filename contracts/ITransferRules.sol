@@ -1,6 +1,8 @@
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: MIT
 
-contract ITransferRules {
+pragma solidity 0.8.4;
+
+interface ITransferRules {
     /// @notice Detects if a transfer will be reverted and if so returns an appropriate reference code
     /// @param from Sending address
     /// @param to Receiving address

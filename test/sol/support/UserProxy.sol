@@ -1,10 +1,12 @@
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: UNLICENSED
+
+pragma solidity 0.8.4;
 
 import "../../../contracts/RestrictedToken.sol";
 contract UserProxy {
     RestrictedToken public token;
     
-    constructor(RestrictedToken _token) public {
+    constructor(RestrictedToken _token) {
         token = _token;
     }
 

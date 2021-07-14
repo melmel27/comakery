@@ -1,4 +1,6 @@
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: UNLICENSED
+
+pragma solidity 0.8.4;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
@@ -14,7 +16,7 @@ contract TransferRulesUpgrade is ITransferRules {
         address from,
         address to,
         uint256 value
-    ) public view returns (uint8) {
+    ) public override view returns (uint8) {
         RestrictedToken token = RestrictedToken(_token);
         if (from == to && value > 0) return token.decimals(); // prove we are using all the arguments
         return 17; // grab an arbitrary value from the injected token contract
@@ -22,14 +24,20 @@ contract TransferRulesUpgrade is ITransferRules {
 
     function messageForTransferRestriction(uint8 restrictionCode)
         public
-        view
+        override
+        pure
         returns (string memory)
     {
         if(restrictionCode >= 0) return "HELLO UPGRADE";
         return "HELLO 0 UPGRADE";
     }
 
-    function checkSuccess(uint8 restrictionCode) public view returns (bool) {
+    function checkSuccess(uint8 restrictionCode)
+        public
+        override
+        pure
+        returns (bool)
+    {
         return restrictionCode == 0;
     }
 }

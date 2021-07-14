@@ -1,4 +1,6 @@
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: UNLICENSED
+
+pragma solidity 0.8.4;
 
 import "truffle/Assert.sol";
 import "./support/UserProxy.sol";
