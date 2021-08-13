@@ -12,6 +12,6 @@ interface IERC1404 is IERC20 {
   ) external view returns(uint8);
 
   function messageForTransferRestriction(
-    uint restrictionCode
+    uint8 restrictionCode
   ) external view returns(string memory);
 }

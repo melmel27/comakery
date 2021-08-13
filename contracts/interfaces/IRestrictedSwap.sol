@@ -4,7 +4,7 @@ pragma solidity 0.8.4;
 
 interface IRestrictedSwap {
   /**
-   *  @dev Configure swap
+   *  @dev Configure swap and emit an event with new swap number
    *  @param restrictedTokenSender the approved sender for the erc1404, the erc1404 is the only one assigned to the RestrictedSwap
    *  @param restrictedTokenAmount the required amount for the erc1404Sender to send
    *  @param token2 the address of an erc1404 or erc20 that will be swapped
@@ -17,7 +17,7 @@ interface IRestrictedSwap {
     address token2,
     address token2Address,
     uint token2Amount
-  ) external returns(uint swapNumber);
+  ) external;
 
   /**
    *  @dev restricted token swap for erc1404

@@ -17,6 +17,7 @@
  * phrase from a file you've .gitignored so it doesn't accidentally become public.
  *
  */
+ require('@openzeppelin/test-helpers/configure')();
 
 
  // use migration defaults for the test environment

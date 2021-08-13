@@ -14,14 +14,17 @@ contract RestrictedSwap is IRestrictedSwap, AccessControl {
     address restrictedTokenSender;
     address token2Sender;
     address token2;
-    uint restrictedTokenAmount;
-    uint token2Amount;
+    uint256 restrictedTokenAmount;
+    uint256 token2Amount;
     bool fundRestrictedToken;
     bool fundToken2;
     bool canceled;
   }
 
   using SafeERC20 for IERC20;
+
+  /// @dev owner role
+  bytes32 private constant OWNER_ROLE = DEFAULT_ADMIN_ROLE;
 
   /// @dev admin role
   bytes32 private constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
@@ -30,12 +33,31 @@ contract RestrictedSwap is IRestrictedSwap, AccessControl {
   address private immutable _erc1404;
 
   /// @dev
-  uint private _swapNumber = 0;
+  uint256 private _swapNumber = 0;
 
   /// @dev swap number => swap
-  mapping(uint => Swap) private _swap;
+  mapping(uint256 => Swap) private _swap;
 
-  event SwapCanceled(address sender, uint swapNumber);
+  event SwapCanceled(address sender, uint256 swapNumber);
+
+  event SwapConfigured(
+    uint256 swapNumber,
+    address restrictedTokenSender,
+    uint256 restrictedTokenAmount,
+    address token2,
+    address token2Sender,
+    uint256 token2Amount
+  );
+
+  modifier onlyAdmin() {
+    require(hasRole(ADMIN_ROLE, msg.sender), "Not admin");
+    _;
+  }
+
+  modifier onlyOwner() {
+    require(hasRole(OWNER_ROLE, msg.sender), "Not owner");
+    _;
+  }
 
   /**
    *  @dev Constructor
@@ -51,32 +73,30 @@ contract RestrictedSwap is IRestrictedSwap, AccessControl {
     require(owner != address(0), "Invalid owner address");
 
     _erc1404 = erc1404;
-    _setupRole(DEFAULT_ADMIN_ROLE, owner);
+    _setupRole(OWNER_ROLE, owner);
 
-    for (uint i = 0; i < admins.length; i++) {
+    for (uint256 i = 0; i < admins.length; i++) {
       _setupRole(ADMIN_ROLE, admins[i]);
     }
   }
 
   /**
-   *  @dev Configure swap
+   *  @dev Configure swap and emit an event with new swap number
    *  @param restrictedTokenSender the approved sender for the erc1404, the erc1404 is the only one assigned to the RestrictedSwap
    *  @param restrictedTokenAmount the required amount for the erc1404Sender to send
    *  @param token2 the address of an erc1404 or erc20 that will be swapped
    *  @param token2Sender the address that is approved to fund token2
    *  @param token2Amount the required amount of token2 to swap
-   *  @return _swapNumber swap number
    */
   function configureSwap(
     address restrictedTokenSender,
-    uint restrictedTokenAmount,
+    uint256 restrictedTokenAmount,
     address token2,
     address token2Sender,
-    uint token2Amount
+    uint256 token2Amount
   ) external
     override
-    onlyRole(ADMIN_ROLE)
-    returns(uint)
+    onlyAdmin
   {
     require(restrictedTokenSender != address(0), "Invalid restricted token sender");
     require(restrictedTokenAmount > 0, "Invalid restricted token amount");
@@ -112,16 +132,23 @@ contract RestrictedSwap is IRestrictedSwap, AccessControl {
     _swap[_swapNumber].token2Amount = token2Amount;
     _swap[_swapNumber].token2 = token2;
 
-    return _swapNumber;
+    emit SwapConfigured(
+      _swapNumber,
+      restrictedTokenSender,
+      restrictedTokenAmount,
+      token2,
+      token2Sender,
+      token2Amount
+    );
   }
 
   /**
    *  @dev restricted token swap for erc1404
    *  @param swapNumber swap number
    */
-  function fundRestrictedTokenSwap(uint swapNumber) external override {
+  function fundRestrictedTokenSwap(uint256 swapNumber) external override {
     Swap storage swap = _swap[swapNumber];
-    uint allowance = IERC20(_erc1404).allowance(msg.sender, address(this));
+    uint256 allowance = IERC20(_erc1404).allowance(msg.sender, address(this));
 
     require(!swap.fundRestrictedToken, "This swap has already been funded");
     require(!swap.canceled, "This swap has been canceled");
@@ -132,8 +159,21 @@ contract RestrictedSwap is IRestrictedSwap, AccessControl {
     swap.fundRestrictedToken = true;
 
     if (swap.fundToken2) {
+      // uint256 restrictedTokenBalanceBefore = IERC20(_erc1404).balanceOf(swap.token2Sender);
+      // uint256 token2BalanceBefore = IERC20(swap.token2).balanceOf(swap.restrictedTokenSender);
+      //
       IERC20(_erc1404).safeTransfer(swap.token2Sender, swap.restrictedTokenAmount);
       IERC20(swap.token2).safeTransfer(swap.restrictedTokenSender, swap.token2Amount);
+      //
+      // uint256 restrictedTokenBalanceAfter = IERC20(_erc1404).balanceOf(swap.token2Sender);
+      // uint256 token2BalanceAfter = IERC20(swap.token2).balanceOf(swap.restrictedTokenSender);
+
+      // if (
+      //   restrictedTokenBalanceBefore + swap.restrictedTokenAmount != restrictedTokenBalanceAfter ||
+      //   token2BalanceBefore + swap.token2Amount != token2BalanceAfter
+      // ) {
+        
+      // }
     }
   }
 
@@ -141,9 +181,9 @@ contract RestrictedSwap is IRestrictedSwap, AccessControl {
    *  @dev token2 swap
    *  @param swapNumber swap number
    */
-  function fundToken2Swap(uint swapNumber) external override {
+  function fundToken2Swap(uint256 swapNumber) external override {
     Swap storage swap = _swap[swapNumber];
-    uint allowance = IERC20(swap.token2).allowance(msg.sender, address(this));
+    uint256 allowance = IERC20(swap.token2).allowance(msg.sender, address(this));
 
     require(!swap.fundToken2, "This swap has already been funded");
     require(!swap.canceled, "This swap has been canceled");
@@ -164,7 +204,7 @@ contract RestrictedSwap is IRestrictedSwap, AccessControl {
    *  @dev cancel swap
    *  @param swapNumber swap number
    */
-  function cancelSwap(uint swapNumber) external override {
+  function cancelSwap(uint256 swapNumber) external override {
     Swap storage swap = _swap[swapNumber];
 
     require(!swap.canceled, "Already canceled");
@@ -206,7 +246,7 @@ contract RestrictedSwap is IRestrictedSwap, AccessControl {
   function grantAdmin(address account)
     override
     external
-    onlyRole(DEFAULT_ADMIN_ROLE)
+    onlyOwner
   {
     grantRole(ADMIN_ROLE, account);
   }
@@ -218,7 +258,7 @@ contract RestrictedSwap is IRestrictedSwap, AccessControl {
   function revokeAdmin(address account)
     override
     external
-    onlyRole(DEFAULT_ADMIN_ROLE)
+    onlyOwner
   {
     revokeRole(ADMIN_ROLE, account);
   }
