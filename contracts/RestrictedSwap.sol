@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IRestrictedSwap } from "./interfaces/IRestrictedSwap.sol";
+import { IERC1404 } from "./interfaces/IERC1404.sol";
 
 contract RestrictedSwap is IRestrictedSwap, AccessControl {
   
@@ -82,6 +83,26 @@ contract RestrictedSwap is IRestrictedSwap, AccessControl {
     require(token2Sender != address(0), "Invalid token2 sender");
     require(token2Amount > 0, "Invalid token2 amount");
     require(token2 != address(0), "Invalid token2 address");
+    
+    uint8 code = IERC1404(_erc1404).detectTransferRestriction(
+      restrictedTokenSender,
+      token2Sender,
+      restrictedTokenAmount);
+    string memory message = IERC1404(_erc1404).messageForTransferRestriction(code);
+    require(code == 0, message);
+
+    bytes memory data = abi.encodeWithSelector(
+      IERC1404(token2).detectTransferRestriction.selector,
+      token2Sender,
+      restrictedTokenSender,
+      token2Amount);
+    (bool isErc1404, bytes memory returnData) = token2.call(data);
+
+    if (isErc1404) {
+      code = abi.decode(returnData, (uint8));
+      message = IERC1404(token2).messageForTransferRestriction(code);
+      require(code == 0, message);
+    }
 
     _swapNumber += 1;
 
