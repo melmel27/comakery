@@ -32,7 +32,7 @@ contract RestrictedSwap is IRestrictedSwap, AccessControl {
   /// @dev address of comakery security token of erc1404 type
   address private immutable _erc1404;
 
-  /// @dev
+  /// @dev swap number
   uint256 private _swapNumber = 0;
 
   /// @dev swap number => swap
@@ -126,11 +126,12 @@ contract RestrictedSwap is IRestrictedSwap, AccessControl {
 
     _swapNumber += 1;
 
-    _swap[_swapNumber].restrictedTokenSender = restrictedTokenSender;
-    _swap[_swapNumber].restrictedTokenAmount = restrictedTokenAmount;
-    _swap[_swapNumber].token2Sender = token2Sender;
-    _swap[_swapNumber].token2Amount = token2Amount;
-    _swap[_swapNumber].token2 = token2;
+    Swap storage swap = _swap[_swapNumber];
+    swap.restrictedTokenSender = restrictedTokenSender;
+    swap.restrictedTokenAmount = restrictedTokenAmount;
+    swap.token2Sender = token2Sender;
+    swap.token2Amount = token2Amount;
+    swap.token2 = token2;
 
     emit SwapConfigured(
       _swapNumber,
@@ -152,7 +153,7 @@ contract RestrictedSwap is IRestrictedSwap, AccessControl {
 
     require(!swap.fundRestrictedToken, "This swap has already been funded");
     require(!swap.canceled, "This swap has been canceled");
-    require(swap.restrictedTokenSender == msg.sender, "You are not appropriate restricted token sender for this swap");
+    require(swap.restrictedTokenSender == msg.sender, "You are not appropriate token sender for this swap");
     require(allowance >= swap.restrictedTokenAmount, "Insufficient allownace to transfer token");
 
     IERC20(_erc1404).safeTransferFrom(msg.sender, address(this), swap.restrictedTokenAmount);
@@ -187,7 +188,7 @@ contract RestrictedSwap is IRestrictedSwap, AccessControl {
 
     require(!swap.fundToken2, "This swap has already been funded");
     require(!swap.canceled, "This swap has been canceled");
-    require(swap.token2Sender == msg.sender, "You are not appropriate token2 sender for this swap");
+    require(swap.token2Sender == msg.sender, "You are not appropriate token sender for this swap");
     require(swap.token2 != address(0), "Invalid token2 address");
     require(allowance >= swap.token2Amount, "Insufficient allowance to transfer token");
 
