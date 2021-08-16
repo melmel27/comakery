@@ -2,6 +2,7 @@ const { expect } = require('chai')
 const { BN, expectEvent, expectRevert } = require('@openzeppelin/test-helpers')
 const RestrictedSwap = artifacts.require('RestrictedSwap')
 const Erc20 = artifacts.require('Erc20Mock')
+const Erc20TxFee = artifacts.require('Erc20TxFeeMock')
 const Erc1404 = artifacts.require('Erc1404Mock')
 const TransferRules = artifacts.require("TransferRules")
 
@@ -218,6 +219,145 @@ contract('RestrictedSwap', function (accounts) {
         .to.equal(token2BalanceOfFunder1.add(this.token2Amount).toNumber())
       expect((await this.token2.balanceOf(this.token2Sender)).toNumber())
         .to.equal(token2BalanceOfFunder2.sub(this.token2Amount).toNumber())
+    })
+  })
+
+  describe('Cancel check', async () => {
+    it('only admin can cancel if no parties funded', async () => {
+      await expectRevert(
+        this.restrictedSwap.cancelSwap(new BN(1), { from : accounts[0] }),
+        'Only admin can cancel the swap'
+      )
+      await this.restrictedSwap.cancelSwap(new BN(1), { from : this.swapAdmins[0] })
+    })
+
+    describe('only admin and restricted token funder can cancel if swap is funded from restricted token funder', async () => {
+      it('admin can cancel the swap funded from restricted token funder', async () => {
+        const balance = await this.erc1404.balanceOf(this.restrictedTokenSender)
+        await this.restrictedSwap.fundRestrictedTokenSwap(new BN(1), { from: this.restrictedTokenSender })
+        await this.restrictedSwap.cancelSwap(new BN(1), { from : this.swapAdmins[0] })
+        expect((await this.erc1404.balanceOf(this.restrictedTokenSender)).toNumber())
+          .to.equal(balance.toNumber())
+      })
+
+      it('restricted token funder can cancel the swap funded from restricted token funder', async () => {
+        const balance = await this.erc1404.balanceOf(this.restrictedTokenSender)
+        await this.restrictedSwap.fundRestrictedTokenSwap(new BN(1), { from: this.restrictedTokenSender })
+        await this.restrictedSwap.cancelSwap(new BN(1), { from : this.restrictedTokenSender })
+        expect((await this.erc1404.balanceOf(this.restrictedTokenSender)).toNumber())
+          .to.equal(balance.toNumber())
+      })
+
+      it('no other one can cancel the swap funded from restricted token funder', async () => {
+        await this.restrictedSwap.fundRestrictedTokenSwap(new BN(1), { from: this.restrictedTokenSender })
+        await expectRevert(
+          this.restrictedSwap.cancelSwap(new BN(1), { from : accounts[0] }),
+          'Only admin or restricted token sender can cancel the swap'
+        )
+      })
+    })
+
+    describe('only admin and token2 funder can cancel if swap is funded from token2 funder', async () => {
+      it('admin can cancel the swap funded from token2 funder', async () => {
+        const balance = await this.token2.balanceOf(this.token2Sender)
+        await this.restrictedSwap.fundToken2Swap(new BN(1), { from: this.token2Sender })
+        await this.restrictedSwap.cancelSwap(new BN(1), { from : this.swapAdmins[0] })
+        expect((await this.token2.balanceOf(this.token2Sender)).toNumber())
+          .to.equal(balance.toNumber())
+      })
+
+      it('token2 funder can cancel the swap funded from token2 funder', async () => {
+        const balance = await this.token2.balanceOf(this.token2Sender)
+        await this.restrictedSwap.fundToken2Swap(new BN(1), { from: this.token2Sender })
+        await this.restrictedSwap.cancelSwap(new BN(1), { from : this.token2Sender })
+        expect((await this.token2.balanceOf(this.token2Sender)).toNumber())
+          .to.equal(balance.toNumber())
+      })
+
+      it('no other one can cancel the swap funded from token2 funder', async () => {
+        await this.restrictedSwap.fundToken2Swap(new BN(1), { from: this.token2Sender })
+        await expectRevert(
+          this.restrictedSwap.cancelSwap(new BN(1), { from : accounts[0] }),
+          'Only admin or token2 sender can cancel the swap'
+        )
+      })
+    })
+
+    it('cannot cancel with an invalid swap number', async () => {
+      await expectRevert(
+        this.restrictedSwap.cancelSwap(new BN(2), { from : accounts[0] }),
+        'This swap is not configured'
+      )
+    })
+
+    it('cannot cancel swap that has been funded from both parties', async () => {
+      await this.restrictedSwap.fundRestrictedTokenSwap(new BN(1), { from: this.restrictedTokenSender })
+      await this.restrictedSwap.fundToken2Swap(new BN(1), { from: this.token2Sender })
+      await expectRevert(
+        this.restrictedSwap.cancelSwap(new BN(1), { from : this.swapAdmins[0] }),
+        'Cannot cancel completed swap'
+      )
+    })
+
+    it('cannot cancel again', async () => {
+      await this.restrictedSwap.cancelSwap(new BN(1), { from : this.swapAdmins[0] })
+      await expectRevert(
+        this.restrictedSwap.cancelSwap(new BN(1), { from : this.swapAdmins[0] }),
+        'Already canceled'
+      )
+    })
+  })
+
+  describe('Check deposit revert with token with transaction fee', async () => {
+    let erc20TxFee = null
+
+    beforeEach(async () => {
+      erc20TxFee = await Erc20TxFee.new('20', '20')
+
+      await Promise.all([
+        erc20TxFee.mint(9999, { from: this.token2Sender }),
+        erc20TxFee.approve(
+          this.restrictedSwap.address,
+          9999,
+          { from: this.token2Sender }
+        ),
+      ])
+
+      await this.restrictedSwap.configureSwap(
+        this.restrictedTokenSender,
+        this.restrictedTokenAmount,
+        erc20TxFee.address,
+        this.token2Sender,
+        this.token2Amount,
+        { from: this.swapAdmins[0] }
+      )
+    })
+
+    it('deposit reverts and funder balance gets restored', async () => {
+      const senderBalance = await erc20TxFee.balanceOf(this.token2Sender)
+      const swapBalance = await erc20TxFee.balanceOf(this.restrictedSwap.address)
+
+      await expectRevert(
+        this.restrictedSwap.fundToken2Swap(new BN(2), { from: this.token2Sender }),
+        'Deposit reverted for incorrect result of deposited amount'
+      )
+
+      expect((await erc20TxFee.balanceOf(this.token2Sender)).toNumber())
+        .to.equal(senderBalance.toNumber())
+      expect((await erc20TxFee.balanceOf(this.restrictedSwap.address)).toNumber())
+        .to.equal(swapBalance.toNumber())
+    })
+
+    it('check event emits', async () => {
+      /*
+       * this test won't work because event and revert are done in the same transaction...
+       * will need to find another way
+       */
+      // const swapReceipt = await this.restrictedSwap.fundToken2Swap(new BN(2), { from: this.token2Sender })
+      // expectEvent(
+      //   swapReceipt,
+      //   'IncorrectDepositResult',
+      // )
     })
   })
 })

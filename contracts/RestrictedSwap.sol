@@ -49,6 +49,12 @@ contract RestrictedSwap is IRestrictedSwap, AccessControl {
     uint256 token2Amount
   );
 
+  event IncorrectDepositResult(
+    uint256 swapNumber,
+    address restrictedTokenSender,
+    address token2Sender
+  );
+
   modifier onlyAdmin() {
     require(hasRole(ADMIN_ROLE, msg.sender), "Not admin");
     _;
@@ -156,25 +162,24 @@ contract RestrictedSwap is IRestrictedSwap, AccessControl {
     require(swap.restrictedTokenSender == msg.sender, "You are not appropriate token sender for this swap");
     require(allowance >= swap.restrictedTokenAmount, "Insufficient allownace to transfer token");
 
+    uint256 balanceBefore = IERC20(_erc1404).balanceOf(address(this));
     IERC20(_erc1404).safeTransferFrom(msg.sender, address(this), swap.restrictedTokenAmount);
+    uint256 balanceAfter = IERC20(_erc1404).balanceOf(address(this));
+
+    if (balanceBefore + swap.restrictedTokenAmount != balanceAfter) {
+      emit IncorrectDepositResult(
+        swapNumber,
+        swap.restrictedTokenSender,
+        swap.token2Sender
+      );
+      revert("Deposit reverted for incorrect result of deposited amount");
+    }
+
     swap.fundRestrictedToken = true;
 
     if (swap.fundToken2) {
-      // uint256 restrictedTokenBalanceBefore = IERC20(_erc1404).balanceOf(swap.token2Sender);
-      // uint256 token2BalanceBefore = IERC20(swap.token2).balanceOf(swap.restrictedTokenSender);
-      //
       IERC20(_erc1404).safeTransfer(swap.token2Sender, swap.restrictedTokenAmount);
       IERC20(swap.token2).safeTransfer(swap.restrictedTokenSender, swap.token2Amount);
-      //
-      // uint256 restrictedTokenBalanceAfter = IERC20(_erc1404).balanceOf(swap.token2Sender);
-      // uint256 token2BalanceAfter = IERC20(swap.token2).balanceOf(swap.restrictedTokenSender);
-
-      // if (
-      //   restrictedTokenBalanceBefore + swap.restrictedTokenAmount != restrictedTokenBalanceAfter ||
-      //   token2BalanceBefore + swap.token2Amount != token2BalanceAfter
-      // ) {
-        
-      // }
     }
   }
 
@@ -192,7 +197,19 @@ contract RestrictedSwap is IRestrictedSwap, AccessControl {
     require(swap.token2 != address(0), "Invalid token2 address");
     require(allowance >= swap.token2Amount, "Insufficient allowance to transfer token");
 
+    uint256 balanceBefore = IERC20(swap.token2).balanceOf(address(this));
     IERC20(swap.token2).safeTransferFrom(msg.sender, address(this), swap.token2Amount);
+    uint256 balanceAfter = IERC20(swap.token2).balanceOf(address(this));
+
+    if (balanceBefore + swap.token2Amount != balanceAfter) {
+      emit IncorrectDepositResult(
+        swapNumber,
+        swap.restrictedTokenSender,
+        swap.token2Sender
+      );
+      revert("Deposit reverted for incorrect result of deposited amount");
+    }
+
     swap.fundToken2 = true;
 
     if (swap.fundRestrictedToken) {
@@ -213,7 +230,7 @@ contract RestrictedSwap is IRestrictedSwap, AccessControl {
     require(swap.token2Sender != address(0), "This swap is not configured");
     require(
       !swap.fundRestrictedToken || !swap.fundToken2,
-      "Cannot cancel as both parties funded"
+      "Cannot cancel completed swap"
     );
 
     if (!swap.fundRestrictedToken) {
