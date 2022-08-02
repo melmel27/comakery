@@ -28,7 +28,7 @@
     "truffle": "^5.4.0",
     "truffle-assertions": "^0.9.1",
     "truffle-contract": "^4.0.31",
-    "web3": "^1.4.0",
+    "web3": "^1.7.5",
     "yargs": "^15.0.2"
   },
   "scripts": {
