@@ -9,7 +9,7 @@
   "description": "An open source ERC-20, ERC-1404 and CoMakery compatible security token",
   "license": "MIT",
   "dependencies": {
-    "@openzeppelin/contracts": "^4.2.0",
+    "@openzeppelin/contracts": "^4.7.2",
     "@truffle/hdwallet-provider": "^1.4.1",
     "ajv": "^6.10.2",
     "auto-bind": "^4.0.0",
