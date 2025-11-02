@@ -16,7 +16,7 @@
     "bignumber": "^1.1.0",
     "boolean": "^3.0.0",
     "browserify": "^16.5.0",
-    "csvtojson": "^2.0.10",
+    "csvtojson": "^2.0.13",
     "dotenv": "^8.1.0",
     "eslint-plugin-node": "^9.1.0",
     "express": "^4.17.1",
